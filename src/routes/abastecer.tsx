@@ -39,11 +39,21 @@ const fuels: { key: FuelType; label: string }[] = [
   { key: "diesel", label: "Diesel" },
 ];
 
+const shareOptions: { key: Visibility; label: string; hint: string }[] = [
+  { key: "somente-preco", label: "Somente o preço", hint: "Ajuda a comunidade sem expor seus dados" },
+  { key: "publico", label: "Abastecimento completo", hint: "Preço, consumo e economia, publicamente" },
+  { key: "amigos", label: "Apenas amigos", hint: "Visível só para quem você segue" },
+  { key: "clube", label: "Apenas no clube", hint: "Visível só para os membros do seu clube" },
+];
+
 function NewFillup() {
   const navigate = useNavigate();
   const fillups = useFillups();
   const vehicles = useVehicles();
+  const social = useSocial();
+  const posts = useCommunityPosts();
   const [saved, setSaved] = useState<Fillup | null>(null);
+  const [shared, setShared] = useState<Visibility | null>(null);
   const [form, setForm] = useState({ amount: "", price: "", odometer: "", station: "" });
   const [fuel, setFuel] = useState<FuelType>("gasolina");
 
@@ -66,6 +76,33 @@ function NewFillup() {
     };
     fillups.setValue([...fillups.value, entry]);
     setSaved(entry);
+  };
+
+  const share = (visibility: Visibility, current?: { kmPerLiter?: number }) => {
+    if (!saved) return;
+    posts.setValue([
+      {
+        id: `mine-${saved.id}`,
+        author: "Você",
+        avatar: "EU",
+        city: "Sua região",
+        createdAt: saved.date,
+        station: saved.station ?? "Posto não informado",
+        fuel: saved.fuel,
+        pricePerLiter: saved.pricePerLiter,
+        amountPaid: visibility === "somente-preco" ? undefined : saved.amountPaid,
+        kmPerLiter: visibility === "somente-preco" ? undefined : current?.kmPerLiter,
+        confirmations: 1,
+        likes: 0,
+        comments: 0,
+        visibility,
+        scope: visibility === "clube" ? "clube" : visibility === "amigos" ? "amigos" : "local",
+        mine: true,
+      },
+      ...posts.value,
+    ]);
+    social.setValue({ ...social.value, shares: social.value.shares + 1 });
+    setShared(visibility);
   };
 
   if (saved) {
@@ -96,15 +133,52 @@ function NewFillup() {
           </Card>
         )}
 
-        <button
-          onClick={() => navigate({ to: "/" })}
-          className="mt-8 w-full rounded-3xl bg-primary px-6 py-4 font-semibold text-primary-foreground"
-        >
-          Voltar ao início
-        </button>
+        <Card className="mt-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary" />
+            <p className="text-sm font-semibold text-foreground">
+              {shared ? "Compartilhado com a comunidade 🎉" : "Deseja compartilhar este abastecimento com a comunidade?"}
+            </p>
+          </div>
+          {shared ? (
+            <p className="text-sm text-muted-foreground">
+              Obrigado! O preço deste posto foi atualizado para outros motoristas.
+            </p>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">Compartilhar é sempre opcional. Escolha o que aparece:</p>
+              {shareOptions.map((o) => (
+                <button
+                  key={o.key}
+                  onClick={() => share(o.key, current)}
+                  className="w-full rounded-2xl border border-border px-4 py-3 text-left transition-colors active:bg-muted"
+                >
+                  <p className="text-sm font-medium text-foreground">{o.label}</p>
+                  <p className="text-xs text-muted-foreground">{o.hint}</p>
+                </button>
+              ))}
+            </>
+          )}
+        </Card>
+
+        <div className="mt-6 flex gap-2">
+          <button
+            onClick={() => navigate({ to: "/" })}
+            className="flex-1 rounded-3xl border border-border bg-card px-6 py-4 font-semibold text-foreground"
+          >
+            Início
+          </button>
+          <button
+            onClick={() => navigate({ to: "/comunidade" })}
+            className="flex-1 rounded-3xl bg-primary px-6 py-4 font-semibold text-primary-foreground"
+          >
+            Ver comunidade
+          </button>
+        </div>
       </div>
     );
   }
+
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-md px-5 py-6">
