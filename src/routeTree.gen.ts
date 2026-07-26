@@ -9,14 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PostosRouteImport } from './routes/postos'
+import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as EconomiaRouteImport } from './routes/economia'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AbastecerRouteImport } from './routes/abastecer'
 import { Route as IndexRouteImport } from './routes/index'
 
+const PostosRoute = PostosRouteImport.update({
+  id: '/postos',
+  path: '/postos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HistoricoRoute = HistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EconomiaRoute = EconomiaRouteImport.update({
+  id: '/economia',
+  path: '/economia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -39,43 +57,98 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
   '/dashboard': typeof DashboardRoute
+  '/economia': typeof EconomiaRoute
   '/historico': typeof HistoricoRoute
+  '/perfil': typeof PerfilRoute
+  '/postos': typeof PostosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
   '/dashboard': typeof DashboardRoute
+  '/economia': typeof EconomiaRoute
   '/historico': typeof HistoricoRoute
+  '/perfil': typeof PerfilRoute
+  '/postos': typeof PostosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
   '/dashboard': typeof DashboardRoute
+  '/economia': typeof EconomiaRoute
   '/historico': typeof HistoricoRoute
+  '/perfil': typeof PerfilRoute
+  '/postos': typeof PostosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/abastecer' | '/dashboard' | '/historico'
+  fullPaths:
+    | '/'
+    | '/abastecer'
+    | '/dashboard'
+    | '/economia'
+    | '/historico'
+    | '/perfil'
+    | '/postos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/abastecer' | '/dashboard' | '/historico'
-  id: '__root__' | '/' | '/abastecer' | '/dashboard' | '/historico'
+  to:
+    | '/'
+    | '/abastecer'
+    | '/dashboard'
+    | '/economia'
+    | '/historico'
+    | '/perfil'
+    | '/postos'
+  id:
+    | '__root__'
+    | '/'
+    | '/abastecer'
+    | '/dashboard'
+    | '/economia'
+    | '/historico'
+    | '/perfil'
+    | '/postos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AbastecerRoute: typeof AbastecerRoute
   DashboardRoute: typeof DashboardRoute
+  EconomiaRoute: typeof EconomiaRoute
   HistoricoRoute: typeof HistoricoRoute
+  PerfilRoute: typeof PerfilRoute
+  PostosRoute: typeof PostosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/postos': {
+      id: '/postos'
+      path: '/postos'
+      fullPath: '/postos'
+      preLoaderRoute: typeof PostosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/historico': {
       id: '/historico'
       path: '/historico'
       fullPath: '/historico'
       preLoaderRoute: typeof HistoricoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/economia': {
+      id: '/economia'
+      path: '/economia'
+      fullPath: '/economia'
+      preLoaderRoute: typeof EconomiaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -106,7 +179,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AbastecerRoute: AbastecerRoute,
   DashboardRoute: DashboardRoute,
+  EconomiaRoute: EconomiaRoute,
   HistoricoRoute: HistoricoRoute,
+  PerfilRoute: PerfilRoute,
+  PostosRoute: PostosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

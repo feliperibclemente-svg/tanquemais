@@ -1,0 +1,12 @@
+# Tanque+
+
+> Assistente inteligente de abastecimento: registre abastecimentos e acompanhe consumo, custo por quilômetro, gastos e postos mais baratos.
+
+## Pages
+
+- [Início](/): resumo de gastos do mês, consumo médio, custo por km e insights da TanqueIA
+- [Registrar abastecimento](/abastecer): cálculo automático de litros e rendimento
+- [Histórico](/historico): lista cronológica de abastecimentos
+- [Painel](/dashboard): gráficos de gastos, litros e evolução do consumo
+- [Economia](/economia): relatório de gastos e melhores/piores rendimentos
+- [Postos próximos](/postos): preços, distância e índice de confiabilidade da comunidade
