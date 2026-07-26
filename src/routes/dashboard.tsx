@@ -87,6 +87,12 @@ function Dashboard() {
         </div>
       )}
       <Link
+        to="/historico"
+        className="mt-4 flex items-center justify-center rounded-3xl border border-border bg-card px-6 py-4 text-sm font-semibold text-foreground"
+      >
+        Ver histórico
+      </Link>
+      <Link
         to="/economia"
         className="mt-4 flex items-center justify-center rounded-3xl border border-border bg-card px-6 py-4 text-sm font-semibold text-foreground"
       >

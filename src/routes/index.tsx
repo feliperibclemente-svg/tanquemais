@@ -96,6 +96,21 @@ function HomePage() {
           ))}
         </Card>
 
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            to="/comunidade"
+            className="rounded-3xl border border-border bg-card px-4 py-4 text-center text-sm font-semibold text-foreground"
+          >
+            Comunidade
+          </Link>
+          <Link
+            to="/radar"
+            className="rounded-3xl border border-border bg-card px-4 py-4 text-center text-sm font-semibold text-foreground"
+          >
+            Radar de Economia
+          </Link>
+        </div>
+
         <Link
           to="/abastecer"
           className="flex items-center justify-center gap-2 rounded-3xl bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[var(--shadow-soft)] transition-transform active:scale-[0.98]"

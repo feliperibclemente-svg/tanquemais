@@ -9,4 +9,6 @@
 - [Histórico](/historico): lista cronológica de abastecimentos
 - [Painel](/dashboard): gráficos de gastos, litros e evolução do consumo
 - [Economia](/economia): relatório de gastos e melhores/piores rendimentos
+- [Comunidade](/comunidade): feed colaborativo de preços, clubes e rankings
+- [Radar de Economia](/radar): mapa com menor preço, avaliações e tendência dos preços
 - [Postos próximos](/postos): preços, distância e índice de confiabilidade da comunidade
