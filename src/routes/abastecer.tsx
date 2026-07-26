@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Camera, CheckCircle2, Users } from "lucide-react";
 import { Card } from "@/components/MobileShell";
-import { uid as newId, useCommunityPosts, useSocial, type Visibility } from "@/lib/community";
+import { useCommunityPosts, useSocial, type Visibility } from "@/lib/community";
 import {
   brl,
   num,
