@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RadarRouteImport } from './routes/radar'
 import { Route as PostosRouteImport } from './routes/postos'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as HistoricoRouteImport } from './routes/historico'
@@ -23,6 +24,11 @@ import { Route as ClubeClubIdRouteImport } from './routes/clube.$clubId'
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RadarRoute = RadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostosRoute = PostosRouteImport.update({
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/historico': typeof HistoricoRoute
   '/perfil': typeof PerfilRoute
   '/postos': typeof PostosRoute
+  '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/clube/$clubId': typeof ClubeClubIdRoute
 }
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/historico': typeof HistoricoRoute
   '/perfil': typeof PerfilRoute
   '/postos': typeof PostosRoute
+  '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/clube/$clubId': typeof ClubeClubIdRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/historico': typeof HistoricoRoute
   '/perfil': typeof PerfilRoute
   '/postos': typeof PostosRoute
+  '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/clube/$clubId': typeof ClubeClubIdRoute
 }
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/perfil'
     | '/postos'
+    | '/radar'
     | '/sitemap.xml'
     | '/clube/$clubId'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/perfil'
     | '/postos'
+    | '/radar'
     | '/sitemap.xml'
     | '/clube/$clubId'
   id:
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/perfil'
     | '/postos'
+    | '/radar'
     | '/sitemap.xml'
     | '/clube/$clubId'
   fileRoutesById: FileRoutesById
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   HistoricoRoute: typeof HistoricoRoute
   PerfilRoute: typeof PerfilRoute
   PostosRoute: typeof PostosRoute
+  RadarRoute: typeof RadarRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ClubeClubIdRoute: typeof ClubeClubIdRoute
 }
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/radar': {
+      id: '/radar'
+      path: '/radar'
+      fullPath: '/radar'
+      preLoaderRoute: typeof RadarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/postos': {
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoricoRoute: HistoricoRoute,
   PerfilRoute: PerfilRoute,
   PostosRoute: PostosRoute,
+  RadarRoute: RadarRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ClubeClubIdRoute: ClubeClubIdRoute,
 }

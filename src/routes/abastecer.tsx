@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Camera, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Camera, CheckCircle2, Users } from "lucide-react";
 import { Card } from "@/components/MobileShell";
+import { uid as newId, useCommunityPosts, useSocial, type Visibility } from "@/lib/community";
 import {
   brl,
   num,
@@ -12,6 +13,7 @@ import {
   type FuelType,
   type Fillup,
 } from "@/lib/tanque";
+
 
 export const Route = createFileRoute("/abastecer")({
   head: () => ({
