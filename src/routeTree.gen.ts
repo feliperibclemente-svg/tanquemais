@@ -10,17 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RadarRouteImport } from './routes/radar'
 import { Route as PostosRouteImport } from './routes/postos'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as EconomiaRouteImport } from './routes/economia'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ComunidadeRouteImport } from './routes/comunidade'
 import { Route as AbastecerRouteImport } from './routes/abastecer'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ClubeClubIdRouteImport } from './routes/clube.$clubId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RadarRoute = RadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostosRoute = PostosRouteImport.update({
@@ -48,6 +56,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComunidadeRoute = ComunidadeRouteImport.update({
+  id: '/comunidade',
+  path: '/comunidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AbastecerRoute = AbastecerRouteImport.update({
   id: '/abastecer',
   path: '/abastecer',
@@ -58,80 +71,106 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClubeClubIdRoute = ClubeClubIdRouteImport.update({
+  id: '/clube/$clubId',
+  path: '/clube/$clubId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
+  '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
   '/historico': typeof HistoricoRoute
   '/perfil': typeof PerfilRoute
   '/postos': typeof PostosRoute
+  '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/clube/$clubId': typeof ClubeClubIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
+  '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
   '/historico': typeof HistoricoRoute
   '/perfil': typeof PerfilRoute
   '/postos': typeof PostosRoute
+  '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/clube/$clubId': typeof ClubeClubIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
+  '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
   '/historico': typeof HistoricoRoute
   '/perfil': typeof PerfilRoute
   '/postos': typeof PostosRoute
+  '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/clube/$clubId': typeof ClubeClubIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/abastecer'
+    | '/comunidade'
     | '/dashboard'
     | '/economia'
     | '/historico'
     | '/perfil'
     | '/postos'
+    | '/radar'
     | '/sitemap.xml'
+    | '/clube/$clubId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/abastecer'
+    | '/comunidade'
     | '/dashboard'
     | '/economia'
     | '/historico'
     | '/perfil'
     | '/postos'
+    | '/radar'
     | '/sitemap.xml'
+    | '/clube/$clubId'
   id:
     | '__root__'
     | '/'
     | '/abastecer'
+    | '/comunidade'
     | '/dashboard'
     | '/economia'
     | '/historico'
     | '/perfil'
     | '/postos'
+    | '/radar'
     | '/sitemap.xml'
+    | '/clube/$clubId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AbastecerRoute: typeof AbastecerRoute
+  ComunidadeRoute: typeof ComunidadeRoute
   DashboardRoute: typeof DashboardRoute
   EconomiaRoute: typeof EconomiaRoute
   HistoricoRoute: typeof HistoricoRoute
   PerfilRoute: typeof PerfilRoute
   PostosRoute: typeof PostosRoute
+  RadarRoute: typeof RadarRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ClubeClubIdRoute: typeof ClubeClubIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/radar': {
+      id: '/radar'
+      path: '/radar'
+      fullPath: '/radar'
+      preLoaderRoute: typeof RadarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/postos': {
@@ -178,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comunidade': {
+      id: '/comunidade'
+      path: '/comunidade'
+      fullPath: '/comunidade'
+      preLoaderRoute: typeof ComunidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/abastecer': {
       id: '/abastecer'
       path: '/abastecer'
@@ -192,18 +245,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/clube/$clubId': {
+      id: '/clube/$clubId'
+      path: '/clube/$clubId'
+      fullPath: '/clube/$clubId'
+      preLoaderRoute: typeof ClubeClubIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AbastecerRoute: AbastecerRoute,
+  ComunidadeRoute: ComunidadeRoute,
   DashboardRoute: DashboardRoute,
   EconomiaRoute: EconomiaRoute,
   HistoricoRoute: HistoricoRoute,
   PerfilRoute: PerfilRoute,
   PostosRoute: PostosRoute,
+  RadarRoute: RadarRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ClubeClubIdRoute: ClubeClubIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

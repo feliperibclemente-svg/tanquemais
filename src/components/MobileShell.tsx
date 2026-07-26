@@ -1,14 +1,15 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BarChart3, Fuel, Home, MapPin, User } from "lucide-react";
+import { BarChart3, Home, Radar, User, Users } from "lucide-react";
 import type { ReactNode } from "react";
 
 const tabs = [
   { to: "/", label: "Início", icon: Home },
-  { to: "/historico", label: "Histórico", icon: Fuel },
+  { to: "/comunidade", label: "Comunidade", icon: Users },
+  { to: "/radar", label: "Radar", icon: Radar },
   { to: "/dashboard", label: "Painel", icon: BarChart3 },
-  { to: "/postos", label: "Postos", icon: MapPin },
   { to: "/perfil", label: "Perfil", icon: User },
 ];
+
 
 export function MobileShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
