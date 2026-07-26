@@ -9,8 +9,50 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PostosRouteImport } from './routes/postos'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as EconomiaRouteImport } from './routes/economia'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AbastecerRouteImport } from './routes/abastecer'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostosRoute = PostosRouteImport.update({
+  id: '/postos',
+  path: '/postos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoricoRoute = HistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EconomiaRoute = EconomiaRouteImport.update({
+  id: '/economia',
+  path: '/economia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AbastecerRoute = AbastecerRouteImport.update({
+  id: '/abastecer',
+  path: '/abastecer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +61,130 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/abastecer': typeof AbastecerRoute
+  '/dashboard': typeof DashboardRoute
+  '/economia': typeof EconomiaRoute
+  '/historico': typeof HistoricoRoute
+  '/perfil': typeof PerfilRoute
+  '/postos': typeof PostosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/abastecer': typeof AbastecerRoute
+  '/dashboard': typeof DashboardRoute
+  '/economia': typeof EconomiaRoute
+  '/historico': typeof HistoricoRoute
+  '/perfil': typeof PerfilRoute
+  '/postos': typeof PostosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/abastecer': typeof AbastecerRoute
+  '/dashboard': typeof DashboardRoute
+  '/economia': typeof EconomiaRoute
+  '/historico': typeof HistoricoRoute
+  '/perfil': typeof PerfilRoute
+  '/postos': typeof PostosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/abastecer'
+    | '/dashboard'
+    | '/economia'
+    | '/historico'
+    | '/perfil'
+    | '/postos'
+    | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/abastecer'
+    | '/dashboard'
+    | '/economia'
+    | '/historico'
+    | '/perfil'
+    | '/postos'
+    | '/sitemap.xml'
+  id:
+    | '__root__'
+    | '/'
+    | '/abastecer'
+    | '/dashboard'
+    | '/economia'
+    | '/historico'
+    | '/perfil'
+    | '/postos'
+    | '/sitemap.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AbastecerRoute: typeof AbastecerRoute
+  DashboardRoute: typeof DashboardRoute
+  EconomiaRoute: typeof EconomiaRoute
+  HistoricoRoute: typeof HistoricoRoute
+  PerfilRoute: typeof PerfilRoute
+  PostosRoute: typeof PostosRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/postos': {
+      id: '/postos'
+      path: '/postos'
+      fullPath: '/postos'
+      preLoaderRoute: typeof PostosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historico': {
+      id: '/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof HistoricoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/economia': {
+      id: '/economia'
+      path: '/economia'
+      fullPath: '/economia'
+      preLoaderRoute: typeof EconomiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/abastecer': {
+      id: '/abastecer'
+      path: '/abastecer'
+      fullPath: '/abastecer'
+      preLoaderRoute: typeof AbastecerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,17 +197,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AbastecerRoute: AbastecerRoute,
+  DashboardRoute: DashboardRoute,
+  EconomiaRoute: EconomiaRoute,
+  HistoricoRoute: HistoricoRoute,
+  PerfilRoute: PerfilRoute,
+  PostosRoute: PostosRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
