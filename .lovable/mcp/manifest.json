@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "tanque-mais-mcp",
+      "version": "0.1.0",
+      "title": "Tanque+ MCP"
+    },
+    "tools": [
+      {
+        "name": "list_stations",
+        "title": "Listar postos e preços",
+        "description": "Lista os postos monitorados pelo Tanque+ com preços públicos de gasolina e etanol, cidade, distância, avaliação, movimento e tendência de preço.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "city": {
+              "description": "Filtra pela cidade, ex: Goiânia.",
+              "type": "string"
+            },
+            "fuel": {
+              "description": "Ordena pelo preço deste combustível (menor primeiro).",
+              "type": "string",
+              "enum": [
+                "gasolina",
+                "etanol"
+              ]
+            },
+            "limit": {
+              "description": "Máximo de postos retornados (padrão 20).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "cheapest_station",
+        "title": "Posto mais barato e economia estimada",
+        "description": "Retorna o posto mais barato do radar público do Tanque+ para o combustível escolhido e estima a economia de um tanque cheio comparado ao posto mais caro.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "fuel": {
+              "type": "string",
+              "enum": [
+                "gasolina",
+                "etanol"
+              ],
+              "description": "Combustível desejado."
+            },
+            "tankSizeLiters": {
+              "description": "Tamanho do tanque em litros (padrão 40).",
+              "type": "number"
+            },
+            "city": {
+              "description": "Restringe a busca a uma cidade.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "fuel"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "gasoline_vs_ethanol",
+        "title": "Gasolina ou etanol?",
+        "description": "Compara gasolina e etanol pela regra dos 70%. Sem preços informados, usa a média pública dos postos do radar do Tanque+.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "gasolinePrice": {
+              "description": "Preço da gasolina por litro.",
+              "type": "number"
+            },
+            "ethanolPrice": {
+              "description": "Preço do etanol por litro.",
+              "type": "number"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "fuel_economy",
+        "title": "Calcular consumo e custo de viagem",
+        "description": "Calcula km/l, custo por km e custo total de um trajeto a partir da distância, do rendimento do veículo e do preço do litro.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "distanceKm": {
+              "type": "number",
+              "description": "Distância percorrida ou planejada, em km."
+            },
+            "kmPerLiter": {
+              "type": "number",
+              "description": "Rendimento do veículo em km/l."
+            },
+            "pricePerLiter": {
+              "type": "number",
+              "description": "Preço do litro em reais."
+            }
+          },
+          "required": [
+            "distanceKm",
+            "kmPerLiter",
+            "pricePerLiter"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_clubs",
+        "title": "Listar clubes da comunidade",
+        "description": "Lista os clubes públicos da comunidade Tanque+ (por marca, cidade e perfil de uso) com número de membros.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
