@@ -31,7 +31,8 @@ export const LEVELS = [
 ] as const;
 
 export function levelFromXp(xp: number) {
-  let current = LEVELS[0];
+  let current: { level: number; xp: number; title: string } = LEVELS[0];
+
   for (const l of LEVELS) if (xp >= l.xp) current = l;
   const next = LEVELS.find((l) => l.xp > xp);
   const span = next ? next.xp - current.xp : 1;
