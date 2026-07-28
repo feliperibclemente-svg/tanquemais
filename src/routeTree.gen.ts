@@ -18,6 +18,7 @@ import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as EconomiaRouteImport } from './routes/economia'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComunidadeRouteImport } from './routes/comunidade'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AbastecerRouteImport } from './routes/abastecer'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClubeClubIdRouteImport } from './routes/clube.$clubId'
@@ -70,6 +71,11 @@ const ComunidadeRoute = ComunidadeRouteImport.update({
   path: '/comunidade',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AbastecerRoute = AbastecerRouteImport.update({
   id: '/abastecer',
   path: '/abastecer',
@@ -107,6 +113,7 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
+  '/auth': typeof AuthRoute
   '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
+  '/auth': typeof AuthRoute
   '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
+  '/auth': typeof AuthRoute
   '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/abastecer'
+    | '/auth'
     | '/comunidade'
     | '/dashboard'
     | '/economia'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/abastecer'
+    | '/auth'
     | '/comunidade'
     | '/dashboard'
     | '/economia'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/abastecer'
+    | '/auth'
     | '/comunidade'
     | '/dashboard'
     | '/economia'
@@ -213,6 +225,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AbastecerRoute: typeof AbastecerRoute
+  AuthRoute: typeof AuthRoute
   ComunidadeRoute: typeof ComunidadeRoute
   DashboardRoute: typeof DashboardRoute
   EconomiaRoute: typeof EconomiaRoute
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/abastecer': {
       id: '/abastecer'
       path: '/abastecer'
@@ -341,6 +361,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AbastecerRoute: AbastecerRoute,
+  AuthRoute: AuthRoute,
   ComunidadeRoute: ComunidadeRoute,
   DashboardRoute: DashboardRoute,
   EconomiaRoute: EconomiaRoute,
@@ -359,13 +380,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
