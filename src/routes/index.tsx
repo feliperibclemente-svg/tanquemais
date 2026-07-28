@@ -1,240 +1,92 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowRight, Fuel, Plus, Sparkles } from "lucide-react";
-import { MobileShell, Card, StatCard } from "@/components/MobileShell";
-import {
-  brl,
-  num,
-  summary,
-  tanqueIA,
-  uid,
-  useFillups,
-  useProfile,
-  useVehicles,
-  type Vehicle,
-} from "@/lib/tanque";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { BarChart3, Fuel, MapPin, Sparkles } from "lucide-react";
+import { useAuth } from "@/providers/AuthProvider";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Tanque+ — Economize combustível e acompanhe seu consumo" },
+      { title: "Tanque+ — Assistente de economia de combustível" },
       {
         name: "description",
         content:
-          "Registre abastecimentos e veja consumo médio, custo por km, gasto mensal e insights da TanqueIA para economizar.",
+          "Registre abastecimentos em segundos, veja seu consumo real em km/L e descubra quanto dá para economizar no próximo tanque.",
       },
-      { property: "og:title", content: "Tanque+ — Assistente inteligente de abastecimento" },
+      { property: "og:title", content: "Tanque+ — Assistente de economia de combustível" },
       {
         property: "og:description",
-        content: "Consumo, custo por km, histórico e postos mais baratos perto de você.",
+        content:
+          "Consumo real, custo por quilômetro e os postos mais baratos perto de você, em um app só.",
       },
     ],
   }),
-  component: HomePage,
+  component: Landing,
 });
 
-const slides = [
-  { emoji: "🚘", title: "Descubra quanto realmente custa dirigir seu carro." },
-  { emoji: "⛽", title: "Controle seus abastecimentos automaticamente." },
-  { emoji: "💸", title: "Economize abastecendo nos postos mais baratos próximos de você." },
+const highlights = [
+  { icon: Fuel, title: "Abasteça em 20 segundos", body: "Um campo por vez, litros calculados automaticamente." },
+  { icon: BarChart3, title: "Consumo real", body: "km/L, custo por km e comparação mês a mês." },
+  { icon: MapPin, title: "Postos mais baratos", body: "Preços da comunidade com índice de confiabilidade." },
+  { icon: Sparkles, title: "TanqueIA", body: "Recomendações com base nos seus próprios números." },
 ];
 
-function HomePage() {
-  const profile = useProfile();
-  const vehicles = useVehicles();
-  const fillups = useFillups();
+function Landing() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
-  if (!profile.ready || !vehicles.ready) return <div className="min-h-screen bg-background" />;
-  if (!profile.value.onboarded) return <Onboarding onDone={(name) => profile.setValue({ name, onboarded: true })} />;
-  if (vehicles.value.length === 0)
-    return <VehicleForm onSave={(v) => vehicles.setValue([...vehicles.value, v])} />;
-
-  const s = summary(fillups.value);
-  const insights = tanqueIA(fillups.value);
-  const firstName = profile.value.name.split(" ")[0] || "motorista";
+  useEffect(() => {
+    if (!loading && user) navigate({ to: "/app", replace: true });
+  }, [loading, user, navigate]);
 
   return (
-    <MobileShell>
-      <div className="fade-up space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">Olá, {firstName} 👋</p>
-            <p className="text-lg font-semibold text-foreground">
-              {vehicles.value[0].brand} {vehicles.value[0].model}
-            </p>
-          </div>
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-            <Fuel className="h-5 w-5" />
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-between px-6 py-10">
+      <div>
+        <div className="flex items-center gap-2">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground">
+            T
           </span>
+          <span className="text-lg font-semibold tracking-tight text-foreground">Tanque+</span>
         </div>
 
-        <Card className="bg-primary text-primary-foreground">
-          <p className="text-sm/none opacity-90">Gasto este mês</p>
-          <p className="mt-3 text-4xl font-semibold tracking-tight">{brl(s.monthSpend)}</p>
-          <p className="mt-3 text-xs opacity-90">
-            {s.stats.length} abastecimento{s.stats.length === 1 ? "" : "s"} registrado
-            {s.stats.length === 1 ? "" : "s"}
-          </p>
-        </Card>
+        <h1 className="mt-10 text-4xl font-extrabold leading-tight tracking-tight text-foreground">
+          Gaste menos
+          <br />
+          em cada tanque.
+        </h1>
+        <p className="mt-4 text-base text-muted-foreground">
+          O assistente inteligente que mostra quanto seu carro consome, quanto você gasta e onde dá
+          para economizar.
+        </p>
 
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard emoji="⛽" label="Consumo médio" value={`${num(s.avg)} km/L`} />
-          <StatCard emoji="🚗" label="Quilômetros rodados" value={`${num(s.km, 0)} km`} />
-          <StatCard emoji="💰" label="Custo por quilômetro" value={brl(s.costPerKm)} />
-          <StatCard emoji="📈" label="Economia estimada" value={brl(s.savings)} />
-        </div>
-
-        <Card className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <p className="text-sm font-semibold text-foreground">TanqueIA</p>
-          </div>
-          {insights.map((i) => (
-            <p key={i} className="rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
-              {i}
-            </p>
-          ))}
-        </Card>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Link
-            to="/comunidade"
-            className="rounded-3xl border border-border bg-card px-4 py-4 text-center text-sm font-semibold text-foreground"
-          >
-            Comunidade
-          </Link>
-          <Link
-            to="/radar"
-            className="rounded-3xl border border-border bg-card px-4 py-4 text-center text-sm font-semibold text-foreground"
-          >
-            Radar de Economia
-          </Link>
-        </div>
-
-        <Link
-          to="/abastecer"
-          className="flex items-center justify-center gap-2 rounded-3xl bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[var(--shadow-soft)] transition-transform active:scale-[0.98]"
-        >
-          <Plus className="h-5 w-5" /> Registrar abastecimento
-        </Link>
-      </div>
-    </MobileShell>
-  );
-}
-
-function Onboarding({ onDone }: { onDone: (name: string) => void }) {
-  const [step, setStep] = useState(0);
-  const [name, setName] = useState("");
-  const last = step === slides.length;
-
-  return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-between px-6 py-10">
-      {!last ? (
-        <>
-          <div className="fade-up flex flex-1 flex-col items-center justify-center text-center" key={step}>
-            <div className="flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-primary-soft text-6xl">
-              {slides[step].emoji}
-            </div>
-            <h1 className="mt-10 text-3xl font-semibold leading-tight tracking-tight text-foreground">
-              {slides[step].title}
-            </h1>
-          </div>
-          <div className="space-y-6">
-            <div className="flex justify-center gap-2">
-              {slides.map((s, i) => (
-                <span
-                  key={s.emoji}
-                  className={`h-1.5 rounded-full transition-all ${i === step ? "w-6 bg-primary" : "w-1.5 bg-border"}`}
-                />
-              ))}
-            </div>
-            <button
-              onClick={() => setStep(step + 1)}
-              className="flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-6 py-4 font-semibold text-primary-foreground active:scale-[0.98]"
+        <ul className="mt-8 space-y-3">
+          {highlights.map((h) => (
+            <li
+              key={h.title}
+              className="flex items-start gap-3 rounded-3xl border border-border bg-card p-4 shadow-[var(--shadow-soft)]"
             >
-              {step === slides.length - 1 ? "Começar" : "Continuar"}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </>
-      ) : (
-        <div className="fade-up flex flex-1 flex-col justify-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Como podemos te chamar?</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Usamos seu nome para personalizar o app.</p>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Seu nome"
-            className="mt-6 w-full rounded-2xl border border-input bg-card px-4 py-4 text-base outline-none focus:border-primary"
-          />
-          <button
-            disabled={!name.trim()}
-            onClick={() => onDone(name.trim())}
-            className="mt-6 w-full rounded-3xl bg-primary px-6 py-4 font-semibold text-primary-foreground disabled:opacity-40"
-          >
-            Continuar
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const field =
-  "w-full rounded-2xl border border-input bg-card px-4 py-3.5 text-base outline-none focus:border-primary";
-
-function VehicleForm({ onSave }: { onSave: (v: Vehicle) => void }) {
-  const [form, setForm] = useState({
-    brand: "",
-    model: "",
-    year: "",
-    engine: "",
-    fuel: "Flex",
-    transmission: "Automático",
-    odometer: "",
-  });
-  const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
-    setForm({ ...form, [k]: e.target.value });
-  const valid = form.brand && form.model && form.year && form.odometer;
-
-  return (
-    <div className="mx-auto min-h-screen w-full max-w-md px-6 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground">Cadastre seu veículo</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Em breve você poderá gerenciar vários veículos no Tanque+.
-      </p>
-      <div className="mt-6 space-y-3">
-        <input className={field} placeholder="Marca" value={form.brand} onChange={set("brand")} />
-        <input className={field} placeholder="Modelo" value={form.model} onChange={set("model")} />
-        <div className="grid grid-cols-2 gap-3">
-          <input className={field} placeholder="Ano" inputMode="numeric" value={form.year} onChange={set("year")} />
-          <input className={field} placeholder="Motor (1.0)" value={form.engine} onChange={set("engine")} />
-        </div>
-        <select className={field} value={form.fuel} onChange={set("fuel")}>
-          {["Flex", "Gasolina", "Etanol", "Diesel", "Híbrido"].map((f) => (
-            <option key={f}>{f}</option>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+                <h.icon className="h-5 w-5" strokeWidth={2.2} />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold text-foreground">{h.title}</span>
+                <span className="block text-sm text-muted-foreground">{h.body}</span>
+              </span>
+            </li>
           ))}
-        </select>
-        <select className={field} value={form.transmission} onChange={set("transmission")}>
-          {["Manual", "Automático", "CVT", "Automatizado"].map((t) => (
-            <option key={t}>{t}</option>
-          ))}
-        </select>
-        <input
-          className={field}
-          placeholder="Quilometragem atual"
-          inputMode="numeric"
-          value={form.odometer}
-          onChange={set("odometer")}
-        />
+        </ul>
       </div>
-      <button
-        disabled={!valid}
-        onClick={() => onSave({ id: uid(), ...form, odometer: Number(form.odometer) })}
-        className="mt-8 w-full rounded-3xl bg-primary px-6 py-4 font-semibold text-primary-foreground disabled:opacity-40"
-      >
-        Salvar veículo
-      </button>
+
+      <div className="mt-10 space-y-3">
+        <Link
+          to="/auth"
+          className="flex min-h-14 w-full items-center justify-center rounded-2xl bg-primary text-base font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
+        >
+          Começar agora
+        </Link>
+        <p className="text-center text-xs text-muted-foreground">
+          Grátis. Seus dados ficam só na sua conta.
+        </p>
+      </div>
     </div>
   );
 }

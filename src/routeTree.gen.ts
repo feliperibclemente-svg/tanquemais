@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VeiculoRouteImport } from './routes/veiculo'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RadarRouteImport } from './routes/radar'
 import { Route as PostosRouteImport } from './routes/postos'
@@ -18,13 +19,21 @@ import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as EconomiaRouteImport } from './routes/economia'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComunidadeRouteImport } from './routes/comunidade'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AbastecerRouteImport } from './routes/abastecer'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClubeClubIdRouteImport } from './routes/clube.$clubId'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
+const VeiculoRoute = VeiculoRouteImport.update({
+  id: '/veiculo',
+  path: '/veiculo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -70,9 +79,18 @@ const ComunidadeRoute = ComunidadeRouteImport.update({
   path: '/comunidade',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AbastecerRoute = AbastecerRouteImport.update({
   id: '/abastecer',
   path: '/abastecer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -84,6 +102,11 @@ const ClubeClubIdRoute = ClubeClubIdRouteImport.update({
   id: '/clube/$clubId',
   path: '/clube/$clubId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
@@ -107,6 +130,7 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
+  '/auth': typeof AuthRoute
   '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
@@ -116,14 +140,17 @@ export interface FileRoutesByFullPath {
   '/postos': typeof PostosRoute
   '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/veiculo': typeof VeiculoRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/app': typeof AuthenticatedAppRoute
   '/clube/$clubId': typeof ClubeClubIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/abastecer': typeof AbastecerRoute
+  '/auth': typeof AuthRoute
   '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
@@ -133,15 +160,19 @@ export interface FileRoutesByTo {
   '/postos': typeof PostosRoute
   '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/veiculo': typeof VeiculoRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/app': typeof AuthenticatedAppRoute
   '/clube/$clubId': typeof ClubeClubIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/abastecer': typeof AbastecerRoute
+  '/auth': typeof AuthRoute
   '/comunidade': typeof ComunidadeRoute
   '/dashboard': typeof DashboardRoute
   '/economia': typeof EconomiaRoute
@@ -151,8 +182,10 @@ export interface FileRoutesById {
   '/postos': typeof PostosRoute
   '/radar': typeof RadarRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/veiculo': typeof VeiculoRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/_authenticated/app': typeof AuthenticatedAppRoute
   '/clube/$clubId': typeof ClubeClubIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -161,6 +194,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/abastecer'
+    | '/auth'
     | '/comunidade'
     | '/dashboard'
     | '/economia'
@@ -170,14 +204,17 @@ export interface FileRouteTypes {
     | '/postos'
     | '/radar'
     | '/sitemap.xml'
+    | '/veiculo'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/app'
     | '/clube/$clubId'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/abastecer'
+    | '/auth'
     | '/comunidade'
     | '/dashboard'
     | '/economia'
@@ -187,14 +224,18 @@ export interface FileRouteTypes {
     | '/postos'
     | '/radar'
     | '/sitemap.xml'
+    | '/veiculo'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/app'
     | '/clube/$clubId'
     | '/.mcp/invoke-tool/$tool'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/abastecer'
+    | '/auth'
     | '/comunidade'
     | '/dashboard'
     | '/economia'
@@ -204,15 +245,19 @@ export interface FileRouteTypes {
     | '/postos'
     | '/radar'
     | '/sitemap.xml'
+    | '/veiculo'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/_authenticated/app'
     | '/clube/$clubId'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AbastecerRoute: typeof AbastecerRoute
+  AuthRoute: typeof AuthRoute
   ComunidadeRoute: typeof ComunidadeRoute
   DashboardRoute: typeof DashboardRoute
   EconomiaRoute: typeof EconomiaRoute
@@ -222,6 +267,7 @@ export interface RootRouteChildren {
   PostosRoute: typeof PostosRoute
   RadarRoute: typeof RadarRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  VeiculoRoute: typeof VeiculoRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ClubeClubIdRoute: typeof ClubeClubIdRoute
@@ -230,6 +276,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/veiculo': {
+      id: '/veiculo'
+      path: '/veiculo'
+      fullPath: '/veiculo'
+      preLoaderRoute: typeof VeiculoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -293,11 +346,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/abastecer': {
       id: '/abastecer'
       path: '/abastecer'
       fullPath: '/abastecer'
       preLoaderRoute: typeof AbastecerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -313,6 +380,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/clube/$clubId'
       preLoaderRoute: typeof ClubeClubIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/.well-known/oauth-protected-resource': {
       id: '/.well-known/oauth-protected-resource'
@@ -338,9 +412,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppRoute: AuthenticatedAppRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AbastecerRoute: AbastecerRoute,
+  AuthRoute: AuthRoute,
   ComunidadeRoute: ComunidadeRoute,
   DashboardRoute: DashboardRoute,
   EconomiaRoute: EconomiaRoute,
@@ -350,6 +437,7 @@ const rootRouteChildren: RootRouteChildren = {
   PostosRoute: PostosRoute,
   RadarRoute: RadarRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  VeiculoRoute: VeiculoRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,

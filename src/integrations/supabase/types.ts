@@ -1060,6 +1060,10 @@ export type Database = {
         Args: { _follower: string; _following: string }
         Returns: boolean
       }
+      recalc_statistics: {
+        Args: { _user_id: string; _vehicle_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
