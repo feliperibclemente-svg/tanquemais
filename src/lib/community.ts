@@ -1,4 +1,4 @@
-import { usePersisted } from "./tanque";
+/* Dados de referência da comunidade (usados pelas ferramentas MCP públicas). */
 
 /* =========================================================================
  * Tanque+ — Comunidade
@@ -78,20 +78,6 @@ export interface Social {
   hideOdometer: boolean;
 }
 
-export const useSocial = () =>
-  usePersisted<Social>("tanque:social", {
-    likes: [],
-    saved: [],
-    reported: [],
-    following: ["Marina Alves"],
-    clubs: ["fiat"],
-    shares: 0,
-    confirmations: 0,
-    privacy: "publico",
-    hideOdometer: false,
-  });
-
-export const useCommunityPosts = () => usePersisted<CommunityPost[]>("tanque:posts", []);
 
 export function toggle(list: string[], id: string) {
   return list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
