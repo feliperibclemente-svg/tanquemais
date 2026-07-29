@@ -78,7 +78,6 @@ export interface Social {
   hideOdometer: boolean;
 }
 
-
 export function toggle(list: string[], id: string) {
   return list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 }

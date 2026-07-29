@@ -252,7 +252,9 @@ function AbastecerPage() {
           onChange={setPrice}
           prefix="R$"
           suffix="/L"
-          hint={litersValue > 0 ? `${num(litersValue, 2)} litros` : "Calculamos os litros para você"}
+          hint={
+            litersValue > 0 ? `${num(litersValue, 2)} litros` : "Calculamos os litros para você"
+          }
         />
         <NumericField
           label="Quilometragem atual"

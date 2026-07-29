@@ -6,7 +6,12 @@ import { AppShell } from "@/components/app/AppShell";
 import { AppCard, EmptyState, PageHeader, ScreenSkeleton } from "@/components/app/Surface";
 import { FUEL_LABEL, FUEL_TYPES } from "@/constants/app";
 import { int } from "@/lib/format";
-import { useCreateVehicle, useDeleteVehicle, useUpdateVehicle, useVehicles } from "@/hooks/use-tanque";
+import {
+  useCreateVehicle,
+  useDeleteVehicle,
+  useUpdateVehicle,
+  useVehicles,
+} from "@/hooks/use-tanque";
 import { useAuth } from "@/providers/AuthProvider";
 import { vehiclesRepository } from "@/repositories";
 import { vehicleSchema } from "@/validators";
