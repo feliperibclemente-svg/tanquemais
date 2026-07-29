@@ -14,7 +14,10 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: ({ distanceKm, kmPerLiter, pricePerLiter }) => {
     if (distanceKm <= 0 || kmPerLiter <= 0 || pricePerLiter <= 0) {
-      return { content: [{ type: "text", text: "Todos os valores devem ser maiores que zero." }], isError: true };
+      return {
+        content: [{ type: "text", text: "Todos os valores devem ser maiores que zero." }],
+        isError: true,
+      };
     }
     const litros = distanceKm / kmPerLiter;
     const result = {

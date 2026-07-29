@@ -22,7 +22,8 @@ export default defineTool({
       etanol: Number(eth.toFixed(2)),
       relacaoPercentual: Number((ratio * 100).toFixed(1)),
       recomendacao: ratio <= 0.7 ? "Etanol compensa" : "Gasolina compensa",
-      fonte: gasolinePrice && ethanolPrice ? "preços informados" : "média pública dos postos do Tanque+",
+      fonte:
+        gasolinePrice && ethanolPrice ? "preços informados" : "média pública dos postos do Tanque+",
     };
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],

@@ -171,9 +171,7 @@ export function savingsOpportunity(
 ): SavingsOpportunity {
   const liters = tankLiters && tankLiters > 0 ? tankLiters : 40;
   const recent = rows.slice(0, 3).filter((r) => !fuelTypeId || r.fuel_type_id === fuelTypeId);
-  const referencePrice = recent.length
-    ? avg(recent.map((r) => Number(r.price_per_liter)))
-    : null;
+  const referencePrice = recent.length ? avg(recent.map((r) => Number(r.price_per_liter))) : null;
 
   let cheapestPrice: number | null = null;
   let stationName: string | null = null;

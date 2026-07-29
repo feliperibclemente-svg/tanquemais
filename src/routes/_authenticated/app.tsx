@@ -144,11 +144,19 @@ function HomePage() {
         </AppCard>
 
         {/* TanqueIA */}
-        <TanqueIACard insights={insights} vehicleLabel={primaryVehicle ? `${primaryVehicle.brand} ${primaryVehicle.model}` : undefined} />
+        <TanqueIACard
+          insights={insights}
+          vehicleLabel={
+            primaryVehicle ? `${primaryVehicle.brand} ${primaryVehicle.model}` : undefined
+          }
+        />
 
         {/* Último abastecimento */}
         <section>
-          <SectionHeader title="Último abastecimento" action={{ label: "Ver tudo", to: "/historico" }} />
+          <SectionHeader
+            title="Último abastecimento"
+            action={{ label: "Ver tudo", to: "/historico" }}
+          />
           {last ? (
             <AppCard>
               <div className="flex items-start justify-between gap-3">
@@ -187,7 +195,8 @@ function HomePage() {
 
         {rows.length > 0 ? (
           <p className="pb-2 text-center text-xs text-muted-foreground">
-            {rows.length} abastecimento{rows.length > 1 ? "s" : ""} · {brl(stats.totalSpend)} no total
+            {rows.length} abastecimento{rows.length > 1 ? "s" : ""} · {brl(stats.totalSpend)} no
+            total
           </p>
         ) : null}
       </motion.div>
@@ -214,7 +223,10 @@ function TanqueIACard({
     queryFn: () => phrase({ data: { facts, vehicle: vehicleLabel } }),
   });
 
-  const text = ai.data?.text ?? main?.body ?? "Registre mais abastecimentos para receber recomendações personalizadas.";
+  const text =
+    ai.data?.text ??
+    main?.body ??
+    "Registre mais abastecimentos para receber recomendações personalizadas.";
 
   return (
     <AppCard className="border-primary/25 bg-accent/40">

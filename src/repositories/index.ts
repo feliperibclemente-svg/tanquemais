@@ -1,17 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Profile, Vehicle, Fueling, Station, UserStatistics, VehicleStatistics } from "@/types/domain";
+import type {
+  Profile,
+  Vehicle,
+  Fueling,
+  Station,
+  UserStatistics,
+  VehicleStatistics,
+} from "@/types/domain";
 import { unwrap, unwrapMaybe } from "./base";
 
 /* ------------------------------- profiles -------------------------------- */
 
 export const profilesRepository = {
   async get(userId: string): Promise<Profile | null> {
-    return unwrapMaybe(
-      await supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-    );
+    return unwrapMaybe(await supabase.from("profiles").select("*").eq("id", userId).maybeSingle());
   },
 
-  async ensure(userId: string, fullName?: string | null, avatarUrl?: string | null): Promise<Profile> {
+  async ensure(
+    userId: string,
+    fullName?: string | null,
+    avatarUrl?: string | null,
+  ): Promise<Profile> {
     const existing = await this.get(userId);
     if (existing) return existing;
     return unwrap(
@@ -127,7 +136,11 @@ export const fuelingsRepository = {
     );
   },
 
-  async create(userId: string, draft: FuelingDraft, computed: { km_per_liter: number | null; cost_per_km: number | null }): Promise<Fueling> {
+  async create(
+    userId: string,
+    draft: FuelingDraft,
+    computed: { km_per_liter: number | null; cost_per_km: number | null },
+  ): Promise<Fueling> {
     return unwrap(
       await supabase
         .from("fuelings")
@@ -160,7 +173,12 @@ export const fuelingsRepository = {
 /* ------------------------------- stations -------------------------------- */
 
 export type StationWithPrice = Station & {
-  station_prices: { fuel_type_id: string; price: number; confirmations: number; reported_at: string }[];
+  station_prices: {
+    fuel_type_id: string;
+    price: number;
+    confirmations: number;
+    reported_at: string;
+  }[];
 };
 
 export const stationsRepository = {
