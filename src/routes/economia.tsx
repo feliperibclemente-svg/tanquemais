@@ -6,9 +6,15 @@ export const Route = createFileRoute("/economia")({
   head: () => ({
     meta: [
       { title: "Economia — Tanque+" },
-      { name: "description", content: "Veja gasto no mês, nos últimos 12 meses, custo por km e melhores abastecimentos." },
+      {
+        name: "description",
+        content: "Veja gasto no mês, nos últimos 12 meses, custo por km e melhores abastecimentos.",
+      },
       { property: "og:title", content: "Economia — Tanque+" },
-      { property: "og:description", content: "Relatório de quanto você gasta e onde dá para economizar." },
+      {
+        property: "og:description",
+        content: "Relatório de quanto você gasta e onde dá para economizar.",
+      },
     ],
   }),
   component: Economia,
@@ -26,7 +32,10 @@ function Economia() {
     <MobileShell>
       <PageTitle title="Economia" subtitle="Quanto seu carro custa de verdade" />
       {s.stats.length === 0 ? (
-        <EmptyState title="Sem dados ainda" description="Registre abastecimentos para ver seu relatório de economia." />
+        <EmptyState
+          title="Sem dados ainda"
+          description="Registre abastecimentos para ver seu relatório de economia."
+        />
       ) : (
         <div className="space-y-4">
           <Card className="bg-primary text-primary-foreground">
@@ -48,7 +57,8 @@ function Economia() {
             <Card>
               <p className="text-sm font-semibold text-foreground">🏆 Melhor rendimento</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                {dateLabel(s.best.date)} · {s.best.station ?? "Abastecimento"} — {num(s.best.kmPerLiter)} km/L
+                {dateLabel(s.best.date)} · {s.best.station ?? "Abastecimento"} —{" "}
+                {num(s.best.kmPerLiter)} km/L
               </p>
             </Card>
           ) : null}
@@ -56,7 +66,8 @@ function Economia() {
             <Card>
               <p className="text-sm font-semibold text-foreground">⚠️ Pior rendimento</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                {dateLabel(s.worst.date)} · {s.worst.station ?? "Abastecimento"} — {num(s.worst.kmPerLiter)} km/L
+                {dateLabel(s.worst.date)} · {s.worst.station ?? "Abastecimento"} —{" "}
+                {num(s.worst.kmPerLiter)} km/L
               </p>
             </Card>
           ) : null}
@@ -64,8 +75,8 @@ function Economia() {
           <Card>
             <p className="text-sm font-semibold text-foreground">💡 Economia potencial</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Abastecendo sempre no menor preço que você já registrou ({brl(s.savings)} de diferença acumulada),
-              seu custo por km cairia de forma consistente.
+              Abastecendo sempre no menor preço que você já registrou ({brl(s.savings)} de diferença
+              acumulada), seu custo por km cairia de forma consistente.
             </p>
           </Card>
         </div>

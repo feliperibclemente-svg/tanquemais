@@ -8,9 +8,15 @@ export const Route = createFileRoute("/postos")({
   head: () => ({
     meta: [
       { title: "Postos próximos — Tanque+" },
-      { name: "description", content: "Postos perto de você ordenados pelo menor preço, com índice de confiabilidade." },
+      {
+        name: "description",
+        content: "Postos perto de você ordenados pelo menor preço, com índice de confiabilidade.",
+      },
       { property: "og:title", content: "Postos próximos — Tanque+" },
-      { property: "og:description", content: "Compare preços, distância e notas da comunidade antes de abastecer." },
+      {
+        property: "og:description",
+        content: "Compare preços, distância e notas da comunidade antes de abastecer.",
+      },
     ],
   }),
   component: Postos,
@@ -81,7 +87,8 @@ function Postos() {
                   </p>
                   <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                     <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-                    <span className="font-semibold text-foreground">{num(s.rating)}</span> ({s.reviews} avaliações)
+                    <span className="font-semibold text-foreground">{num(s.rating)}</span> (
+                    {s.reviews} avaliações)
                   </p>
                 </div>
                 <div className="text-right text-sm">
@@ -118,7 +125,9 @@ function Postos() {
                           style={{ width: `${(v / 5) * 100}%` }}
                         />
                       </span>
-                      <span className="w-8 text-right text-xs font-medium text-foreground">{num(v)}</span>
+                      <span className="w-8 text-right text-xs font-medium text-foreground">
+                        {num(v)}
+                      </span>
                     </div>
                   ))}
                 </div>

@@ -4,7 +4,8 @@ import { CLUBS } from "@/lib/community";
 export default defineTool({
   name: "list_clubs",
   title: "Listar clubes da comunidade",
-  description: "Lista os clubes públicos da comunidade Tanque+ (por marca, cidade e perfil de uso) com número de membros.",
+  description:
+    "Lista os clubes públicos da comunidade Tanque+ (por marca, cidade e perfil de uso) com número de membros.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: () => {

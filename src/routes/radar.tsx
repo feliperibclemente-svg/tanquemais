@@ -12,10 +12,14 @@ export const Route = createFileRoute("/radar")({
       { title: "Radar de Economia — Tanque+" },
       {
         name: "description",
-        content: "Mapa com postos próximos, menor preço, avaliações da comunidade e tendência dos preços.",
+        content:
+          "Mapa com postos próximos, menor preço, avaliações da comunidade e tendência dos preços.",
       },
       { property: "og:title", content: "Radar de Economia — Tanque+" },
-      { property: "og:description", content: "Descubra onde abastecer mais barato hoje perto de você." },
+      {
+        property: "og:description",
+        content: "Descubra onde abastecer mais barato hoje perto de você.",
+      },
     ],
   }),
   component: RadarPage,
@@ -98,15 +102,21 @@ function RadarPage() {
                   </p>
                   <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                     <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-                    <span className="font-semibold text-foreground">{num(s.rating)}</span> · atualizado{" "}
-                    {timeAgo(s.updatedAt)} · {rel.label}
+                    <span className="font-semibold text-foreground">{num(s.rating)}</span> ·
+                    atualizado {timeAgo(s.updatedAt)} · {rel.label}
                   </p>
                 </div>
                 <div className="text-right text-sm">
                   <p className="font-semibold text-foreground">G {brl(s.gasoline)}</p>
                   <p className="text-muted-foreground">E {brl(s.ethanol)}</p>
-                  <p className={`mt-1 flex items-center justify-end gap-1 text-xs ${up ? "text-destructive" : "text-primary"}`}>
-                    {up ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                  <p
+                    className={`mt-1 flex items-center justify-end gap-1 text-xs ${up ? "text-destructive" : "text-primary"}`}
+                  >
+                    {up ? (
+                      <TrendingUp className="h-3.5 w-3.5" />
+                    ) : (
+                      <TrendingDown className="h-3.5 w-3.5" />
+                    )}
                     {brl(Math.abs(s.trend))}/L
                   </p>
                 </div>
@@ -114,7 +124,9 @@ function RadarPage() {
 
               <div className="mt-3 flex items-center gap-3 rounded-2xl bg-muted px-4 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] text-muted-foreground">Economia estimada (tanque de 40 L)</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Economia estimada (tanque de 40 L)
+                  </p>
                   <p className="text-sm font-semibold text-primary">{brl(economy)}</p>
                 </div>
                 <div className="h-10 w-24">
@@ -152,9 +164,14 @@ function RadarPage() {
                       <div key={c} className="flex items-center gap-3">
                         <span className="w-36 text-xs text-muted-foreground">{c}</span>
                         <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                          <span className="block h-full rounded-full bg-primary" style={{ width: `${(score / 5) * 100}%` }} />
+                          <span
+                            className="block h-full rounded-full bg-primary"
+                            style={{ width: `${(score / 5) * 100}%` }}
+                          />
                         </span>
-                        <span className="w-8 text-right text-xs font-medium text-foreground">{num(score)}</span>
+                        <span className="w-8 text-right text-xs font-medium text-foreground">
+                          {num(score)}
+                        </span>
                       </div>
                     );
                   })}

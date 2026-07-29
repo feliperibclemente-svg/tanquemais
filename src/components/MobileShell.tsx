@@ -10,7 +10,6 @@ const tabs = [
   { to: "/perfil", label: "Perfil", icon: User },
 ];
 
-
 export function MobileShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -57,13 +56,7 @@ export function PageTitle({ title, subtitle }: { title: string; subtitle?: strin
   );
 }
 
-export function Card({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <div
       className={`rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-soft)] ${className}`}
@@ -73,15 +66,7 @@ export function Card({
   );
 }
 
-export function StatCard({
-  emoji,
-  label,
-  value,
-}: {
-  emoji: string;
-  label: string;
-  value: string;
-}) {
+export function StatCard({ emoji, label, value }: { emoji: string; label: string; value: string }) {
   return (
     <Card className="p-4">
       <div className="text-lg">{emoji}</div>

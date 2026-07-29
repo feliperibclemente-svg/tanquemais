@@ -90,11 +90,30 @@ export function PostCard({
       {post.comment ? <p className="text-sm text-muted-foreground">{post.comment}</p> : null}
 
       <div className="flex items-center justify-between border-t border-border pt-3 text-xs">
-        <Action active={liked} onClick={onLike} icon={<Heart className="h-4 w-4" />} label={String(post.likes + (liked ? 1 : 0))} />
-        <Action icon={<MessageCircle className="h-4 w-4" />} label={String(post.comments)} onClick={() => {}} />
+        <Action
+          active={liked}
+          onClick={onLike}
+          icon={<Heart className="h-4 w-4" />}
+          label={String(post.likes + (liked ? 1 : 0))}
+        />
+        <Action
+          icon={<MessageCircle className="h-4 w-4" />}
+          label={String(post.comments)}
+          onClick={() => {}}
+        />
         <Action icon={<Share2 className="h-4 w-4" />} label="Compartilhar" onClick={onShare} />
-        <Action active={saved} icon={<Bookmark className="h-4 w-4" />} label="Salvar" onClick={onSave} />
-        <Action active={reported} icon={<Flag className="h-4 w-4" />} label={reported ? "Reportado" : "Reportar"} onClick={onReport} />
+        <Action
+          active={saved}
+          icon={<Bookmark className="h-4 w-4" />}
+          label="Salvar"
+          onClick={onSave}
+        />
+        <Action
+          active={reported}
+          icon={<Flag className="h-4 w-4" />}
+          label={reported ? "Reportado" : "Reportar"}
+          onClick={onReport}
+        />
       </div>
     </Card>
   );

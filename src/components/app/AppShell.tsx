@@ -14,13 +14,7 @@ const tabs = [
  * Layout único de todas as telas autenticadas: largura, respiros, navegação
  * inferior e botão flutuante de abastecimento.
  */
-export function AppShell({
-  children,
-  fab = true,
-}: {
-  children: ReactNode;
-  fab?: boolean;
-}) {
+export function AppShell({ children, fab = true }: { children: ReactNode; fab?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (

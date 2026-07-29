@@ -3,7 +3,14 @@ import { useEffect, useState } from "react";
 import { Car, Download, LifeBuoy, Lock, Moon, Wrench } from "lucide-react";
 import { Card, MobileShell, PageTitle } from "@/components/MobileShell";
 import { brl, num, summary, THEME_KEY, useFillups, useProfile, useVehicles } from "@/lib/tanque";
-import { BADGES, MISSIONS, computeXp, levelFor, useCommunityPosts, useSocial } from "@/lib/community";
+import {
+  BADGES,
+  MISSIONS,
+  computeXp,
+  levelFor,
+  useCommunityPosts,
+  useSocial,
+} from "@/lib/community";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -11,10 +18,14 @@ export const Route = createFileRoute("/perfil")({
       { title: "Perfil social — Tanque+" },
       {
         name: "description",
-        content: "Nível, conquistas, missões, contribuições e privacidade do seu perfil no Tanque+.",
+        content:
+          "Nível, conquistas, missões, contribuições e privacidade do seu perfil no Tanque+.",
       },
       { property: "og:title", content: "Perfil — Tanque+" },
-      { property: "og:description", content: "Acompanhe sua evolução, medalhas e contribuições na comunidade." },
+      {
+        property: "og:description",
+        content: "Acompanhe sua evolução, medalhas e contribuições na comunidade.",
+      },
     ],
   }),
   component: Perfil,
@@ -44,7 +55,13 @@ function Perfil() {
 
   const exportData = () => {
     const blob = new Blob(
-      [JSON.stringify({ profile: profile.value, vehicles: vehicles.value, fillups: fillups.value }, null, 2)],
+      [
+        JSON.stringify(
+          { profile: profile.value, vehicles: vehicles.value, fillups: fillups.value },
+          null,
+          2,
+        ),
+      ],
       { type: "application/json" },
     );
     const url = URL.createObjectURL(blob);
@@ -94,14 +111,17 @@ function Perfil() {
             {(profile.value.name || "T").slice(0, 1).toUpperCase()}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold text-foreground">{profile.value.name || "Motorista"}</p>
+            <p className="truncate font-semibold text-foreground">
+              {profile.value.name || "Motorista"}
+            </p>
             <p className="text-xs text-muted-foreground">
               Nível {current.level} · {current.name}
             </p>
           </div>
           <div className="text-right text-xs text-muted-foreground">
             <p>
-              <span className="font-semibold text-foreground">{social.value.following.length}</span> seguindo
+              <span className="font-semibold text-foreground">{social.value.following.length}</span>{" "}
+              seguindo
             </p>
             <p>
               <span className="font-semibold text-foreground">{12 + contributions}</span> seguidores
@@ -117,12 +137,18 @@ function Perfil() {
             </p>
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${progress}%` }} />
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-700"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </Card>
 
         <div className="grid grid-cols-2 gap-3">
-          <Stat label="Quilometragem" value={social.value.hideOdometer ? "Oculta" : `${num(s.km, 0)} km`} />
+          <Stat
+            label="Quilometragem"
+            value={social.value.hideOdometer ? "Oculta" : `${num(s.km, 0)} km`}
+          />
           <Stat label="Total gasto" value={brl(s.totalSpend)} />
           <Stat label="Economia acumulada" value={brl(s.savings)} />
           <Stat label="Consumo médio" value={`${num(s.avg)} km/L`} />
@@ -149,7 +175,10 @@ function Perfil() {
                   </span>
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
-                  <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${pct}%` }} />
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-700"
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
               </div>
             );
@@ -219,23 +248,38 @@ function Perfil() {
           <Toggle
             label="Ocultar quilometragem exata"
             active={social.value.hideOdometer}
-            onClick={() => social.setValue({ ...social.value, hideOdometer: !social.value.hideOdometer })}
+            onClick={() =>
+              social.setValue({ ...social.value, hideOdometer: !social.value.hideOdometer })
+            }
           />
         </Card>
 
         <Card className="divide-y divide-border p-0">
-          <button onClick={toggleTheme} className="flex w-full items-center justify-between px-5 py-4">
+          <button
+            onClick={toggleTheme}
+            className="flex w-full items-center justify-between px-5 py-4"
+          >
             <span className="flex items-center gap-3 text-sm text-foreground">
               <Moon className="h-4 w-4 text-muted-foreground" /> Tema escuro
             </span>
-            <span className={`h-6 w-11 rounded-full p-0.5 transition-colors ${dark ? "bg-primary" : "bg-border"}`}>
-              <span className={`block h-5 w-5 rounded-full bg-card transition-transform ${dark ? "translate-x-5" : ""}`} />
+            <span
+              className={`h-6 w-11 rounded-full p-0.5 transition-colors ${dark ? "bg-primary" : "bg-border"}`}
+            >
+              <span
+                className={`block h-5 w-5 rounded-full bg-card transition-transform ${dark ? "translate-x-5" : ""}`}
+              />
             </span>
           </button>
-          <button onClick={exportData} className="flex w-full items-center gap-3 px-5 py-4 text-sm text-foreground">
+          <button
+            onClick={exportData}
+            className="flex w-full items-center gap-3 px-5 py-4 text-sm text-foreground"
+          >
             <Download className="h-4 w-4 text-muted-foreground" /> Exportar dados
           </button>
-          <a href="mailto:suporte@tanquemais.app" className="flex items-center gap-3 px-5 py-4 text-sm text-foreground">
+          <a
+            href="mailto:suporte@tanquemais.app"
+            className="flex items-center gap-3 px-5 py-4 text-sm text-foreground"
+          >
             <LifeBuoy className="h-4 w-4 text-muted-foreground" /> Suporte
           </a>
         </Card>
@@ -243,8 +287,8 @@ function Perfil() {
         <Card className="flex items-start gap-3">
           <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <p className="text-sm text-muted-foreground">
-            Em breve: manutenção, IPVA, seguro, troca de óleo e pneus — o Tanque+ vai virar seu hub de gestão
-            automotiva.
+            Em breve: manutenção, IPVA, seguro, troca de óleo e pneus — o Tanque+ vai virar seu hub
+            de gestão automotiva.
           </p>
         </Card>
 
@@ -276,12 +320,24 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Toggle({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function Toggle({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button onClick={onClick} className="flex w-full items-center justify-between">
       <span className="text-sm text-foreground">{label}</span>
-      <span className={`h-6 w-11 rounded-full p-0.5 transition-colors ${active ? "bg-primary" : "bg-border"}`}>
-        <span className={`block h-5 w-5 rounded-full bg-card transition-transform ${active ? "translate-x-5" : ""}`} />
+      <span
+        className={`h-6 w-11 rounded-full p-0.5 transition-colors ${active ? "bg-primary" : "bg-border"}`}
+      >
+        <span
+          className={`block h-5 w-5 rounded-full bg-card transition-transform ${active ? "translate-x-5" : ""}`}
+        />
       </span>
     </button>
   );

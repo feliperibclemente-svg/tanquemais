@@ -20,7 +20,8 @@ export const Route = createFileRoute("/comunidade")({
       { title: "Comunidade — Tanque+" },
       {
         name: "description",
-        content: "Feed colaborativo de preços, postos confiáveis e economia entre motoristas brasileiros.",
+        content:
+          "Feed colaborativo de preços, postos confiáveis e economia entre motoristas brasileiros.",
       },
       { property: "og:title", content: "Comunidade Tanque+" },
       {
@@ -68,7 +69,9 @@ function Comunidade() {
             key={v}
             onClick={() => setView(v)}
             className={`flex-1 rounded-2xl py-2.5 text-sm font-medium capitalize transition-colors ${
-              view === v ? "bg-card text-foreground shadow-[var(--shadow-soft)]" : "text-muted-foreground"
+              view === v
+                ? "bg-card text-foreground shadow-[var(--shadow-soft)]"
+                : "text-muted-foreground"
             }`}
           >
             {v}
@@ -118,16 +121,28 @@ function Comunidade() {
                 liked={social.value.likes.includes(p.id)}
                 saved={social.value.saved.includes(p.id)}
                 reported={social.value.reported.includes(p.id)}
-                onLike={() => social.setValue({ ...social.value, likes: toggle(social.value.likes, p.id) })}
-                onSave={() => social.setValue({ ...social.value, saved: toggle(social.value.saved, p.id) })}
-                onReport={() => social.setValue({ ...social.value, reported: toggle(social.value.reported, p.id) })}
+                onLike={() =>
+                  social.setValue({ ...social.value, likes: toggle(social.value.likes, p.id) })
+                }
+                onSave={() =>
+                  social.setValue({ ...social.value, saved: toggle(social.value.saved, p.id) })
+                }
+                onReport={() =>
+                  social.setValue({
+                    ...social.value,
+                    reported: toggle(social.value.reported, p.id),
+                  })
+                }
                 onShare={() => {
                   const text = `${p.station} — ${p.fuel} a R$ ${p.pricePerLiter.toFixed(2)}/L (Tanque+)`;
                   if (navigator.share) void navigator.share({ text }).catch(() => {});
                   else void navigator.clipboard?.writeText(text);
                 }}
                 onConfirm={() =>
-                  social.setValue({ ...social.value, confirmations: social.value.confirmations + 1 })
+                  social.setValue({
+                    ...social.value,
+                    confirmations: social.value.confirmations + 1,
+                  })
                 }
               />
             ))
@@ -151,7 +166,9 @@ function Comunidade() {
                   </p>
                 </Link>
                 <button
-                  onClick={() => social.setValue({ ...social.value, clubs: toggle(social.value.clubs, c.id) })}
+                  onClick={() =>
+                    social.setValue({ ...social.value, clubs: toggle(social.value.clubs, c.id) })
+                  }
                   className={`rounded-2xl px-3 py-2 text-xs font-semibold ${
                     joined ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
                   }`}
@@ -199,7 +216,10 @@ function Comunidade() {
               <Trophy className="h-4 w-4 text-primary" /> Ranking {period.toLowerCase()} · {rank}
             </p>
             {RANKINGS[rank].map((row, i) => (
-              <div key={row.name} className="flex items-center gap-3 rounded-2xl bg-muted px-4 py-3">
+              <div
+                key={row.name}
+                className="flex items-center gap-3 rounded-2xl bg-muted px-4 py-3"
+              >
                 <span className="w-5 text-sm font-bold text-primary">{i + 1}</span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{row.name}</p>
@@ -212,7 +232,8 @@ function Comunidade() {
           <Card className="flex items-center gap-3">
             <UserPlus className="h-4 w-4 text-primary" />
             <p className="text-sm text-muted-foreground">
-              Você segue {social.value.following.length} motorista(s). Siga mais pessoas para ver o feed de amigos.
+              Você segue {social.value.following.length} motorista(s). Siga mais pessoas para ver o
+              feed de amigos.
             </p>
           </Card>
         </div>

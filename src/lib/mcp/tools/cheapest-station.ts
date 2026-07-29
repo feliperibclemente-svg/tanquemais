@@ -20,14 +20,22 @@ export default defineTool({
       ? RADAR.filter((s) => s.city.toLowerCase().includes(city.toLowerCase()))
       : RADAR;
     if (pool.length === 0) {
-      return { content: [{ type: "text", text: "Nenhum posto encontrado para essa cidade." }], isError: true };
+      return {
+        content: [{ type: "text", text: "Nenhum posto encontrado para essa cidade." }],
+        isError: true,
+      };
     }
     const sorted = [...pool].sort((a, b) => price(a) - price(b));
     const cheapest = sorted[0];
     const priciest = sorted[sorted.length - 1];
     const result = {
       combustivel: fuel,
-      postoMaisBarato: { nome: cheapest.name, cidade: cheapest.city, preco: price(cheapest), distanciaKm: cheapest.distanceKm },
+      postoMaisBarato: {
+        nome: cheapest.name,
+        cidade: cheapest.city,
+        preco: price(cheapest),
+        distanciaKm: cheapest.distanceKm,
+      },
       postoMaisCaro: { nome: priciest.name, preco: price(priciest) },
       economiaTanqueCheio: Number(((price(priciest) - price(cheapest)) * tank).toFixed(2)),
       tanqueLitros: tank,

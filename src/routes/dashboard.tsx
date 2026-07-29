@@ -18,9 +18,15 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Painel de consumo — Tanque+" },
-      { name: "description", content: "Gráficos de gastos, litros, consumo médio e comparação gasolina x etanol." },
+      {
+        name: "description",
+        content: "Gráficos de gastos, litros, consumo médio e comparação gasolina x etanol.",
+      },
       { property: "og:title", content: "Painel de consumo — Tanque+" },
-      { property: "og:description", content: "Visualize a evolução do seu consumo e dos seus gastos com combustível." },
+      {
+        property: "og:description",
+        content: "Visualize a evolução do seu consumo e dos seus gastos com combustível.",
+      },
     ],
   }),
   component: Dashboard,
@@ -37,7 +43,10 @@ function Dashboard() {
     <MobileShell>
       <PageTitle title="Painel" subtitle="Como seus gastos evoluem" />
       {data.length === 0 ? (
-        <EmptyState title="Sem dados ainda" description="Os gráficos aparecem depois do primeiro abastecimento." />
+        <EmptyState
+          title="Sem dados ainda"
+          description="Os gráficos aparecem depois do primeiro abastecimento."
+        />
       ) : (
         <div className="space-y-4">
           <ChartCard title="Gastos por mês">
@@ -54,7 +63,12 @@ function Dashboard() {
               <CartesianGrid vertical={false} stroke="var(--border)" />
               <XAxis dataKey="month" tick={axis} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v: number) => `${num(v)} L`} />
-              <Area dataKey="litros" stroke="var(--chart-2)" fill="var(--chart-2)" fillOpacity={0.15} />
+              <Area
+                dataKey="litros"
+                stroke="var(--chart-2)"
+                fill="var(--chart-2)"
+                fillOpacity={0.15}
+              />
             </AreaChart>
           </ChartCard>
 
@@ -70,11 +84,16 @@ function Dashboard() {
           <Card>
             <p className="mb-4 text-sm font-semibold text-foreground">Gasolina x Etanol</p>
             {cmp.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Registre abastecimentos com mais de um combustível.</p>
+              <p className="text-sm text-muted-foreground">
+                Registre abastecimentos com mais de um combustível.
+              </p>
             ) : (
               <div className="space-y-3">
                 {cmp.map((c) => (
-                  <div key={c.fuel} className="flex items-center justify-between rounded-2xl bg-muted px-4 py-3">
+                  <div
+                    key={c.fuel}
+                    className="flex items-center justify-between rounded-2xl bg-muted px-4 py-3"
+                  >
                     <span className="text-sm font-medium capitalize text-foreground">{c.fuel}</span>
                     <span className="text-sm text-muted-foreground">
                       {num(c.consumo)} km/L · {brl(c.custoKm)}/km

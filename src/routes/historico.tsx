@@ -7,9 +7,15 @@ export const Route = createFileRoute("/historico")({
   head: () => ({
     meta: [
       { title: "Histórico de abastecimentos — Tanque+" },
-      { name: "description", content: "Todos os seus abastecimentos com litros, preço por litro e km/L." },
+      {
+        name: "description",
+        content: "Todos os seus abastecimentos com litros, preço por litro e km/L.",
+      },
       { property: "og:title", content: "Histórico de abastecimentos — Tanque+" },
-      { property: "og:description", content: "Consulte data, posto, valor, litros e rendimento de cada abastecimento." },
+      {
+        property: "og:description",
+        content: "Consulte data, posto, valor, litros e rendimento de cada abastecimento.",
+      },
     ],
   }),
   component: Historico,
@@ -32,7 +38,10 @@ function Historico() {
         <ul className="space-y-3">
           {rows.map((f) => (
             <li key={f.id}>
-              <button className="w-full text-left" onClick={() => setOpen(open === f.id ? null : f.id)}>
+              <button
+                className="w-full text-left"
+                onClick={() => setOpen(open === f.id ? null : f.id)}
+              >
                 <Card>
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -52,7 +61,10 @@ function Historico() {
                     <div className="fade-up mt-4 space-y-2 border-t border-border pt-4 text-sm">
                       <Detail label="Combustível" value={f.fuel} />
                       <Detail label="Odômetro" value={`${num(f.odometer, 0)} km`} />
-                      <Detail label="Distância percorrida" value={f.distance ? `${num(f.distance, 0)} km` : "—"} />
+                      <Detail
+                        label="Distância percorrida"
+                        value={f.distance ? `${num(f.distance, 0)} km` : "—"}
+                      />
                       <Detail label="Custo por km" value={f.costPerKm ? brl(f.costPerKm) : "—"} />
                     </div>
                   )}

@@ -3,7 +3,10 @@ import { cn } from "@/lib/utils";
 
 /** Converte "12,34" ou "1.234,56" em número. */
 export function parseDecimal(value: string): number {
-  const clean = value.replace(/\./g, "").replace(",", ".").replace(/[^\d.]/g, "");
+  const clean = value
+    .replace(/\./g, "")
+    .replace(",", ".")
+    .replace(/[^\d.]/g, "");
   const n = Number(clean);
   return Number.isFinite(n) ? n : 0;
 }
@@ -35,7 +38,18 @@ interface FieldProps {
 
 /** Campo numérico grande, otimizado para preenchimento rápido no celular. */
 export const NumericField = forwardRef<HTMLInputElement, FieldProps>(function NumericField(
-  { label, value, onChange, prefix, suffix, hint, error, autoFocus, inputMode = "decimal", placeholder },
+  {
+    label,
+    value,
+    onChange,
+    prefix,
+    suffix,
+    hint,
+    error,
+    autoFocus,
+    inputMode = "decimal",
+    placeholder,
+  },
   ref,
 ) {
   const id = useId();
@@ -51,7 +65,9 @@ export const NumericField = forwardRef<HTMLInputElement, FieldProps>(function Nu
           error ? "border-destructive" : "border-border",
         )}
       >
-        {prefix ? <span className="text-lg font-medium text-muted-foreground">{prefix}</span> : null}
+        {prefix ? (
+          <span className="text-lg font-medium text-muted-foreground">{prefix}</span>
+        ) : null}
         <input
           id={id}
           ref={ref}
@@ -62,11 +78,15 @@ export const NumericField = forwardRef<HTMLInputElement, FieldProps>(function Nu
           aria-invalid={!!error}
           aria-describedby={hint || error ? `${id}-hint` : undefined}
           onChange={(e) =>
-            onChange(inputMode === "numeric" ? maskInteger(e.target.value) : maskDecimal(e.target.value))
+            onChange(
+              inputMode === "numeric" ? maskInteger(e.target.value) : maskDecimal(e.target.value),
+            )
           }
           className="min-h-11 w-full bg-transparent text-2xl font-semibold tracking-tight text-foreground outline-none placeholder:text-muted-foreground"
         />
-        {suffix ? <span className="text-sm font-medium text-muted-foreground">{suffix}</span> : null}
+        {suffix ? (
+          <span className="text-sm font-medium text-muted-foreground">{suffix}</span>
+        ) : null}
       </div>
       {error ? (
         <p id={`${id}-hint`} className="text-xs font-medium text-destructive">

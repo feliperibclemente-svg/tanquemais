@@ -101,8 +101,7 @@ export function usePersisted<T>(key: string, fallback: T) {
   return { value, setValue: update, ready };
 }
 
-export const useProfile = () =>
-  usePersisted<Profile>(KEYS.profile, { name: "", onboarded: false });
+export const useProfile = () => usePersisted<Profile>(KEYS.profile, { name: "", onboarded: false });
 export const useVehicles = () => usePersisted<Vehicle[]>(KEYS.vehicles, []);
 export const useFillups = () => usePersisted<Fillup[]>(KEYS.fillups, []);
 export const THEME_KEY = KEYS.theme;
@@ -111,8 +110,7 @@ export const uid = () => Math.random().toString(36).slice(2, 10);
 
 /* -------------------------------- formatação ----------------------------- */
 
-export const brl = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 export const num = (v: number, d = 1) =>
   v.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
 
@@ -197,7 +195,9 @@ export function monthlySeries(fillups: Fillup[]) {
     month: e.month,
     gasto: Number(e.gasto.toFixed(2)),
     litros: Number(e.litros.toFixed(1)),
-    consumo: e.kml.length ? Number((e.kml.reduce((a, b) => a + b, 0) / e.kml.length).toFixed(2)) : 0,
+    consumo: e.kml.length
+      ? Number((e.kml.reduce((a, b) => a + b, 0) / e.kml.length).toFixed(2))
+      : 0,
   }));
 }
 
@@ -212,9 +212,11 @@ export function fuelComparison(fillups: Fillup[]) {
       custoKm: rows.reduce((s, f) => s + (f.costPerKm ?? 0), 0) / rows.length,
     };
   };
-  return (["gasolina", "etanol", "diesel"] as FuelType[])
-    .map(byFuel)
-    .filter(Boolean) as { fuel: FuelType; consumo: number; custoKm: number }[];
+  return (["gasolina", "etanol", "diesel"] as FuelType[]).map(byFuel).filter(Boolean) as {
+    fuel: FuelType;
+    consumo: number;
+    custoKm: number;
+  }[];
 }
 
 /* --------------------------------- TanqueIA ------------------------------- */
@@ -223,7 +225,9 @@ export function tanqueIA(fillups: Fillup[]): string[] {
   const s = summary(fillups);
   const out: string[] = [];
   if (fillups.length < 2) {
-    out.push("Registre ao menos dois abastecimentos para eu calcular o rendimento real do seu carro.");
+    out.push(
+      "Registre ao menos dois abastecimentos para eu calcular o rendimento real do seu carro.",
+    );
     return out;
   }
   const months = monthlySeries(fillups);

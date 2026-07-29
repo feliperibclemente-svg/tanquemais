@@ -9,7 +9,10 @@ export const Route = createFileRoute("/veiculo")({
   head: () => ({
     meta: [
       { title: "Meus veículos — Tanque+" },
-      { name: "description", content: "Gerencie os veículos cadastrados, odômetro e combustível padrão." },
+      {
+        name: "description",
+        content: "Gerencie os veículos cadastrados, odômetro e combustível padrão.",
+      },
       { property: "og:title", content: "Meus veículos — Tanque+" },
       { property: "og:description", content: "Veículos, odômetro atual e combustível preferido." },
     ],

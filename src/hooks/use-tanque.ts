@@ -1,9 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type UseQueryOptions,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { QUERY_STALE_TIME } from "@/constants/app";
 import {
@@ -29,9 +24,11 @@ export const queryKeys = {
   vehicleStats: (vehicleId: string) => ["vehicle-stats", vehicleId] as const,
 };
 
-const base = { staleTime: QUERY_STALE_TIME, retry: 2, refetchOnWindowFocus: false } satisfies Partial<
-  UseQueryOptions
->;
+const base = {
+  staleTime: QUERY_STALE_TIME,
+  retry: 2,
+  refetchOnWindowFocus: false,
+} satisfies Partial<UseQueryOptions>;
 
 export function useProfile() {
   const { user } = useAuth();
@@ -188,8 +185,7 @@ export function useHomeData() {
   const profile = useProfile();
   const vehicles = useVehicles();
   const fuelings = useFuelings();
-  const primary =
-    vehicles.data?.find((v) => v.is_primary) ?? vehicles.data?.[0] ?? null;
+  const primary = vehicles.data?.find((v) => v.is_primary) ?? vehicles.data?.[0] ?? null;
   const stations = useStations(profile.data?.city ?? null);
 
   const rows = computeFuelings((fuelings.data ?? []) as Fueling[]);

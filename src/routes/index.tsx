@@ -24,9 +24,17 @@ export const Route = createFileRoute("/")({
 });
 
 const highlights = [
-  { icon: Fuel, title: "Abasteça em 20 segundos", body: "Um campo por vez, litros calculados automaticamente." },
+  {
+    icon: Fuel,
+    title: "Abasteça em 20 segundos",
+    body: "Um campo por vez, litros calculados automaticamente.",
+  },
   { icon: BarChart3, title: "Consumo real", body: "km/L, custo por km e comparação mês a mês." },
-  { icon: MapPin, title: "Postos mais baratos", body: "Preços da comunidade com índice de confiabilidade." },
+  {
+    icon: MapPin,
+    title: "Postos mais baratos",
+    body: "Preços da comunidade com índice de confiabilidade.",
+  },
   { icon: Sparkles, title: "TanqueIA", body: "Recomendações com base nos seus próprios números." },
 ];
 

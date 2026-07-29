@@ -14,17 +14,20 @@ import {
   type Fillup,
 } from "@/lib/tanque";
 
-
 export const Route = createFileRoute("/abastecer")({
   head: () => ({
     meta: [
       { title: "Registrar abastecimento — Tanque+" },
       {
         name: "description",
-        content: "Registre valor pago, preço do litro e quilometragem: o Tanque+ calcula litros e rendimento.",
+        content:
+          "Registre valor pago, preço do litro e quilometragem: o Tanque+ calcula litros e rendimento.",
       },
       { property: "og:title", content: "Registrar abastecimento — Tanque+" },
-      { property: "og:description", content: "Cálculo automático de litros, consumo e custo por km." },
+      {
+        property: "og:description",
+        content: "Cálculo automático de litros, consumo e custo por km.",
+      },
     ],
   }),
   component: NewFillup,
@@ -40,8 +43,16 @@ const fuels: { key: FuelType; label: string }[] = [
 ];
 
 const shareOptions: { key: Visibility; label: string; hint: string }[] = [
-  { key: "somente-preco", label: "Somente o preço", hint: "Ajuda a comunidade sem expor seus dados" },
-  { key: "publico", label: "Abastecimento completo", hint: "Preço, consumo e economia, publicamente" },
+  {
+    key: "somente-preco",
+    label: "Somente o preço",
+    hint: "Ajuda a comunidade sem expor seus dados",
+  },
+  {
+    key: "publico",
+    label: "Abastecimento completo",
+    hint: "Preço, consumo e economia, publicamente",
+  },
   { key: "amigos", label: "Apenas amigos", hint: "Visível só para quem você segue" },
   { key: "clube", label: "Apenas no clube", hint: "Visível só para os membros do seu clube" },
 ];
@@ -115,7 +126,9 @@ function NewFillup() {
             <CheckCircle2 className="h-10 w-10" />
           </span>
           <p className="mt-6 text-sm text-muted-foreground">Você abasteceu</p>
-          <p className="text-4xl font-semibold tracking-tight text-foreground">{num(saved.liters, 2)} litros</p>
+          <p className="text-4xl font-semibold tracking-tight text-foreground">
+            {num(saved.liters, 2)} litros
+          </p>
           <p className="mt-3 text-sm text-muted-foreground">Valor</p>
           <p className="text-2xl font-semibold text-foreground">{brl(saved.amountPaid)}</p>
         </div>
@@ -137,7 +150,9 @@ function NewFillup() {
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" />
             <p className="text-sm font-semibold text-foreground">
-              {shared ? "Compartilhado com a comunidade 🎉" : "Deseja compartilhar este abastecimento com a comunidade?"}
+              {shared
+                ? "Compartilhado com a comunidade 🎉"
+                : "Deseja compartilhar este abastecimento com a comunidade?"}
             </p>
           </div>
           {shared ? (
@@ -146,7 +161,9 @@ function NewFillup() {
             </p>
           ) : (
             <>
-              <p className="text-xs text-muted-foreground">Compartilhar é sempre opcional. Escolha o que aparece:</p>
+              <p className="text-xs text-muted-foreground">
+                Compartilhar é sempre opcional. Escolha o que aparece:
+              </p>
               {shareOptions.map((o) => (
                 <button
                   key={o.key}
@@ -179,13 +196,14 @@ function NewFillup() {
     );
   }
 
-
   return (
     <div className="mx-auto min-h-screen w-full max-w-md px-5 py-6">
       <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground">
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">Registrar abastecimento</h1>
+      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
+        Registrar abastecimento
+      </h1>
 
       <div className="mt-6 space-y-3">
         <Labeled label="Valor pago (R$)">

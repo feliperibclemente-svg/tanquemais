@@ -197,18 +197,93 @@ export const SEED_POSTS: CommunityPost[] = [
 ];
 
 export const CLUBS: Club[] = [
-  { id: "fiat", name: "Fiat", emoji: "🚗", members: 12840, description: "Donos de Fiat trocando consumo real e dicas." },
-  { id: "vw", name: "Volkswagen", emoji: "🚙", members: 10422, description: "Consumo, manutenção e economia VW." },
-  { id: "chevrolet", name: "Chevrolet", emoji: "🛻", members: 9310, description: "Onix, Tracker, S10 e companhia." },
-  { id: "toyota", name: "Toyota", emoji: "🚘", members: 7180, description: "Híbridos e flex com foco em economia." },
-  { id: "honda", name: "Honda", emoji: "🏍️", members: 5904, description: "Rendimento e cuidados com o motor." },
-  { id: "apps", name: "Motoristas de Aplicativo", emoji: "📱", members: 21400, description: "Quem roda o dia todo e precisa gastar menos." },
-  { id: "entregadores", name: "Entregadores", emoji: "🛵", members: 15320, description: "Rotas curtas, muitos abastecimentos." },
-  { id: "flex", name: "Carros Flex", emoji: "🌽", members: 18240, description: "Gasolina x etanol na prática." },
-  { id: "diesel", name: "Carros Diesel", emoji: "⛽", members: 6120, description: "Consumo em estrada e cargas." },
-  { id: "goiania", name: "Goiânia", emoji: "📍", members: 8420, city: "Goiânia", description: "Preços e postos da capital goiana." },
-  { id: "brasilia", name: "Brasília", emoji: "📍", members: 11230, city: "Brasília", description: "Radar de preços do DF." },
-  { id: "sp", name: "São Paulo", emoji: "📍", members: 32110, city: "São Paulo", description: "A maior comunidade do país." },
+  {
+    id: "fiat",
+    name: "Fiat",
+    emoji: "🚗",
+    members: 12840,
+    description: "Donos de Fiat trocando consumo real e dicas.",
+  },
+  {
+    id: "vw",
+    name: "Volkswagen",
+    emoji: "🚙",
+    members: 10422,
+    description: "Consumo, manutenção e economia VW.",
+  },
+  {
+    id: "chevrolet",
+    name: "Chevrolet",
+    emoji: "🛻",
+    members: 9310,
+    description: "Onix, Tracker, S10 e companhia.",
+  },
+  {
+    id: "toyota",
+    name: "Toyota",
+    emoji: "🚘",
+    members: 7180,
+    description: "Híbridos e flex com foco em economia.",
+  },
+  {
+    id: "honda",
+    name: "Honda",
+    emoji: "🏍️",
+    members: 5904,
+    description: "Rendimento e cuidados com o motor.",
+  },
+  {
+    id: "apps",
+    name: "Motoristas de Aplicativo",
+    emoji: "📱",
+    members: 21400,
+    description: "Quem roda o dia todo e precisa gastar menos.",
+  },
+  {
+    id: "entregadores",
+    name: "Entregadores",
+    emoji: "🛵",
+    members: 15320,
+    description: "Rotas curtas, muitos abastecimentos.",
+  },
+  {
+    id: "flex",
+    name: "Carros Flex",
+    emoji: "🌽",
+    members: 18240,
+    description: "Gasolina x etanol na prática.",
+  },
+  {
+    id: "diesel",
+    name: "Carros Diesel",
+    emoji: "⛽",
+    members: 6120,
+    description: "Consumo em estrada e cargas.",
+  },
+  {
+    id: "goiania",
+    name: "Goiânia",
+    emoji: "📍",
+    members: 8420,
+    city: "Goiânia",
+    description: "Preços e postos da capital goiana.",
+  },
+  {
+    id: "brasilia",
+    name: "Brasília",
+    emoji: "📍",
+    members: 11230,
+    city: "Brasília",
+    description: "Radar de preços do DF.",
+  },
+  {
+    id: "sp",
+    name: "São Paulo",
+    emoji: "📍",
+    members: 32110,
+    city: "São Paulo",
+    description: "A maior comunidade do país.",
+  },
 ];
 
 export const RANKINGS: Record<string, RankingRow[]> = {
@@ -233,14 +308,62 @@ export const RANKINGS: Record<string, RankingRow[]> = {
 };
 
 export const BADGES: Badge[] = [
-  { id: "b1", icon: "🥉", title: "Primeiro abastecimento", description: "Registre seu primeiro abastecimento", goal: 1 },
-  { id: "b2", icon: "🥈", title: "10 abastecimentos", description: "Registre 10 abastecimentos", goal: 10 },
-  { id: "b3", icon: "🥇", title: "Economia de R$100", description: "Acumule R$100 de economia", goal: 100 },
-  { id: "b4", icon: "💎", title: "Economia de R$1.000", description: "Acumule R$1.000 de economia", goal: 1000 },
-  { id: "b5", icon: "🏆", title: "Compartilhou 100 preços", description: "Envie 100 preços para a comunidade", goal: 100 },
-  { id: "b6", icon: "🏆", title: "Contribuidor da Comunidade", description: "Confirme 25 informações de postos", goal: 25 },
-  { id: "b7", icon: "🏆", title: "Explorador de Postos", description: "Abasteça em 10 postos diferentes", goal: 10 },
-  { id: "b8", icon: "🏆", title: "Mestre da Economia", description: "Fique 3 meses abaixo do custo médio por km", goal: 3 },
+  {
+    id: "b1",
+    icon: "🥉",
+    title: "Primeiro abastecimento",
+    description: "Registre seu primeiro abastecimento",
+    goal: 1,
+  },
+  {
+    id: "b2",
+    icon: "🥈",
+    title: "10 abastecimentos",
+    description: "Registre 10 abastecimentos",
+    goal: 10,
+  },
+  {
+    id: "b3",
+    icon: "🥇",
+    title: "Economia de R$100",
+    description: "Acumule R$100 de economia",
+    goal: 100,
+  },
+  {
+    id: "b4",
+    icon: "💎",
+    title: "Economia de R$1.000",
+    description: "Acumule R$1.000 de economia",
+    goal: 1000,
+  },
+  {
+    id: "b5",
+    icon: "🏆",
+    title: "Compartilhou 100 preços",
+    description: "Envie 100 preços para a comunidade",
+    goal: 100,
+  },
+  {
+    id: "b6",
+    icon: "🏆",
+    title: "Contribuidor da Comunidade",
+    description: "Confirme 25 informações de postos",
+    goal: 25,
+  },
+  {
+    id: "b7",
+    icon: "🏆",
+    title: "Explorador de Postos",
+    description: "Abasteça em 10 postos diferentes",
+    goal: 10,
+  },
+  {
+    id: "b8",
+    icon: "🏆",
+    title: "Mestre da Economia",
+    description: "Fique 3 meses abaixo do custo médio por km",
+    goal: 3,
+  },
 ];
 
 export const LEVELS = [
@@ -252,10 +375,38 @@ export const LEVELS = [
 ];
 
 export const MISSIONS: Mission[] = [
-  { id: "m1", title: "Compartilhe 5 preços", period: "Semanal", goal: 5, xp: 120, progressKey: "shares" },
-  { id: "m2", title: "Confirme 3 informações de postos", period: "Semanal", goal: 3, xp: 80, progressKey: "confirmations" },
-  { id: "m3", title: "Registre todos os abastecimentos do mês", period: "Mensal", goal: 4, xp: 250, progressKey: "fillups" },
-  { id: "m4", title: "Economize R$50", period: "Mensal", goal: 50, xp: 200, progressKey: "savings" },
+  {
+    id: "m1",
+    title: "Compartilhe 5 preços",
+    period: "Semanal",
+    goal: 5,
+    xp: 120,
+    progressKey: "shares",
+  },
+  {
+    id: "m2",
+    title: "Confirme 3 informações de postos",
+    period: "Semanal",
+    goal: 3,
+    xp: 80,
+    progressKey: "confirmations",
+  },
+  {
+    id: "m3",
+    title: "Registre todos os abastecimentos do mês",
+    period: "Mensal",
+    goal: 4,
+    xp: 250,
+    progressKey: "fillups",
+  },
+  {
+    id: "m4",
+    title: "Economize R$50",
+    period: "Mensal",
+    goal: 50,
+    xp: 200,
+    progressKey: "savings",
+  },
 ];
 
 export function computeXp(input: {

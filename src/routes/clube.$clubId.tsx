@@ -12,7 +12,10 @@ export const Route = createFileRoute("/clube/$clubId")({
     return { club };
   },
   head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [{ title: "Clube não encontrado — Tanque+" }, { name: "robots", content: "noindex" }] };
+    if (!loaderData)
+      return {
+        meta: [{ title: "Clube não encontrado — Tanque+" }, { name: "robots", content: "noindex" }],
+      };
     const t = `Clube ${loaderData.club.name} — Tanque+`;
     return {
       meta: [
@@ -37,7 +40,10 @@ function ClubePage() {
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-md px-5 py-6">
-      <Link to="/comunidade" className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+      <Link
+        to="/comunidade"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Comunidade
       </Link>
 
@@ -47,10 +53,14 @@ function ClubePage() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-foreground">{club.name}</p>
-          <p className="text-xs text-muted-foreground">{club.members.toLocaleString("pt-BR")} membros</p>
+          <p className="text-xs text-muted-foreground">
+            {club.members.toLocaleString("pt-BR")} membros
+          </p>
         </div>
         <button
-          onClick={() => social.setValue({ ...social.value, clubs: toggle(social.value.clubs, club.id) })}
+          onClick={() =>
+            social.setValue({ ...social.value, clubs: toggle(social.value.clubs, club.id) })
+          }
           className={`rounded-2xl px-3 py-2 text-xs font-semibold ${
             joined ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
           }`}
@@ -86,11 +96,19 @@ function ClubePage() {
               liked={social.value.likes.includes(p.id)}
               saved={social.value.saved.includes(p.id)}
               reported={social.value.reported.includes(p.id)}
-              onLike={() => social.setValue({ ...social.value, likes: toggle(social.value.likes, p.id) })}
-              onSave={() => social.setValue({ ...social.value, saved: toggle(social.value.saved, p.id) })}
-              onReport={() => social.setValue({ ...social.value, reported: toggle(social.value.reported, p.id) })}
+              onLike={() =>
+                social.setValue({ ...social.value, likes: toggle(social.value.likes, p.id) })
+              }
+              onSave={() =>
+                social.setValue({ ...social.value, saved: toggle(social.value.saved, p.id) })
+              }
+              onReport={() =>
+                social.setValue({ ...social.value, reported: toggle(social.value.reported, p.id) })
+              }
               onShare={() => void navigator.clipboard?.writeText(`${p.station} — ${p.fuel}`)}
-              onConfirm={() => social.setValue({ ...social.value, confirmations: social.value.confirmations + 1 })}
+              onConfirm={() =>
+                social.setValue({ ...social.value, confirmations: social.value.confirmations + 1 })
+              }
             />
           ))}
 
