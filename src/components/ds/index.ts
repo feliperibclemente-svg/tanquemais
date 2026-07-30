@@ -18,7 +18,12 @@ export { Action, ActionLink, actionVariants } from "./action";
 export { ChoiceGroup } from "./choice";
 export { TextField, SelectField, ToggleRow } from "./field";
 export { ConfirmAction } from "./confirm";
-export { NumericField, parseDecimal, maskDecimal, maskInteger } from "@/components/app/NumericField";
+export {
+  NumericField,
+  parseDecimal,
+  maskDecimal,
+  maskInteger,
+} from "@/components/app/NumericField";
 export {
   AppCard,
   PageHeader,
