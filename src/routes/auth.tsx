@@ -31,6 +31,10 @@ function safePath(value: string | undefined) {
   return value;
 }
 
+function goTo(destination: string) {
+  window.location.replace(destination);
+}
+
 function AuthPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -44,7 +48,7 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: destination, replace: true });
+    if (!loading && user) goTo(destination);
   }, [loading, user, navigate, destination]);
 
   async function signInWith(provider: "google" | "apple") {
@@ -59,7 +63,7 @@ function AuthPage() {
       return;
     }
     if ("redirected" in result && result.redirected) return;
-    navigate({ to: destination, replace: true });
+    goTo(destination);
   }
 
   async function submitEmail(event: React.FormEvent) {
@@ -97,7 +101,7 @@ function AuthPage() {
       return;
     }
 
-    navigate({ to: destination, replace: true });
+    goTo(destination);
   }
 
   return (
