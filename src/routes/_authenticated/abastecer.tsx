@@ -1,9 +1,19 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Fuel, Loader2 } from "lucide-react";
-import { AppShell } from "@/components/app/AppShell";
-import { AppCard, EmptyState, PageHeader, ScreenSkeleton } from "@/components/app/Surface";
-import { NumericField, parseDecimal } from "@/components/app/NumericField";
+import { CheckCircle2, Fuel } from "lucide-react";
+import {
+  Action,
+  ActionLink,
+  AppCard,
+  AppShell,
+  ChoiceGroup,
+  EmptyState,
+  NumericField,
+  PageHeader,
+  parseDecimal,
+  ScreenSkeleton,
+  ToggleRow,
+} from "@/components/ds";
 import { FUEL_TYPES } from "@/constants/app";
 import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useCreateFueling, useFuelings, useVehicles } from "@/hooks/use-tanque";
@@ -127,12 +137,9 @@ function AbastecerPage() {
           title="Cadastre um veículo primeiro"
           description="Precisamos do veículo para calcular consumo, custo por km e economia."
           action={
-            <Link
-              to="/veiculo"
-              className="mt-1 flex min-h-11 items-center rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground"
-            >
+            <ActionLink to="/veiculo" size="md" className="mt-1">
               Cadastrar veículo
-            </Link>
+            </ActionLink>
           }
         />
       </AppShell>
@@ -170,25 +177,18 @@ function AbastecerPage() {
         </div>
 
         <div className="mt-6 space-y-3">
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/app" })}
-            className="min-h-14 w-full rounded-2xl bg-primary text-base font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
-          >
-            Voltar para o início
-          </button>
-          <button
-            type="button"
+          <Action onClick={() => navigate({ to: "/app" })}>Voltar para o início</Action>
+          <Action
+            variant="secondary"
             onClick={() => {
               setSaved(null);
               setTotal("");
               setPrice("");
               setOdometer("");
             }}
-            className="min-h-14 w-full rounded-2xl border border-border bg-card text-base font-semibold text-foreground"
           >
             Registrar outro
-          </button>
+          </Action>
         </div>
       </AppShell>
     );
@@ -203,41 +203,23 @@ function AbastecerPage() {
 
       <form onSubmit={submit} className="space-y-5">
         {list.length > 1 ? (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {list.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => setVehicleId(v.id)}
-                className={`min-h-11 shrink-0 rounded-2xl border px-4 text-sm font-medium transition-colors ${
-                  v.id === vehicle.id
-                    ? "border-primary bg-accent text-accent-foreground"
-                    : "border-border bg-card text-muted-foreground"
-                }`}
-              >
-                {v.nickname || `${v.brand} ${v.model}`}
-              </button>
-            ))}
-          </div>
+          <ChoiceGroup
+            label="Veículo"
+            value={vehicle.id}
+            onChange={setVehicleId}
+            options={list.map((v) => ({
+              value: v.id,
+              label: v.nickname || `${v.brand} ${v.model}`,
+            }))}
+          />
         ) : null}
 
-        <div className="flex flex-wrap gap-2">
-          {FUEL_TYPES.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setFuel(f.id)}
-              aria-pressed={fuelTypeId === f.id}
-              className={`min-h-11 rounded-2xl border px-4 text-sm font-medium transition-colors ${
-                fuelTypeId === f.id
-                  ? "border-primary bg-accent text-accent-foreground"
-                  : "border-border bg-card text-muted-foreground"
-              }`}
-            >
-              {f.short}
-            </button>
-          ))}
-        </div>
+        <ChoiceGroup
+          label="Combustível"
+          value={fuelTypeId}
+          onChange={setFuel}
+          options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.short }))}
+        />
 
         <NumericField
           label="Valor abastecido"
@@ -269,15 +251,7 @@ function AbastecerPage() {
           }
         />
 
-        <label className="flex min-h-14 items-center justify-between rounded-2xl border border-border bg-card px-4">
-          <span className="text-sm font-medium text-foreground">Enchi o tanque</span>
-          <input
-            type="checkbox"
-            checked={fullTank}
-            onChange={(e) => setFullTank(e.target.checked)}
-            className="h-5 w-5 accent-[var(--primary)]"
-          />
-        </label>
+        <ToggleRow label="Enchi o tanque" checked={fullTank} onChange={setFullTank} />
 
         {preview.kmPerLiter ? (
           <AppCard className="border-primary/25 bg-accent/40 p-4">
@@ -295,18 +269,10 @@ function AbastecerPage() {
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={create.isPending}
-          className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-base font-semibold text-primary-foreground transition-transform active:scale-[0.98] disabled:opacity-60"
-        >
-          {create.isPending ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Fuel className="h-5 w-5" />
-          )}
+        <Action type="submit" loading={create.isPending}>
+          {create.isPending ? null : <Fuel className="h-5 w-5" />}
           Salvar abastecimento
-        </button>
+        </Action>
       </form>
     </AppShell>
   );
