@@ -1,17 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Loader2, Plus, Star, Trash2 } from "lucide-react";
+import { Plus, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app/AppShell";
-import { AppCard, EmptyState, PageHeader, ScreenSkeleton } from "@/components/app/Surface";
+import {
+  Action,
+  AppCard,
+  AppShell,
+  ConfirmAction,
+  EmptyState,
+  PageHeader,
+  ScreenSkeleton,
+  SelectField,
+  TextField,
+} from "@/components/ds";
 import { FUEL_LABEL, FUEL_TYPES } from "@/constants/app";
 import { int } from "@/lib/format";
-import {
-  useCreateVehicle,
-  useDeleteVehicle,
-  useUpdateVehicle,
-  useVehicles,
-} from "@/hooks/use-tanque";
+import { useCreateVehicle, useDeleteVehicle, useVehicles } from "@/hooks/use-tanque";
 import { useAuth } from "@/providers/AuthProvider";
 import { vehiclesRepository } from "@/repositories";
 import { vehicleSchema } from "@/validators";
@@ -33,26 +37,24 @@ export const Route = createFileRoute("/_authenticated/veiculo")({
   component: VeiculoPage,
 });
 
-const field =
-  "min-h-14 w-full rounded-2xl border border-border bg-card px-4 text-base text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-ring/25";
+const EMPTY = {
+  nickname: "",
+  brand: "",
+  model: "",
+  year: "",
+  fuel_type_id: "gasolina",
+  tank_liters: "",
+  current_odometer: "",
+};
 
 function VeiculoPage() {
   const { user } = useAuth();
   const vehicles = useVehicles();
   const create = useCreateVehicle();
-  const update = useUpdateVehicle();
   const remove = useDeleteVehicle();
 
   const [form, setForm] = useState(false);
-  const [values, setValues] = useState({
-    nickname: "",
-    brand: "",
-    model: "",
-    year: "",
-    fuel_type_id: "gasolina",
-    tank_liters: "",
-    current_odometer: "",
-  });
+  const [values, setValues] = useState(EMPTY);
   const [error, setError] = useState<string | null>(null);
 
   const list = vehicles.data ?? [];
@@ -82,15 +84,7 @@ function VeiculoPage() {
       isPrimary: list.length === 0,
     });
     setForm(false);
-    setValues({
-      nickname: "",
-      brand: "",
-      model: "",
-      year: "",
-      fuel_type_id: "gasolina",
-      tank_liters: "",
-      current_odometer: "",
-    });
+    setValues(EMPTY);
   }
 
   async function makePrimary(id: string) {
@@ -106,69 +100,58 @@ function VeiculoPage() {
         title="Veículos"
         subtitle="Seus carros cadastrados no Tanque+"
         action={
-          <button
-            type="button"
+          <Action
+            size="icon"
             onClick={() => setForm((v) => !v)}
             aria-label={form ? "Fechar formulário" : "Adicionar veículo"}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground"
           >
             <Plus className={`h-5 w-5 transition-transform ${form ? "rotate-45" : ""}`} />
-          </button>
+          </Action>
         }
       />
 
       {form ? (
         <AppCard className="mb-4">
           <form onSubmit={submit} className="space-y-3">
-            <input
-              className={field}
-              placeholder="Apelido (opcional)"
+            <TextField
+              label="Apelido"
+              hint="Opcional — ex: Carro do trabalho"
               value={values.nickname}
               onChange={(e) => setValues({ ...values, nickname: e.target.value })}
             />
             <div className="grid grid-cols-2 gap-3">
-              <input
-                className={field}
-                placeholder="Marca"
+              <TextField
+                label="Marca"
                 value={values.brand}
                 onChange={(e) => setValues({ ...values, brand: e.target.value })}
               />
-              <input
-                className={field}
-                placeholder="Modelo"
+              <TextField
+                label="Modelo"
                 value={values.model}
                 onChange={(e) => setValues({ ...values, model: e.target.value })}
               />
-              <input
-                className={field}
+              <TextField
+                label="Ano"
                 inputMode="numeric"
-                placeholder="Ano"
                 value={values.year}
                 onChange={(e) => setValues({ ...values, year: e.target.value })}
               />
-              <input
-                className={field}
+              <TextField
+                label="Tanque (L)"
                 inputMode="numeric"
-                placeholder="Tanque (L)"
                 value={values.tank_liters}
                 onChange={(e) => setValues({ ...values, tank_liters: e.target.value })}
               />
             </div>
-            <select
-              className={field}
+            <SelectField
+              label="Combustível padrão"
               value={values.fuel_type_id}
               onChange={(e) => setValues({ ...values, fuel_type_id: e.target.value })}
-            >
-              {FUEL_TYPES.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.label}
-                </option>
-              ))}
-            </select>
-            <input
-              className={field}
+              options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.label }))}
+            />
+            <TextField
+              label="Quilometragem atual"
               inputMode="numeric"
-              placeholder="Quilometragem atual"
               value={values.current_odometer}
               onChange={(e) => setValues({ ...values, current_odometer: e.target.value })}
             />
@@ -177,14 +160,9 @@ function VeiculoPage() {
                 {error}
               </p>
             ) : null}
-            <button
-              type="submit"
-              disabled={create.isPending}
-              className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-base font-semibold text-primary-foreground disabled:opacity-60"
-            >
-              {create.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            <Action type="submit" loading={create.isPending}>
               Salvar veículo
-            </button>
+            </Action>
           </form>
         </AppCard>
       ) : null}
@@ -219,23 +197,23 @@ function VeiculoPage() {
                   <span className="font-medium text-foreground">{int(v.current_odometer)} km</span>
                 </p>
 
-                <div className="mt-4 flex items-center gap-4 border-t border-border pt-3">
+                <div className="mt-4 flex items-center gap-2 border-t border-border pt-3">
                   {!v.is_primary ? (
-                    <button
-                      type="button"
-                      onClick={() => makePrimary(v.id)}
-                      className="flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary"
-                    >
+                    <Action variant="ghost" size="sm" onClick={() => makePrimary(v.id)}>
                       <Star className="h-4 w-4" /> Tornar principal
-                    </button>
+                    </Action>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => remove.mutate(v.id)}
-                    className="ml-auto flex min-h-11 items-center gap-1.5 text-sm font-medium text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" /> Remover
-                  </button>
+                  <ConfirmAction
+                    title="Remover veículo?"
+                    description="Os abastecimentos ligados a este veículo também deixarão de ser exibidos."
+                    confirmLabel="Remover"
+                    onConfirm={() => remove.mutate(v.id)}
+                    trigger={
+                      <Action variant="danger-ghost" size="sm" className="ml-auto">
+                        <Trash2 className="h-4 w-4" /> Remover
+                      </Action>
+                    }
+                  />
                 </div>
               </AppCard>
             </li>
@@ -247,18 +225,12 @@ function VeiculoPage() {
           title="Nenhum veículo cadastrado"
           description="Cadastre um veículo para registrar abastecimentos e acompanhar o consumo."
           action={
-            <button
-              type="button"
-              onClick={() => setForm(true)}
-              className="mt-1 flex min-h-11 items-center rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground"
-            >
+            <Action size="md" className="mt-1" onClick={() => setForm(true)}>
               Cadastrar veículo
-            </button>
+            </Action>
           }
         />
       )}
-
-      {update.isPending ? null : null}
     </AppShell>
   );
 }

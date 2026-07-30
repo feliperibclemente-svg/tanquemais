@@ -1,8 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { AppShell } from "@/components/app/AppShell";
-import { AppCard, EmptyState, PageHeader, ScreenSkeleton } from "@/components/app/Surface";
+import {
+  Action,
+  ActionLink,
+  AppCard,
+  AppShell,
+  ConfirmAction,
+  EmptyState,
+  PageHeader,
+  ScreenSkeleton,
+} from "@/components/ds";
 import { FUEL_LABEL } from "@/constants/app";
 import { brl, fullDate, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useDeleteFueling, useFuelings } from "@/hooks/use-tanque";
@@ -44,12 +52,9 @@ function HistoricoPage() {
           title="Nada por aqui ainda"
           description="Assim que você registrar um abastecimento ele aparece nesta lista."
           action={
-            <Link
-              to="/abastecer"
-              className="mt-1 flex min-h-11 items-center rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground"
-            >
+            <ActionLink to="/abastecer" size="md" className="mt-1">
               Registrar abastecimento
-            </Link>
+            </ActionLink>
           }
         />
       ) : (
@@ -94,13 +99,16 @@ function HistoricoPage() {
                         value={row.computed_cost_per_km ? brl(row.computed_cost_per_km) : "—"}
                       />
                       <Row label="Tanque cheio" value={row.full_tank ? "Sim" : "Não"} />
-                      <button
-                        type="button"
-                        onClick={() => remove.mutate(row.id)}
-                        className="mt-2 flex min-h-11 items-center gap-2 text-sm font-semibold text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" /> Excluir abastecimento
-                      </button>
+                      <ConfirmAction
+                        title="Excluir abastecimento?"
+                        description="Esse registro sai do histórico e das estatísticas de consumo."
+                        onConfirm={() => remove.mutate(row.id)}
+                        trigger={
+                          <Action variant="danger-ghost" size="sm" className="mt-2 px-0">
+                            <Trash2 className="h-4 w-4" /> Excluir abastecimento
+                          </Action>
+                        }
+                      />
                     </div>
                   ) : null}
                 </AppCard>
