@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -37,7 +37,7 @@ function goTo(destination: string) {
 
 function AuthPage() {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
+
   const search = useSearch({ from: "/auth" });
   const destination = safePath(search.redirect);
 
@@ -49,7 +49,7 @@ function AuthPage() {
 
   useEffect(() => {
     if (!loading && user) goTo(destination);
-  }, [loading, user, navigate, destination]);
+  }, [loading, user, destination]);
 
   async function signInWith(provider: "google" | "apple") {
     setBusy(provider);
