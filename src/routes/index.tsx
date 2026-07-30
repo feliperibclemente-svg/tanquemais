@@ -1,6 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { BarChart3, Fuel, MapPin, Sparkles } from "lucide-react";
+import { ActionLink } from "@/components/ds";
 import { useAuth } from "@/providers/AuthProvider";
 
 export const Route = createFileRoute("/")({
@@ -85,12 +86,7 @@ function Landing() {
       </div>
 
       <div className="mt-10 space-y-3">
-        <Link
-          to="/auth"
-          className="flex min-h-14 w-full items-center justify-center rounded-2xl bg-primary text-base font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
-        >
-          Começar agora
-        </Link>
+        <ActionLink to="/auth">Começar agora</ActionLink>
         <p className="text-center text-xs text-muted-foreground">
           Grátis. Seus dados ficam só na sua conta.
         </p>

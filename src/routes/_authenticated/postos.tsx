@@ -1,8 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { MapPin, ShieldCheck, Star } from "lucide-react";
-import { AppShell } from "@/components/app/AppShell";
-import { AppCard, EmptyState, PageHeader, ScreenSkeleton } from "@/components/app/Surface";
+import {
+  AppCard,
+  AppShell,
+  ChoiceGroup,
+  EmptyState,
+  PageHeader,
+  ScreenSkeleton,
+} from "@/components/ds";
 import { FUEL_LABEL, FUEL_TYPES, reliabilityFromConfirmations } from "@/constants/app";
 import { brl, num, relativeDate } from "@/lib/format";
 import { useProfile, useStations } from "@/hooks/use-tanque";
@@ -44,23 +50,13 @@ function PostosPage() {
     <AppShell>
       <PageHeader title="Postos" subtitle="Preços informados pela comunidade" />
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {FUEL_TYPES.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => setFuel(f.id)}
-            aria-pressed={fuel === f.id}
-            className={`min-h-11 rounded-2xl border px-4 text-sm font-medium transition-colors ${
-              fuel === f.id
-                ? "border-primary bg-accent text-accent-foreground"
-                : "border-border bg-card text-muted-foreground"
-            }`}
-          >
-            {f.short}
-          </button>
-        ))}
-      </div>
+      <ChoiceGroup
+        label="Combustível"
+        className="mb-4"
+        value={fuel}
+        onChange={setFuel}
+        options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.short }))}
+      />
 
       {stations.isLoading ? (
         <ScreenSkeleton cards={3} />
