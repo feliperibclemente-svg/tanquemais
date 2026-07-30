@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -31,9 +31,13 @@ function safePath(value: string | undefined) {
   return value;
 }
 
+function goTo(destination: string) {
+  window.location.replace(destination);
+}
+
 function AuthPage() {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
+
   const search = useSearch({ from: "/auth" });
   const destination = safePath(search.redirect);
 
@@ -44,14 +48,14 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: destination, replace: true });
-  }, [loading, user, navigate, destination]);
+    if (!loading && user) goTo(destination);
+  }, [loading, user, destination]);
 
   async function signInWith(provider: "google" | "apple") {
     setBusy(provider);
     setError(null);
     const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}${destination}`,
     });
     if ("error" in result && result.error) {
       setBusy(null);
@@ -59,7 +63,7 @@ function AuthPage() {
       return;
     }
     if ("redirected" in result && result.redirected) return;
-    navigate({ to: destination, replace: true });
+    goTo(destination);
   }
 
   async function submitEmail(event: React.FormEvent) {
@@ -78,7 +82,7 @@ function AuthPage() {
         ? await supabase.auth.signInWithPassword(parsed.data)
         : await supabase.auth.signUp({
             ...parsed.data,
-            options: { emailRedirectTo: window.location.origin },
+            options: { emailRedirectTo: `${window.location.origin}${destination}` },
           });
 
     setBusy(null);
@@ -97,7 +101,7 @@ function AuthPage() {
       return;
     }
 
-    navigate({ to: destination, replace: true });
+    goTo(destination);
   }
 
   return (
