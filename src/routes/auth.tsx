@@ -78,7 +78,7 @@ function AuthPage() {
         ? await supabase.auth.signInWithPassword(parsed.data)
         : await supabase.auth.signUp({
             ...parsed.data,
-            options: { emailRedirectTo: window.location.origin },
+            options: { emailRedirectTo: `${window.location.origin}${destination}` },
           });
 
     setBusy(null);
