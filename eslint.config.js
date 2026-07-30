@@ -6,7 +6,19 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+  {
+    ignores: [
+      "dist",
+      ".output",
+      ".vinxi",
+      // Arquivos gerados automaticamente — não são fonte de verdade do projeto.
+      "src/routeTree.gen.ts",
+      "src/integrations/supabase/types.ts",
+      "src/routes/mcp.ts",
+      "src/routes/[.mcp]/**",
+      "src/routes/[.well-known]/**",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

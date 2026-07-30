@@ -4,8 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { ArrowRight, Fuel, PiggyBank, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
-import { AppShell } from "@/components/app/AppShell";
-import { AppCard, EmptyState, ScreenSkeleton, SectionHeader } from "@/components/app/Surface";
+import {
+  ActionLink,
+  AppCard,
+  AppShell,
+  EmptyState,
+  ScreenSkeleton,
+  SectionHeader,
+} from "@/components/ds";
 import { useHomeData } from "@/hooks/use-tanque";
 import { brl, kmPerLiter, liters as fmtLiters, num, relativeDate } from "@/lib/format";
 import { FUEL_LABEL } from "@/constants/app";
@@ -86,12 +92,9 @@ function HomePage() {
               </p>
             </div>
           </div>
-          <Link
-            to="/postos"
-            className="mt-4 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-2xl bg-primary-foreground text-sm font-semibold text-primary transition-transform active:scale-[0.98]"
-          >
+          <ActionLink to="/postos" variant="inverse" size="md" className="mt-4 w-full">
             Ver postos <ArrowRight className="h-4 w-4" />
-          </Link>
+          </ActionLink>
         </AppCard>
 
         {/* Gasto do mês */}
@@ -182,12 +185,9 @@ function HomePage() {
               title="Nenhum abastecimento ainda"
               description="Registre o primeiro para ver consumo, custo por km e economia."
               action={
-                <Link
-                  to="/abastecer"
-                  className="mt-1 flex min-h-11 items-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground"
-                >
+                <ActionLink to="/abastecer" size="md" className="mt-1">
                   <Fuel className="h-4 w-4" /> Registrar agora
-                </Link>
+                </ActionLink>
               }
             />
           )}

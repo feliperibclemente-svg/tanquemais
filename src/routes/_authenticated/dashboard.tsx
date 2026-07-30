@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   Bar,
   BarChart,
@@ -10,14 +10,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AppShell } from "@/components/app/AppShell";
 import {
+  ActionLink,
   AppCard,
+  AppShell,
   EmptyState,
   PageHeader,
   ScreenSkeleton,
   StatTile,
-} from "@/components/app/Surface";
+} from "@/components/ds";
 import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useHomeData } from "@/hooks/use-tanque";
 
@@ -58,12 +59,9 @@ function DashboardPage() {
           title="Sem dados suficientes"
           description="Registre pelo menos dois abastecimentos para ver gráficos de gasto e consumo."
           action={
-            <Link
-              to="/abastecer"
-              className="mt-1 flex min-h-11 items-center rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground"
-            >
+            <ActionLink to="/abastecer" size="md" className="mt-1">
               Registrar abastecimento
-            </Link>
+            </ActionLink>
           }
         />
       </AppShell>

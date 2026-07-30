@@ -1,8 +1,8 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { z } from "zod";
+import { Action, TextField } from "@/components/ds";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/providers/AuthProvider";
@@ -119,24 +119,24 @@ function AuthPage() {
       </div>
 
       <div className="space-y-3">
-        <button
-          type="button"
+        <Action
+          variant="secondary"
           onClick={() => signInWith("google")}
           disabled={busy !== null}
-          className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-border bg-card text-sm font-semibold text-foreground transition-transform active:scale-[0.98] disabled:opacity-60"
+          loading={busy === "google"}
         >
-          {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleMark />}
+          {busy === "google" ? null : <GoogleMark />}
           Continuar com Google
-        </button>
-        <button
-          type="button"
+        </Action>
+        <Action
+          variant="secondary"
           onClick={() => signInWith("apple")}
           disabled={busy !== null}
-          className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-border bg-card text-sm font-semibold text-foreground transition-transform active:scale-[0.98] disabled:opacity-60"
+          loading={busy === "apple"}
         >
-          {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleMark />}
+          {busy === "apple" ? null : <AppleMark />}
           Continuar com Apple
-        </button>
+        </Action>
       </div>
 
       <div className="my-6 flex items-center gap-3">
@@ -146,34 +146,24 @@ function AuthPage() {
       </div>
 
       <form onSubmit={submitEmail} className="space-y-3">
-        <div className="space-y-1.5">
-          <label htmlFor="email" className="text-sm font-medium text-foreground">
-            E-mail
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="min-h-14 w-full rounded-2xl border border-border bg-card px-4 text-base text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/25"
-            placeholder="voce@email.com"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor="password" className="text-sm font-medium text-foreground">
-            Senha
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete={mode === "signin" ? "current-password" : "new-password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="min-h-14 w-full rounded-2xl border border-border bg-card px-4 text-base text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/25"
-            placeholder="Mínimo de 8 caracteres"
-          />
-        </div>
+        <TextField
+          id="email"
+          label="E-mail"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="voce@email.com"
+        />
+        <TextField
+          id="password"
+          label="Senha"
+          type="password"
+          autoComplete={mode === "signin" ? "current-password" : "new-password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Mínimo de 8 caracteres"
+        />
 
         {error ? (
           <p role="alert" className="text-sm font-medium text-destructive">
@@ -181,14 +171,9 @@ function AuthPage() {
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={busy !== null}
-          className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-base font-semibold text-primary-foreground transition-transform active:scale-[0.98] disabled:opacity-60"
-        >
-          {busy === "email" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        <Action type="submit" disabled={busy !== null} loading={busy === "email"}>
           {mode === "signin" ? "Entrar" : "Criar conta"}
-        </button>
+        </Action>
       </form>
 
       <button

@@ -1,11 +1,21 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
+import { Action } from "@/components/ds";
 import { supabase } from "@/integrations/supabase/client";
 
+type OAuthResult = {
+  data: {
+    client?: { name?: string };
+    redirect_url?: string;
+    redirect_to?: string;
+  } | null;
+  error: { message: string } | null;
+};
+
 type OAuthApi = {
-  getAuthorizationDetails: (id: string) => Promise<{ data: any; error: any }>;
-  approveAuthorization: (id: string) => Promise<{ data: any; error: any }>;
-  denyAuthorization: (id: string) => Promise<{ data: any; error: any }>;
+  getAuthorizationDetails: (id: string) => Promise<OAuthResult>;
+  approveAuthorization: (id: string) => Promise<OAuthResult>;
+  denyAuthorization: (id: string) => Promise<OAuthResult>;
 };
 
 const oauth = () => (supabase.auth as unknown as { oauth: OAuthApi }).oauth;
@@ -83,22 +93,12 @@ function Consent() {
         </p>
       ) : null}
       <div className="mt-8 space-y-3">
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => decide(true)}
-          className="min-h-14 w-full rounded-2xl bg-primary text-base font-semibold text-primary-foreground disabled:opacity-60"
-        >
+        <Action disabled={busy} onClick={() => decide(true)}>
           Autorizar
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => decide(false)}
-          className="min-h-14 w-full rounded-2xl border border-border bg-card text-base font-semibold text-foreground disabled:opacity-60"
-        >
+        </Action>
+        <Action variant="secondary" disabled={busy} onClick={() => decide(false)}>
           Recusar
-        </button>
+        </Action>
       </div>
     </main>
   );

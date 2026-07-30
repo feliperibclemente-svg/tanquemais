@@ -2,8 +2,16 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { LogOut, Moon, Sun } from "lucide-react";
-import { AppShell } from "@/components/app/AppShell";
-import { AppCard, PageHeader, ScreenSkeleton, StatTile } from "@/components/app/Surface";
+import {
+  Action,
+  AppCard,
+  AppShell,
+  ChoiceGroup,
+  PageHeader,
+  ScreenSkeleton,
+  StatTile,
+  ToggleRow,
+} from "@/components/ds";
 import { levelFromXp } from "@/constants/app";
 import { brl, kmPerLiter, liters as fmtLiters } from "@/lib/format";
 import { useHomeData, useProfile, useUpdateProfile } from "@/hooks/use-tanque";
@@ -117,33 +125,24 @@ function PerfilPage() {
           <p className="mt-1 text-xs text-muted-foreground">
             Define quem pode ver seu perfil quando os recursos sociais chegarem.
           </p>
-          <div className="mt-3 flex gap-2">
-            {visibilities.map((v) => (
-              <button
-                key={v.key}
-                type="button"
-                onClick={() => updateProfile.mutate({ visibility: v.key })}
-                aria-pressed={data?.visibility === v.key}
-                className={`min-h-11 flex-1 rounded-2xl border text-sm font-medium transition-colors ${
-                  data?.visibility === v.key
-                    ? "border-primary bg-accent text-accent-foreground"
-                    : "border-border bg-card text-muted-foreground"
-                }`}
-              >
-                {v.label}
-              </button>
-            ))}
-          </div>
+          <ChoiceGroup
+            label="Visibilidade do perfil"
+            className="mt-3"
+            fill
+            value={data?.visibility ?? "private"}
+            onChange={(value) =>
+              updateProfile.mutate({ visibility: value as (typeof visibilities)[number]["key"] })
+            }
+            options={visibilities.map((v) => ({ value: v.key, label: v.label }))}
+          />
 
-          <label className="mt-3 flex min-h-14 items-center justify-between rounded-2xl border border-border px-4">
-            <span className="text-sm font-medium text-foreground">Ocultar quilometragem</span>
-            <input
-              type="checkbox"
+          <div className="mt-3">
+            <ToggleRow
+              label="Ocultar quilometragem"
               checked={!!data?.hide_odometer}
-              onChange={(e) => updateProfile.mutate({ hide_odometer: e.target.checked })}
-              className="h-5 w-5 accent-[var(--primary)]"
+              onChange={(checked) => updateProfile.mutate({ hide_odometer: checked })}
             />
-          </label>
+          </div>
         </AppCard>
 
         <AppCard>
@@ -169,13 +168,9 @@ function PerfilPage() {
           </ul>
         </AppCard>
 
-        <button
-          type="button"
-          onClick={signOut}
-          className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card text-base font-semibold text-destructive"
-        >
+        <Action variant="danger" onClick={signOut}>
           <LogOut className="h-4 w-4" /> Sair da conta
-        </button>
+        </Action>
       </section>
     </AppShell>
   );
