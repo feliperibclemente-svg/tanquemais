@@ -98,6 +98,8 @@ function AuthPage() {
       return;
     }
 
+    track(mode === "signin" ? "auth_sign_in" : "auth_sign_up", { method: "email" });
+
     if (mode === "signup" && !response.data.session) {
       toast.success("Confira seu e-mail para confirmar a conta.");
       return;
