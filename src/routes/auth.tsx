@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/providers/AuthProvider";
 import { authSchema } from "@/validators";
+import { track } from "@/lib/analytics";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -62,6 +63,7 @@ function AuthPage() {
       setError("Não foi possível entrar com esse provedor. Tente novamente.");
       return;
     }
+    track("auth_sign_in", { method: provider });
     if ("redirected" in result && result.redirected) return;
     goTo(destination);
   }
@@ -95,6 +97,8 @@ function AuthPage() {
       );
       return;
     }
+
+    track(mode === "signin" ? "auth_sign_in" : "auth_sign_up", { method: "email" });
 
     if (mode === "signup" && !response.data.session) {
       toast.success("Confira seu e-mail para confirmar a conta.");

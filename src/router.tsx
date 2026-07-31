@@ -9,6 +9,10 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Pré-carrega a rota assim que o usuário demonstra intenção (hover/toque),
+    // deixando a navegação praticamente instantânea.
+    defaultPreload: "intent",
+    defaultPreloadDelay: 30,
     defaultPreloadStaleTime: 0,
   });
 

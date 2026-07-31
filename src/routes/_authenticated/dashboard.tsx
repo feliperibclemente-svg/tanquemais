@@ -1,15 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { lazy, Suspense } from "react";
 import {
   ActionLink,
   AppCard,
@@ -19,8 +9,11 @@ import {
   ScreenSkeleton,
   StatTile,
 } from "@/components/ds";
+import { Skeleton } from "@/components/ui/skeleton";
 import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useHomeData } from "@/hooks/use-tanque";
+
+const DashboardCharts = lazy(() => import("@/components/charts/DashboardCharts"));
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -89,55 +82,13 @@ function DashboardPage() {
       <section className="mt-5 space-y-4">
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Gasto por mês</p>
-          <div className="mt-4 h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={series}>
-                <CartesianGrid vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} />
-                <YAxis hide />
-                <Tooltip
-                  cursor={{ fill: "var(--accent)" }}
-                  formatter={(v: number) => brl(v)}
-                  contentStyle={{
-                    borderRadius: 16,
-                    border: "1px solid var(--border)",
-                    background: "var(--card)",
-                  }}
-                />
-                <Bar dataKey="gasto" fill="var(--primary)" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="mt-4">
+            <Suspense fallback={<Skeleton className="h-44 w-full rounded-2xl" />}>
+              <DashboardCharts series={series} />
+            </Suspense>
           </div>
         </AppCard>
 
-        <AppCard>
-          <p className="text-sm font-semibold text-foreground">Consumo (km/L)</p>
-          <div className="mt-4 h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={series}>
-                <CartesianGrid vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} />
-                <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
-                <Tooltip
-                  formatter={(v: number) => `${num(v)} km/L`}
-                  contentStyle={{
-                    borderRadius: 16,
-                    border: "1px solid var(--border)",
-                    background: "var(--card)",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="consumo"
-                  stroke="var(--primary)"
-                  strokeWidth={2.5}
-                  dot={{ r: 3 }}
-                  connectNulls
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </AppCard>
 
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Resumo geral</p>

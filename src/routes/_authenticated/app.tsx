@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { lazy, Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Fuel, PiggyBank, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer } from "recharts";
 import {
   ActionLink,
   AppCard,
@@ -15,7 +15,10 @@ import {
 import { useHomeData } from "@/hooks/use-tanque";
 import { brl, kmPerLiter, liters as fmtLiters, num, relativeDate } from "@/lib/format";
 import { FUEL_LABEL } from "@/constants/app";
+import { track } from "@/lib/analytics";
 import { phraseInsight } from "@/lib/tanque-ia.functions";
+
+const Sparkline = lazy(() => import("@/components/charts/Sparkline"));
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -124,24 +127,11 @@ function HomePage() {
             </div>
             <div className="h-16 w-28">
               {spark.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={spark}>
-                    <defs>
-                      <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
-                        <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <Area
-                      type="monotone"
-                      dataKey="gasto"
-                      stroke="var(--primary)"
-                      strokeWidth={2}
-                      fill="url(#sparkFill)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <Suspense fallback={null}>
+                  <Sparkline data={spark} />
+                </Suspense>
               ) : null}
+
             </div>
           </div>
         </AppCard>
@@ -220,8 +210,16 @@ function TanqueIACard({
     enabled: facts.length > 0,
     staleTime: 15 * 60_000,
     retry: 1,
-    queryFn: () => phrase({ data: { facts, vehicle: vehicleLabel } }),
+    queryFn: async () => {
+      track("tanque_ia_requested", { facts: facts.length });
+      return phrase({ data: { facts, vehicle: vehicleLabel } });
+    },
   });
+
+  useEffect(() => {
+    if (ai.data?.text) track("tanque_ia_answered", { length: ai.data.text.length });
+  }, [ai.data?.text]);
+
 
   const text =
     ai.data?.text ??

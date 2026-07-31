@@ -17,6 +17,7 @@ import { brl, kmPerLiter, liters as fmtLiters } from "@/lib/format";
 import { useHomeData, useProfile, useUpdateProfile } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   head: () => ({
@@ -62,6 +63,7 @@ function PerfilPage() {
   }
 
   async function signOut() {
+    track("auth_sign_out");
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();

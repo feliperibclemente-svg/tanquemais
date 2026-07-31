@@ -11,6 +11,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { installTelemetry, setTelemetryUser } from "@/lib/telemetry";
+import { trackPageView } from "@/lib/analytics";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -133,7 +136,7 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function OfflineBanner() {
+function OfflineBanner({ pendingCount }: { pendingCount: number }) {
   const [offline, setOffline] = useState(false);
 
   useEffect(() => {
@@ -147,15 +150,38 @@ function OfflineBanner() {
     };
   }, []);
 
-  if (!offline) return null;
+  if (!offline && pendingCount === 0) return null;
   return (
     <div
       role="status"
       className="fixed inset-x-0 top-0 z-[60] bg-foreground px-4 py-2 text-center text-xs font-medium text-background"
     >
-      Você está offline — mostrando os últimos dados salvos.
+      {offline
+        ? "Você está offline — mostrando os últimos dados salvos."
+        : `Sincronizando ${pendingCount} ${pendingCount === 1 ? "registro" : "registros"}…`}
     </div>
   );
+}
+
+/** Fila offline + banner de sincronização. */
+function OfflineSync() {
+  const { pendingCount } = useOfflineSync();
+  return <OfflineBanner pendingCount={pendingCount} />;
+}
+
+/** Telemetria: handlers globais, web vitals e page views. */
+function Telemetry() {
+  const router = useRouter();
+
+  useEffect(() => {
+    installTelemetry();
+    trackPageView(window.location.pathname);
+    return router.subscribe("onResolved", ({ toLocation }) =>
+      trackPageView(toLocation.pathname),
+    );
+  }, [router]);
+
+  return null;
 }
 
 function AuthSync() {
@@ -163,7 +189,8 @@ function AuthSync() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      setTelemetryUser(session?.user?.id ?? null);
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
@@ -180,8 +207,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <Telemetry />
         <AuthSync />
-        <OfflineBanner />
+        <OfflineSync />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster position="top-center" richColors />

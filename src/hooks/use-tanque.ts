@@ -13,6 +13,9 @@ import {
 import { computeFuelings, overview, savingsOpportunity } from "@/services/analytics";
 import { buildInsights } from "@/services/insights";
 import { useAuth } from "@/providers/AuthProvider";
+import { track } from "@/lib/analytics";
+import { captureException } from "@/lib/telemetry";
+import { enqueueFueling, isNetworkError } from "@/lib/offline-queue";
 import type { Fueling, Vehicle } from "@/types/domain";
 
 export const queryKeys = {
@@ -88,17 +91,25 @@ export function useVehicleStats(vehicleId: string | null) {
 
 /* ------------------------------- mutations -------------------------------- */
 
+function reportMutationError(scope: string) {
+  return (error: Error) => {
+    captureException(error, { scope });
+    toast.error(error.message);
+  };
+}
+
 export function useCreateVehicle() {
   const { user } = useAuth();
   const client = useQueryClient();
   return useMutation({
     mutationFn: async ({ draft, isPrimary }: { draft: VehicleDraft; isPrimary: boolean }) =>
       vehiclesRepository.create(user!.id, draft, isPrimary),
-    onSuccess: () => {
+    onSuccess: (vehicle) => {
       client.invalidateQueries({ queryKey: queryKeys.vehicles(user?.id ?? "") });
+      track("vehicle_created", { fuel_type: vehicle?.fuel_type_id ?? null });
       toast.success("Veículo salvo");
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: reportMutationError("vehicle.create"),
   });
 }
 
@@ -110,9 +121,10 @@ export function useUpdateVehicle() {
       vehiclesRepository.update(id, patch),
     onSuccess: () => {
       client.invalidateQueries({ queryKey: queryKeys.vehicles(user?.id ?? "") });
+      track("vehicle_updated");
       toast.success("Veículo atualizado");
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: reportMutationError("vehicle.update"),
   });
 }
 
@@ -124,9 +136,10 @@ export function useDeleteVehicle() {
     onSuccess: () => {
       client.invalidateQueries({ queryKey: queryKeys.vehicles(user?.id ?? "") });
       client.invalidateQueries({ queryKey: queryKeys.fuelings(user?.id ?? "") });
+      track("vehicle_deleted");
       toast.success("Veículo removido");
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: reportMutationError("vehicle.delete"),
   });
 }
 
@@ -134,20 +147,46 @@ export function useCreateFueling() {
   const { user } = useAuth();
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       draft,
       computed,
     }: {
       draft: FuelingDraft;
       computed: { km_per_liter: number | null; cost_per_km: number | null };
-    }) => fuelingsRepository.create(user!.id, draft, computed),
-    onSuccess: () => {
+    }): Promise<{ queued: boolean }> => {
+      const userId = user!.id;
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        enqueueFueling(userId, draft, computed);
+        return { queued: true };
+      }
+      try {
+        await fuelingsRepository.create(userId, draft, computed);
+        return { queued: false };
+      } catch (error) {
+        if (!isNetworkError(error)) throw error;
+        enqueueFueling(userId, draft, computed);
+        return { queued: true };
+      }
+    },
+    onSuccess: (result, variables) => {
       const id = user?.id ?? "";
       client.invalidateQueries({ queryKey: queryKeys.fuelings(id) });
       client.invalidateQueries({ queryKey: queryKeys.vehicles(id) });
       client.invalidateQueries({ queryKey: ["vehicle-stats"] });
+
+      if (result.queued) {
+        track("fueling_queued_offline", { fuel_type: variables.draft.fuel_type_id });
+        toast.info("Sem conexão: salvo no aparelho e enviaremos automaticamente.");
+        return;
+      }
+      track("fueling_created", {
+        fuel_type: variables.draft.fuel_type_id,
+        liters: variables.draft.liters,
+        total_cost: variables.draft.total_cost,
+        full_tank: variables.draft.full_tank,
+      });
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: reportMutationError("fueling.create"),
   });
 }
 
@@ -159,9 +198,10 @@ export function useDeleteFueling() {
     onSuccess: () => {
       client.invalidateQueries({ queryKey: queryKeys.fuelings(user?.id ?? "") });
       client.invalidateQueries({ queryKey: ["vehicle-stats"] });
+      track("fueling_deleted");
       toast.success("Abastecimento removido");
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: reportMutationError("fueling.delete"),
   });
 }
 
