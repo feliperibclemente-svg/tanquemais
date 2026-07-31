@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/providers/AuthProvider";
 import { authSchema } from "@/validators";
+import { track } from "@/lib/analytics";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
