@@ -63,6 +63,7 @@ function AuthPage() {
       setError("Não foi possível entrar com esse provedor. Tente novamente.");
       return;
     }
+    track("auth_sign_in", { method: provider });
     if ("redirected" in result && result.redirected) return;
     goTo(destination);
   }
