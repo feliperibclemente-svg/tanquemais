@@ -18,6 +18,7 @@ import { Route as AuthenticatedVeiculoRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPostosRouteImport } from './routes/_authenticated/postos'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAbastecerRouteImport } from './routes/_authenticated/abastecer'
@@ -70,6 +71,11 @@ const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   path: '/historico',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/abastecer': typeof AuthenticatedAbastecerRoute
   '/app': typeof AuthenticatedAppRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/postos': typeof AuthenticatedPostosRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/abastecer': typeof AuthenticatedAbastecerRoute
   '/app': typeof AuthenticatedAppRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/postos': typeof AuthenticatedPostosRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/_authenticated/abastecer': typeof AuthenticatedAbastecerRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/postos': typeof AuthenticatedPostosRoute
@@ -174,6 +183,7 @@ export interface FileRouteTypes {
     | '/abastecer'
     | '/app'
     | '/dashboard'
+    | '/feedback'
     | '/historico'
     | '/perfil'
     | '/postos'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/abastecer'
     | '/app'
     | '/dashboard'
+    | '/feedback'
     | '/historico'
     | '/perfil'
     | '/postos'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/_authenticated/abastecer'
     | '/_authenticated/app'
     | '/_authenticated/dashboard'
+    | '/_authenticated/feedback'
     | '/_authenticated/historico'
     | '/_authenticated/perfil'
     | '/_authenticated/postos'
@@ -294,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/feedback': {
+      id: '/_authenticated/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -350,6 +369,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAbastecerRoute: typeof AuthenticatedAbastecerRoute
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedPostosRoute: typeof AuthenticatedPostosRoute
@@ -360,6 +380,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAbastecerRoute: AuthenticatedAbastecerRoute,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedPostosRoute: AuthenticatedPostosRoute,
