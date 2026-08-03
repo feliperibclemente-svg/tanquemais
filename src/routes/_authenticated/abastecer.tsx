@@ -19,6 +19,7 @@ import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useCreateFueling, useFuelings, useVehicles } from "@/hooks/use-tanque";
 import { computeFuelings, estimateConsumption } from "@/services/analytics";
 import { fuelingSchema } from "@/validators";
+import { captureException } from "@/lib/telemetry";
 import type { Fueling } from "@/types/domain";
 
 export const Route = createFileRoute("/_authenticated/abastecer")({
