@@ -1,5 +1,5 @@
 import { defineTool } from "@lovable.dev/mcp-js";
-import { CLUBS } from "@/lib/community";
+import { emptyResult, mcpSupabase } from "../supabase.server";
 
 export default defineTool({
   name: "list_clubs",
@@ -8,12 +8,24 @@ export default defineTool({
     "Lista os clubes públicos da comunidade Tanque+ (por marca, cidade e perfil de uso) com número de membros.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: () => {
-    const rows = CLUBS.map((c) => ({
+  handler: async () => {
+    const { data, error } = await mcpSupabase()
+      .from("clubs")
+      .select("id, slug, name, description, kind, city, members_count")
+      .order("members_count", { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) {
+      return emptyResult("Ainda não há clubes criados na comunidade Tanque+.");
+    }
+
+    const rows = data.map((c) => ({
       id: c.id,
+      slug: c.slug,
       nome: c.name,
-      membros: c.members,
-      cidade: c.city ?? null,
+      tipo: c.kind,
+      membros: c.members_count,
+      cidade: c.city,
       descricao: c.description,
     }));
     return {
