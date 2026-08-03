@@ -162,6 +162,22 @@ function PerfilPage() {
         </AppCard>
 
         <AppCard>
+          <p className="text-sm font-semibold text-foreground">Beta fechado</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Você está usando uma versão de testes. Algumas funcionalidades ainda vão evoluir — sua
+            opinião decide o que vem primeiro.
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <ActionLink to="/feedback" size="md" className="w-full sm:w-auto">
+              <MessageSquareHeart className="h-4 w-4" /> Enviar feedback
+            </ActionLink>
+            <ActionLink to="/beta" variant="secondary" size="md" className="w-full sm:w-auto">
+              <FlaskConical className="h-4 w-4" /> Sobre o Beta
+            </ActionLink>
+          </div>
+        </AppCard>
+
+        <AppCard>
           <p className="text-sm font-semibold text-foreground">Em breve</p>
           <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
             <li>Controle de manutenção e troca de óleo</li>
@@ -169,6 +185,7 @@ function PerfilPage() {
             <li>Comunidade e ranking de economia</li>
           </ul>
         </AppCard>
+
 
         <Action variant="danger" onClick={signOut}>
           <LogOut className="h-4 w-4" /> Sair da conta
