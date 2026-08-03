@@ -16,7 +16,7 @@
  */
 export { Action, ActionLink, actionVariants } from "./action";
 export { ChoiceGroup } from "./choice";
-export { TextField, SelectField, ToggleRow } from "./field";
+export { TextField, TextAreaField, SelectField, ToggleRow } from "./field";
 export { ConfirmAction } from "./confirm";
 export {
   NumericField,
