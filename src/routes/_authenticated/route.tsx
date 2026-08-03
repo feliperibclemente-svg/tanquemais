@@ -1,5 +1,11 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { useFunnelTracking } from "@/hooks/use-funnel";
+
+function AuthenticatedLayout() {
+  useFunnelTracking();
+  return <Outlet />;
+}
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -10,5 +16,5 @@ export const Route = createFileRoute("/_authenticated")({
     }
     return { user: data.user };
   },
-  component: () => <Outlet />,
+  component: AuthenticatedLayout,
 });

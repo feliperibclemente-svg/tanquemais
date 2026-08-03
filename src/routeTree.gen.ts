@@ -18,7 +18,9 @@ import { Route as AuthenticatedVeiculoRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPostosRouteImport } from './routes/_authenticated/postos'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedBetaRouteImport } from './routes/_authenticated/beta'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAbastecerRouteImport } from './routes/_authenticated/abastecer'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -70,9 +72,19 @@ const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   path: '/historico',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBetaRoute = AuthenticatedBetaRouteImport.update({
+  id: '/beta',
+  path: '/beta',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
@@ -118,7 +130,9 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/abastecer': typeof AuthenticatedAbastecerRoute
   '/app': typeof AuthenticatedAppRoute
+  '/beta': typeof AuthenticatedBetaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/postos': typeof AuthenticatedPostosRoute
@@ -135,7 +149,9 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/abastecer': typeof AuthenticatedAbastecerRoute
   '/app': typeof AuthenticatedAppRoute
+  '/beta': typeof AuthenticatedBetaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/postos': typeof AuthenticatedPostosRoute
@@ -154,7 +170,9 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/abastecer': typeof AuthenticatedAbastecerRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/beta': typeof AuthenticatedBetaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/postos': typeof AuthenticatedPostosRoute
@@ -173,7 +191,9 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/abastecer'
     | '/app'
+    | '/beta'
     | '/dashboard'
+    | '/feedback'
     | '/historico'
     | '/perfil'
     | '/postos'
@@ -190,7 +210,9 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/abastecer'
     | '/app'
+    | '/beta'
     | '/dashboard'
+    | '/feedback'
     | '/historico'
     | '/perfil'
     | '/postos'
@@ -208,7 +230,9 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/abastecer'
     | '/_authenticated/app'
+    | '/_authenticated/beta'
     | '/_authenticated/dashboard'
+    | '/_authenticated/feedback'
     | '/_authenticated/historico'
     | '/_authenticated/perfil'
     | '/_authenticated/postos'
@@ -294,11 +318,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/feedback': {
+      id: '/_authenticated/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/beta': {
+      id: '/_authenticated/beta'
+      path: '/beta'
+      fullPath: '/beta'
+      preLoaderRoute: typeof AuthenticatedBetaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app': {
@@ -349,7 +387,9 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAbastecerRoute: typeof AuthenticatedAbastecerRoute
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedBetaRoute: typeof AuthenticatedBetaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedPostosRoute: typeof AuthenticatedPostosRoute
@@ -359,7 +399,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAbastecerRoute: AuthenticatedAbastecerRoute,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedBetaRoute: AuthenticatedBetaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedPostosRoute: AuthenticatedPostosRoute,

@@ -223,6 +223,42 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          app_version: string | null
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          page: string | null
+          rating: number | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          app_version?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          message: string
+          page?: string | null
+          rating?: number | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          app_version?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          page?: string | null
+          rating?: number | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       followers: {
         Row: {
           created_at: string

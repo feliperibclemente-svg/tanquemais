@@ -212,3 +212,47 @@ export const statisticsRepository = {
     );
   },
 };
+
+/* -------------------------------- feedback -------------------------------- */
+
+export type FeedbackKind = "problema" | "sugestao" | "elogio";
+
+export interface FeedbackDraft {
+  kind: FeedbackKind;
+  rating: number | null;
+  message: string;
+  page?: string | null;
+}
+
+export const feedbackRepository = {
+  async create(userId: string, draft: FeedbackDraft) {
+    return unwrap(
+      await supabase
+        .from("feedback")
+        .insert({
+          user_id: userId,
+          kind: draft.kind,
+          rating: draft.rating,
+          message: draft.message.trim(),
+          page: draft.page ?? null,
+          app_version: "beta",
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 300) : null,
+        })
+        .select("id, created_at")
+        .single(),
+    );
+  },
+
+  async listMine(userId: string) {
+    return (
+      unwrap(
+        await supabase
+          .from("feedback")
+          .select("id, kind, rating, message, created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+      ) ?? []
+    );
+  },
+};

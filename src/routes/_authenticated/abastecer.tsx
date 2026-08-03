@@ -19,6 +19,7 @@ import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useCreateFueling, useFuelings, useVehicles } from "@/hooks/use-tanque";
 import { computeFuelings, estimateConsumption } from "@/services/analytics";
 import { fuelingSchema } from "@/validators";
+import { captureException } from "@/lib/telemetry";
 import type { Fueling } from "@/types/domain";
 
 export const Route = createFileRoute("/_authenticated/abastecer")({
@@ -107,17 +108,29 @@ function AbastecerPage() {
       return;
     }
 
-    await create.mutateAsync({
-      draft: parsed.data,
-      computed: { km_per_liter: preview.kmPerLiter, cost_per_km: preview.costPerKm },
-    });
+    if (previousOdometer && odometerValue < previousOdometer) {
+      setError(
+        `A quilometragem precisa ser maior que a do último registro (${num(previousOdometer, 0)} km).`,
+      );
+      return;
+    }
 
-    setSaved({
-      liters: parsed.data.liters,
-      total: parsed.data.total_cost,
-      kmPerLiter: preview.kmPerLiter,
-      costPerKm: preview.costPerKm,
-    });
+    try {
+      await create.mutateAsync({
+        draft: parsed.data,
+        computed: { km_per_liter: preview.kmPerLiter, cost_per_km: preview.costPerKm },
+      });
+
+      setSaved({
+        liters: parsed.data.liters,
+        total: parsed.data.total_cost,
+        kmPerLiter: preview.kmPerLiter,
+        costPerKm: preview.costPerKm,
+      });
+    } catch (err) {
+      captureException(err, { scope: "fueling.create" });
+      setError("Não conseguimos salvar agora. Tente novamente em instantes.");
+    }
   }
 
   if (vehicles.isLoading) {
