@@ -19,7 +19,7 @@
       {
         "name": "list_stations",
         "title": "Listar postos e preços",
-        "description": "Lista os postos monitorados pelo Tanque+ com preços públicos de gasolina e etanol, cidade, distância, avaliação, movimento e tendência de preço.",
+        "description": "Lista os postos cadastrados no Tanque+ com os preços informados pela comunidade, cidade, avaliação e índice de confiabilidade.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -34,12 +34,8 @@
               "type": "string"
             },
             "fuel": {
-              "description": "Ordena pelo preço deste combustível (menor primeiro).",
-              "type": "string",
-              "enum": [
-                "gasolina",
-                "etanol"
-              ]
+              "description": "Ordena pelo preço deste combustível (gasolina, etanol, diesel, gnv...).",
+              "type": "string"
             },
             "limit": {
               "description": "Máximo de postos retornados (padrão 20).",
