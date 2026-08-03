@@ -58,6 +58,28 @@ export function TextField({
   );
 }
 
+export function TextAreaField({
+  label,
+  hint,
+  error,
+  className,
+  ...props
+}: { label: string; hint?: string; error?: string } & ComponentProps<"textarea">) {
+  const generated = useId();
+  const id = props.id ?? generated;
+  return (
+    <Wrapper id={id} label={label} hint={hint} error={error}>
+      <textarea
+        {...props}
+        id={id}
+        aria-invalid={!!error}
+        aria-describedby={hint || error ? `${id}-hint` : undefined}
+        className={cn(control, "min-h-32 resize-y py-3 leading-relaxed", className)}
+      />
+    </Wrapper>
+  );
+}
+
 export function SelectField({
   label,
   hint,
