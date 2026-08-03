@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BarChart3, Car, Fuel, History, Home, User } from "lucide-react";
+import { BarChart3, Car, FlaskConical, Fuel, History, Home, User } from "lucide-react";
 import type { ReactNode } from "react";
 
 const tabs = [
