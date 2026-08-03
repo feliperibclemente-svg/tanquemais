@@ -1,29 +1,40 @@
-# Welcome to your Lovable project
+# Tanque+
 
-This project was built with [Lovable](https://lovable.dev).
+Assistente inteligente de economia automotiva: registre abastecimentos em segundos, acompanhe o consumo do veículo, compare preços de postos e receba insights da **TanqueIA**.
 
-## Build with Lovable
+## Arquitetura
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+- **TanStack Start (React 19 + Vite 7)** com rotas em `src/routes`. Rotas privadas ficam sob `src/routes/_authenticated/`.
+- **Lovable Cloud (Postgres + Auth)** é a **única fonte de verdade**: perfil, veículos, abastecimentos, postos, preços, estatísticas e insights. Não há dados fictícios nem persistência local de domínio.
+- **Camadas**
+  - `src/repositories` — acesso a dados tipado, com erros traduzidos (`base.ts`).
+  - `src/services` — regras de negócio puras (`analytics.ts`, `insights.ts`).
+  - `src/hooks/use-tanque.ts` — TanStack Query (queries, mutations, invalidações).
+  - `src/components/ds` — design system (Action, campos, confirmação, skeletons).
+  - `src/lib` — formatação, geo, analytics, telemetria e fila offline.
+- **Segurança**: RLS habilitada em todas as tabelas, políticas por `auth.uid()`, papéis em `user_roles` com `has_role()`.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+## Offline
 
-## Development
+`src/lib/offline-queue.ts` é apenas um **buffer temporário**: quando não há rede, o abastecimento fica no aparelho e é reenviado automaticamente ao voltar a conexão (`src/hooks/use-offline-sync.ts`). Nada é lido do dispositivo como fonte de dados — apenas o tema visual é lembrado localmente.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## TanqueIA
+
+`src/services/insights.ts` gera recomendações determinísticas a partir dos dados reais do usuário; `src/lib/tanque-ia.functions.ts` complementa com o gateway de IA quando necessário.
+
+## Agentes (MCP)
+
+Servidor MCP em `src/lib/mcp` com ferramentas que consultam o banco real: postos e preços, posto mais barato, gasolina x etanol, cálculo de consumo e clubes. Requer login (OAuth 2.1).
+
+## Desenvolvimento
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
 npm i
 npm run dev
 ```
 
-## Built with
+Comandos úteis: `npm run build`, `npm run lint`.
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+## Estados vazios
+
+Funcionalidades sociais (clubes, feed, ranking) leem exclusivamente o banco. Sem dados, o app mostra estados vazios elegantes em vez de conteúdo simulado.
