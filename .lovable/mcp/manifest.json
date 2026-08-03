@@ -82,7 +82,7 @@
       {
         "name": "gasoline_vs_ethanol",
         "title": "Gasolina ou etanol?",
-        "description": "Compara gasolina e etanol pela regra dos 70%. Sem preços informados, usa a média pública dos postos do radar do Tanque+.",
+        "description": "Compara gasolina e etanol pela regra dos 70%. Sem preços informados, usa a média dos preços cadastrados pela comunidade Tanque+.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -99,6 +99,10 @@
             "ethanolPrice": {
               "description": "Preço do etanol por litro.",
               "type": "number"
+            },
+            "city": {
+              "description": "Cidade usada para calcular a média da comunidade.",
+              "type": "string"
             }
           }
         },
