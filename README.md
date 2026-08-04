@@ -38,3 +38,16 @@ Comandos úteis: `npm run build`, `npm run lint`.
 ## Estados vazios
 
 Funcionalidades sociais (clubes, feed, ranking) leem exclusivamente o banco. Sem dados, o app mostra estados vazios elegantes em vez de conteúdo simulado.
+
+## Testes de permissão (RLS/GRANTs)
+
+`tests/rls` valida, via Data API real, o que cada tipo de usuário consegue ler:
+
+- `anon.test.ts` — catálogo público legível; preços públicos sem `reported_by`; clubes, seguidores e dados pessoais bloqueados.
+- `authenticated.test.ts` — usuário logado vê só as próprias linhas; membro de clube vê só rosters de clubes onde participa; seguidor vê só relações em que participa.
+
+```sh
+npm test
+```
+
+Os cenários autenticados só rodam com credenciais de teste no ambiente (`TANQUE_TEST_EMAIL_A`/`TANQUE_TEST_PASSWORD_A` e `TANQUE_TEST_EMAIL_B`/`TANQUE_TEST_PASSWORD_B`); sem elas são pulados.
