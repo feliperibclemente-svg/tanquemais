@@ -1,0 +1,38 @@
+name: Testes de RLS
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: rls-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rls:
+    name: Permissões de leitura (GRANTs + RLS)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Rodar testes de RLS
+        env:
+          # Chaves públicas do projeto (anon/publishable). Configure em
+          # Settings > Secrets and variables > Actions caso queira sobrescrever.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          # Opcionais: habilitam os cenários de usuário logado / clube / seguidor.
+          TANQUE_TEST_EMAIL_A: ${{ secrets.TANQUE_TEST_EMAIL_A }}
+          TANQUE_TEST_PASSWORD_A: ${{ secrets.TANQUE_TEST_PASSWORD_A }}
+          TANQUE_TEST_EMAIL_B: ${{ secrets.TANQUE_TEST_EMAIL_B }}
+          TANQUE_TEST_PASSWORD_B: ${{ secrets.TANQUE_TEST_PASSWORD_B }}
+        run: bun run test

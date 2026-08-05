@@ -51,3 +51,14 @@ npm test
 ```
 
 Os cenários autenticados só rodam com credenciais de teste no ambiente (`TANQUE_TEST_EMAIL_A`/`TANQUE_TEST_PASSWORD_A` e `TANQUE_TEST_EMAIL_B`/`TANQUE_TEST_PASSWORD_B`); sem elas são pulados.
+
+### CI (GitHub Actions)
+
+`.github/workflows/rls-tests.yml` roda a suíte em todo pull request e em pushes na `main`.
+
+Configure em **Settings → Secrets and variables → Actions**:
+
+- `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` (podem ser _variables_, são públicas)
+- opcionalmente `TANQUE_TEST_EMAIL_A/B` e `TANQUE_TEST_PASSWORD_A/B` como _secrets_, para habilitar os cenários autenticados
+
+Para **bloquear merges com regressão**, vá em **Settings → Branches → Add branch ruleset** (ou _Branch protection rule_) para a `main`, marque **Require status checks to pass before merging** e selecione o check `Permissões de leitura (GRANTs + RLS)`.
