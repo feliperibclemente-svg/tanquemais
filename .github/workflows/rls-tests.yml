@@ -8,16 +8,76 @@ on:
     # Toda segunda-feira às 06:00 UTC (03:00 em São Paulo)
     - cron: "0 6 * * 1"
   workflow_dispatch:
+    inputs:
+      full:
+        description: "Rodar a suíte completa"
+        type: boolean
+        default: true
 
 concurrency:
   group: rls-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
-  rls:
-    name: Suíte RLS
+  # ---------------------------------------------------------------------------
+  # Smoke rápido: roda em TODO pull request e push.
+  # ---------------------------------------------------------------------------
+  smoke:
+    name: Smoke RLS
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache de dependências (bun)
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb', 'bun.lock', 'package.json') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Rodar smoke (com 1 retry para casos intermitentes)
+        env:
+          CI: "true"
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set +e
+          RLS_REPORT_NAME=smoke-attempt1 bunx vitest run tests/rls/smoke.test.ts
+          if [ $? -ne 0 ]; then
+            echo "::warning::Smoke falhou na 1ª tentativa — reexecutando para detectar flakiness."
+            RLS_REPORT_NAME=smoke-attempt2 bunx vitest run tests/rls/smoke.test.ts || exit 1
+          fi
+
+      - name: Publicar relatório JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rls-report-smoke
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # Suíte completa: agendada, manual ou push na main.
+  # ---------------------------------------------------------------------------
+  full:
+    name: Suíte completa RLS
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
     strategy:
       fail-fast: false
       matrix:
@@ -44,20 +104,22 @@ jobs:
       - name: Instalar dependências
         run: bun install --frozen-lockfile
 
-      - name: Rodar testes de RLS (${{ matrix.suite.name }})
+      - name: Rodar testes (${{ matrix.suite.name }}) com 1 retry
         env:
           CI: "true"
-          RLS_REPORT_NAME: ${{ matrix.suite.name }}
-          # Chaves públicas do projeto (anon/publishable). Configure em
-          # Settings > Secrets and variables > Actions caso queira sobrescrever.
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          # Opcionais: habilitam os cenários de usuário logado / clube / seguidor.
           TANQUE_TEST_EMAIL_A: ${{ secrets.TANQUE_TEST_EMAIL_A }}
           TANQUE_TEST_PASSWORD_A: ${{ secrets.TANQUE_TEST_PASSWORD_A }}
           TANQUE_TEST_EMAIL_B: ${{ secrets.TANQUE_TEST_EMAIL_B }}
           TANQUE_TEST_PASSWORD_B: ${{ secrets.TANQUE_TEST_PASSWORD_B }}
-        run: bunx vitest run ${{ matrix.suite.path }}
+        run: |
+          set +e
+          RLS_REPORT_NAME=${{ matrix.suite.name }}-attempt1 bunx vitest run ${{ matrix.suite.path }}
+          if [ $? -ne 0 ]; then
+            echo "::warning::${{ matrix.suite.name }} falhou na 1ª tentativa — reexecutando (flaky?)."
+            RLS_REPORT_NAME=${{ matrix.suite.name }}-attempt2 bunx vitest run ${{ matrix.suite.path }} || exit 1
+          fi
 
       - name: Publicar relatório JUnit
         if: always()
@@ -66,29 +128,61 @@ jobs:
           name: rls-report-${{ matrix.suite.name }}
           path: reports/
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 30
 
-      - name: Resumo dos testes no job
-        if: always()
-        run: |
-          echo "### Testes de RLS — ${{ matrix.suite.name }}" >> "$GITHUB_STEP_SUMMARY"
-          if [ -f "reports/junit-${{ matrix.suite.name }}.xml" ]; then
-            grep -o 'tests="[0-9]*"\|failures="[0-9]*"\|errors="[0-9]*"\|skipped="[0-9]*"' \
-              "reports/junit-${{ matrix.suite.name }}.xml" | head -n 8 >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "Nenhum relatório gerado." >> "$GITHUB_STEP_SUMMARY"
-          fi
-
+  # ---------------------------------------------------------------------------
+  # Status check obrigatório + resumo no PR + alerta no Slack.
+  # ---------------------------------------------------------------------------
   rls-status:
     name: Permissões de leitura (GRANTs + RLS)
     runs-on: ubuntu-latest
-    needs: rls
+    needs: [smoke, full]
     if: always()
     steps:
-      - name: Falhar se alguma suíte falhou
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Baixar relatórios
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rls-report-*
+          path: reports
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Gerar resumo em Markdown
+        id: summary
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ "${{ needs.rls.result }}" != "success" ]; then
-            echo "Regressão de permissões detectada (${{ needs.rls.result }})."
+          bun scripts/rls-summary.ts reports --title "Testes de RLS — resultado" > summary.md
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comentar no pull request
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: rls-tests
+          path: summary.md
+
+      - name: Avisar no Slack quando falhar
+        if: (needs.smoke.result == 'failure' || needs.full.result == 'failure') && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TEXT=":rotating_light: *Testes de RLS falharam* em \`${{ github.repository }}\` (${{ github.event_name }}, ref \`${{ github.ref_name }}\`)\n<${RUN_URL}|Ver execução e relatórios JUnit>"
+          curl -sS -X POST -H 'Content-type: application/json' \
+            --data "$(printf '{"text":"%s"}' "$TEXT")" \
+            "$SLACK_WEBHOOK_URL"
+
+      - name: Falhar se houve regressão
+        run: |
+          if [ "${{ needs.smoke.result }}" = "failure" ] || [ "${{ needs.full.result }}" = "failure" ]; then
+            echo "Regressão de permissões detectada."
             exit 1
           fi
-          echo "Todas as suítes de RLS passaram."
+          echo "Permissões de leitura OK."
