@@ -54,11 +54,27 @@ Os cenários autenticados só rodam com credenciais de teste no ambiente (`TANQU
 
 ### CI (GitHub Actions)
 
-`.github/workflows/rls-tests.yml` roda a suíte em todo pull request e em pushes na `main`.
+`.github/workflows/rls-tests.yml` roda a suíte em todo pull request, em pushes na `main`, **toda segunda-feira às 06:00 UTC** (execução agendada) e sob demanda (`workflow_dispatch`).
+
+Detalhes do pipeline:
+
+- **Paralelismo**: as suítes `anon` e `authenticated` rodam em jobs separados (matriz, `fail-fast: false`).
+- **Cache**: `~/.bun/install/cache` é cacheado por hash do lockfile, reduzindo o tempo de instalação.
+- **Relatórios**: cada job gera `reports/junit-<suite>.xml` e o publica como artefato (`rls-report-anon`, `rls-report-authenticated`, retenção de 14 dias), além de um resumo no _job summary_.
+- **Status check único**: o job agregador `Permissões de leitura (GRANTs + RLS)` falha se qualquer suíte falhar — use-o na proteção de branch.
 
 Configure em **Settings → Secrets and variables → Actions**:
 
 - `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` (podem ser _variables_, são públicas)
 - opcionalmente `TANQUE_TEST_EMAIL_A/B` e `TANQUE_TEST_PASSWORD_A/B` como _secrets_, para habilitar os cenários autenticados
 
-Para **bloquear merges com regressão**, vá em **Settings → Branches → Add branch ruleset** (ou _Branch protection rule_) para a `main`, marque **Require status checks to pass before merging** e selecione o check `Permissões de leitura (GRANTs + RLS)`.
+### Bloquear merges com regressão (proteção de branch)
+
+Isso é uma configuração do GitHub e precisa ser feita no repositório (não pode ser aplicada pelo código):
+
+1. **Settings → Rules → Rulesets → New branch ruleset** (ou **Branches → Add branch protection rule**).
+2. Alvo: branch padrão (`main`).
+3. Marque **Require a pull request before merging**.
+4. Marque **Require status checks to pass** → **Require branches to be up to date** e adicione o check **`Permissões de leitura (GRANTs + RLS)`**.
+5. Salve. O check só aparece na busca depois que o workflow rodar ao menos uma vez na branch/PR.
+
