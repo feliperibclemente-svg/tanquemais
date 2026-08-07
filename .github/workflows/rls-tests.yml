@@ -169,11 +169,15 @@ jobs:
           path: summary.md
 
       - name: Avisar no Slack quando falhar
-        if: (needs.smoke.result == 'failure' || needs.full.result == 'failure') && env.SLACK_WEBHOOK_URL != ''
+        if: needs.smoke.result == 'failure' || needs.full.result == 'failure'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL não configurado — pulando notificação."
+            exit 0
+          fi
           TEXT=":rotating_light: *Testes de RLS falharam* em \`${{ github.repository }}\` (${{ github.event_name }}, ref \`${{ github.ref_name }}\`)\n<${RUN_URL}|Ver execução e relatórios JUnit>"
           curl -sS -X POST -H 'Content-type: application/json' \
             --data "$(printf '{"text":"%s"}' "$TEXT")" \
