@@ -43,6 +43,7 @@ Funcionalidades sociais (clubes, feed, ranking) leem exclusivamente o banco. Sem
 
 `tests/rls` valida, via Data API real, o que cada tipo de usuário consegue ler:
 
+- `smoke.test.ts` — invariantes críticos em poucos segundos (catálogo público, `reported_by` bloqueado, grafo social e dados pessoais inacessíveis).
 - `anon.test.ts` — catálogo público legível; preços públicos sem `reported_by`; clubes, seguidores e dados pessoais bloqueados.
 - `authenticated.test.ts` — usuário logado vê só as próprias linhas; membro de clube vê só rosters de clubes onde participa; seguidor vê só relações em que participa.
 
@@ -54,19 +55,23 @@ Os cenários autenticados só rodam com credenciais de teste no ambiente (`TANQU
 
 ### CI (GitHub Actions)
 
-`.github/workflows/rls-tests.yml` roda a suíte em todo pull request, em pushes na `main`, **toda segunda-feira às 06:00 UTC** (execução agendada) e sob demanda (`workflow_dispatch`).
+`.github/workflows/rls-tests.yml`:
 
-Detalhes do pipeline:
-
-- **Paralelismo**: as suítes `anon` e `authenticated` rodam em jobs separados (matriz, `fail-fast: false`).
-- **Cache**: `~/.bun/install/cache` é cacheado por hash do lockfile, reduzindo o tempo de instalação.
-- **Relatórios**: cada job gera `reports/junit-<suite>.xml` e o publica como artefato (`rls-report-anon`, `rls-report-authenticated`, retenção de 14 dias), além de um resumo no _job summary_.
-- **Status check único**: o job agregador `Permissões de leitura (GRANTs + RLS)` falha se qualquer suíte falhar — use-o na proteção de branch.
+- **Todo pull request / push**: job `Smoke RLS` (~alguns segundos) com os invariantes críticos.
+- **Semanal (segunda, 06:00 UTC), manual (`workflow_dispatch`) e push na `main`**: suíte completa em matriz paralela (`anon` + `authenticated`, `fail-fast: false`).
+- **Cache**: `~/.bun/install/cache` por hash do lockfile.
+- **Retry**: cada suíte é reexecutada uma vez em caso de falha; os relatórios das duas tentativas são mantidos (`*-attempt1`, `*-attempt2`) para diagnosticar flakiness — o resumo marca quando houve retry.
+- **Relatórios**: JUnit em `reports/junit-<suite>-attempt<N>.xml`, publicados como artefatos (`rls-report-*`, retenção 14–30 dias).
+- **Comentário no PR**: o job agregador roda `scripts/rls-summary.ts` e publica/atualiza um comentário fixo com tabela de pass/fail, duração, testes que falharam e link para os artefatos.
+- **Slack**: se `SLACK_WEBHOOK_URL` estiver configurado, uma mensagem é enviada sempre que o RLS falhar (PR, push ou execução agendada). Sem o secret, a etapa é ignorada.
+- **Status check único**: o job `Permissões de leitura (GRANTs + RLS)` falha se qualquer suíte falhar — use-o na proteção de branch.
 
 Configure em **Settings → Secrets and variables → Actions**:
 
 - `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` (podem ser _variables_, são públicas)
 - opcionalmente `TANQUE_TEST_EMAIL_A/B` e `TANQUE_TEST_PASSWORD_A/B` como _secrets_, para habilitar os cenários autenticados
+- opcionalmente `SLACK_WEBHOOK_URL` (Incoming Webhook do Slack) para os alertas de falha
+
 
 ### Bloquear merges com regressão (proteção de branch)
 
