@@ -80,12 +80,79 @@ if (suites.length === 0) {
     );
   }
 
-  const flaky = suites.filter((s) => s.attempt > 1);
-  if (flaky.length > 0) {
-    lines.push("", "> ⚠️ Houve reexecução (retry) — possível teste intermitente (flaky).");
+  // ---- Indicador de flakiness (por suíte, comparando as tentativas) ----
+  const byName = new Map<string, SuiteSummary[]>();
+  for (const s of suites) {
+    const list = byName.get(s.name) ?? [];
+    list.push(s);
+    byName.set(s.name, list);
   }
 
-  const failed = suites.flatMap((s) => s.failedNames.map((n) => `\`${s.name}\` — ${n}`));
+  const flakyLines: string[] = [];
+  for (const [name, attemptsRaw] of byName) {
+    const attempts = attemptsRaw.sort((a, b) => a.attempt - b.attempt);
+    if (attempts.length < 2) continue;
+
+    const bad = (s: SuiteSummary) => s.failures + s.errors;
+    const first = attempts[0]!;
+    const last = attempts[attempts.length - 1]!;
+
+    let pattern: string;
+    if (bad(first) > 0 && bad(last) === 0) pattern = "🟡 intermitente (falhou e passou ao repetir)";
+    else if (bad(first) > 0 && bad(last) > 0) {
+      const firstSet = new Set(first.failedNames);
+      const sameTests =
+        last.failedNames.length === firstSet.size && last.failedNames.every((n) => firstSet.has(n));
+      pattern = sameTests
+        ? "🔴 falha consistente (mesmos testes nas duas tentativas)"
+        : "🟠 falha instável (testes diferentes a cada tentativa)";
+    } else pattern = "🟢 passou em todas as tentativas";
+
+    const durations = attempts.map((a) => `#${a.attempt}: ${a.time.toFixed(1)}s`).join(" · ");
+    const results = attempts
+      .map((a) => `#${a.attempt} ${bad(a) === 0 ? "✅" : `❌ (${bad(a)})`}`)
+      .join(" → ");
+    const drift =
+      attempts.length >= 2 && first.time > 0
+        ? ` (Δ ${(((last.time - first.time) / first.time) * 100).toFixed(0)}%)`
+        : "";
+
+    flakyLines.push(
+      `| \`${name}\` | ${attempts.length} | ${results} | ${pattern} | ${durations}${drift} |`,
+    );
+  }
+
+  if (flakyLines.length > 0) {
+    lines.push(
+      "",
+      "#### Indicador de flakiness",
+      "",
+      "| Suíte | Tentativas | Resultado por tentativa | Padrão | Duração por tentativa |",
+      "| --- | --- | --- | --- | --- |",
+      ...flakyLines,
+      "",
+      "> ⚠️ Houve reexecução (retry) — veja o padrão acima para distinguir regressão real de teste intermitente.",
+    );
+
+    const intermittent = [...byName.values()].filter((a) => {
+      if (a.length < 2) return false;
+      const sorted = a.sort((x, y) => x.attempt - y.attempt);
+      return (
+        sorted[0]!.failures + sorted[0]!.errors > 0 &&
+        sorted[sorted.length - 1]!.failures + sorted[sorted.length - 1]!.errors === 0
+      );
+    });
+    if (intermittent.length > 0) {
+      lines.push(
+        "",
+        `**Flaky detectado:** ${intermittent.length} suíte(s) passaram apenas na reexecução — investigue latência da Data API ou dados de teste compartilhados.`,
+      );
+    }
+  }
+
+  const failed = suites.flatMap((s) =>
+    s.failedNames.map((n) => `\`${s.name}\` (tentativa ${s.attempt}) — ${n}`),
+  );
   if (failed.length > 0) {
     lines.push("", "**Testes que falharam**", ...failed.slice(0, 20).map((f) => `- ${f}`));
     if (failed.length > 20) lines.push(`- … e mais ${failed.length - 20}`);
