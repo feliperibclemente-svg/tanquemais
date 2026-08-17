@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Fuel } from "lucide-react";
+import { CheckCircle2, ChevronDown, Fuel, MapPin } from "lucide-react";
 import {
   Action,
   ActionLink,
@@ -12,12 +12,22 @@ import {
   PageHeader,
   parseDecimal,
   ScreenSkeleton,
+  SelectField,
   ToggleRow,
 } from "@/components/ds";
+import { VerdictCard } from "@/components/app/Verdict";
 import { FUEL_TYPES } from "@/constants/app";
-import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
-import { useCreateFueling, useFuelings, useVehicles } from "@/hooks/use-tanque";
+import { brl, kmPerLiter, num } from "@/lib/format";
+import {
+  useCreateFueling,
+  useFuelings,
+  useProfile,
+  useStations,
+  useVehicles,
+} from "@/hooks/use-tanque";
 import { computeFuelings, estimateConsumption } from "@/services/analytics";
+import { deriveAmounts, priceVerdict, stationOpportunity } from "@/services/verdict";
+import type { PriceVerdict, StationOpportunity } from "@/services/verdict";
 import { fuelingSchema } from "@/validators";
 import { captureException } from "@/lib/telemetry";
 import type { Fueling } from "@/types/domain";
@@ -28,13 +38,12 @@ export const Route = createFileRoute("/_authenticated/abastecer")({
       { title: "Registrar abastecimento — Tanque+" },
       {
         name: "description",
-        content:
-          "Registre valor pago, preço do litro e quilometragem: o Tanque+ calcula litros, consumo e custo por km.",
+        content: "Informe o valor e o preço do litro: o Tanque+ calcula o resto e diz se foi bom.",
       },
       { property: "og:title", content: "Registrar abastecimento — Tanque+" },
       {
         property: "og:description",
-        content: "Cálculo automático de litros, consumo e custo por km em menos de 20 segundos.",
+        content: "Dois campos e pronto: litros, consumo e economia calculados para você.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -46,58 +55,95 @@ export const Route = createFileRoute("/_authenticated/abastecer")({
 interface Saved {
   liters: number;
   total: number;
+  price: number;
   kmPerLiter: number | null;
-  costPerKm: number | null;
+  verdict: PriceVerdict;
+  opportunity: StationOpportunity | null;
 }
 
 function AbastecerPage() {
-  const navigate = useNavigate();
   const vehicles = useVehicles();
   const fuelings = useFuelings();
+  const profile = useProfile();
+  const stations = useStations(profile.data?.city ?? null);
   const create = useCreateFueling();
 
   const list = vehicles.data ?? [];
+  const history = useMemo(
+    () => computeFuelings((fuelings.data ?? []) as Fueling[]),
+    [fuelings.data],
+  );
+
   const [vehicleId, setVehicleId] = useState<string | null>(null);
   const vehicle = list.find((v) => v.id === vehicleId) ?? list.find((v) => v.is_primary) ?? list[0];
 
-  const [fuel, setFuel] = useState<string | null>(null);
-  const fuelTypeId = fuel ?? vehicle?.fuel_type_id ?? "gasolina";
+  /** Último registro do veículo — base do preenchimento inteligente. */
+  const lastForVehicle = useMemo(
+    () => (vehicle ? (history.find((r) => r.vehicle_id === vehicle.id) ?? null) : null),
+    [history, vehicle],
+  );
 
+  const [fuel, setFuel] = useState<string | null>(null);
+  const fuelTypeId = fuel ?? lastForVehicle?.fuel_type_id ?? vehicle?.fuel_type_id ?? "gasolina";
+
+  const suggestedPrice = lastForVehicle ? Number(lastForVehicle.price_per_liter) : null;
   const [total, setTotal] = useState("");
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState(
+    suggestedPrice ? suggestedPrice.toFixed(2).replace(".", ",") : "",
+  );
+  const [litersInput, setLitersInput] = useState("");
   const [odometer, setOdometer] = useState("");
+  const [stationId, setStationId] = useState<string>(lastForVehicle?.station_id ?? "");
   const [fullTank, setFullTank] = useState(true);
+  const [details, setDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<Saved | null>(null);
 
-  const totalValue = parseDecimal(total);
-  const priceValue = parseDecimal(price);
-  const odometerValue = parseDecimal(odometer);
-  const litersValue = priceValue > 0 ? totalValue / priceValue : 0;
+  const amounts = deriveAmounts({
+    total: parseDecimal(total),
+    price: parseDecimal(price),
+    liters: parseDecimal(litersInput),
+  });
 
-  const previousOdometer = useMemo(() => {
-    if (!vehicle) return null;
-    const rows = computeFuelings((fuelings.data ?? []) as Fueling[]).filter(
-      (r) => r.vehicle_id === vehicle.id,
-    );
-    return rows.length ? Number(rows[0].odometer) : Number(vehicle.current_odometer) || null;
-  }, [fuelings.data, vehicle]);
+  const previousOdometer = lastForVehicle
+    ? Number(lastForVehicle.odometer)
+    : Number(vehicle?.current_odometer) || null;
 
-  const preview = estimateConsumption(previousOdometer, odometerValue, litersValue, totalValue);
+  const odometerValue = odometer ? parseDecimal(odometer) : (previousOdometer ?? 0);
+  const preview = estimateConsumption(
+    previousOdometer,
+    odometerValue,
+    amounts.liters,
+    amounts.total,
+  );
+
+  const canSubmit = amounts.total > 0 && amounts.price > 0 && amounts.liters > 0;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!vehicle) return;
     setError(null);
 
+    if (!canSubmit) {
+      setError("Informe o valor abastecido e o preço por litro (ou os litros).");
+      return;
+    }
+
+    if (odometer && previousOdometer && odometerValue < previousOdometer) {
+      setError(
+        `A quilometragem precisa ser maior que a do último registro (${num(previousOdometer, 0)} km).`,
+      );
+      return;
+    }
+
     const parsed = fuelingSchema.safeParse({
       vehicle_id: vehicle.id,
-      station_id: null,
+      station_id: stationId || null,
       fuel_type_id: fuelTypeId,
       filled_at: new Date().toISOString(),
-      liters: Number(litersValue.toFixed(3)),
-      price_per_liter: priceValue,
-      total_cost: totalValue,
+      liters: Number(amounts.liters.toFixed(3)),
+      price_per_liter: Number(amounts.price.toFixed(3)),
+      total_cost: Number(amounts.total.toFixed(2)),
       odometer: odometerValue,
       full_tank: fullTank,
       note: "",
@@ -105,13 +151,6 @@ function AbastecerPage() {
 
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Confira os dados informados.");
-      return;
-    }
-
-    if (previousOdometer && odometerValue < previousOdometer) {
-      setError(
-        `A quilometragem precisa ser maior que a do último registro (${num(previousOdometer, 0)} km).`,
-      );
       return;
     }
 
@@ -124,8 +163,22 @@ function AbastecerPage() {
       setSaved({
         liters: parsed.data.liters,
         total: parsed.data.total_cost,
+        price: parsed.data.price_per_liter,
         kmPerLiter: preview.kmPerLiter,
-        costPerKm: preview.costPerKm,
+        verdict: priceVerdict(
+          history.filter((r) => r.vehicle_id === vehicle.id),
+          {
+            pricePerLiter: parsed.data.price_per_liter,
+            liters: parsed.data.liters,
+            fuelTypeId,
+          },
+        ),
+        opportunity: stationOpportunity(
+          stations.data ?? [],
+          fuelTypeId,
+          parsed.data.price_per_liter,
+          parsed.data.liters,
+        ),
       });
     } catch (err) {
       captureException(err, { scope: "fueling.create" });
@@ -136,7 +189,7 @@ function AbastecerPage() {
   if (vehicles.isLoading) {
     return (
       <AppShell fab={false}>
-        <ScreenSkeleton cards={3} />
+        <ScreenSkeleton cards={2} />
       </AppShell>
     );
   }
@@ -148,7 +201,7 @@ function AbastecerPage() {
         <EmptyState
           emoji="🚗"
           title="Cadastre um veículo primeiro"
-          description="Precisamos do veículo para calcular consumo, custo por km e economia."
+          description="Precisamos do veículo para calcular consumo e economia."
           action={
             <ActionLink to="/veiculo" size="md" className="mt-1">
               Cadastrar veículo
@@ -162,41 +215,63 @@ function AbastecerPage() {
   if (saved) {
     return (
       <AppShell fab={false}>
-        <div className="flex flex-col items-center py-6 text-center">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-primary">
-            <CheckCircle2 className="h-8 w-8" strokeWidth={2.2} />
+        <div className="flex flex-col items-center py-4 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-primary">
+            <CheckCircle2 className="h-7 w-7" strokeWidth={2.2} />
           </span>
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
-            Abastecimento registrado
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
+            Abastecimento registrado!
           </h1>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-foreground">
+            {brl(saved.total)}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {fmtLiters(saved.liters)} · {brl(saved.total)}
+            {num(saved.liters, 2)} L · {brl(saved.price)}/L
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <AppCard className="p-4">
-            <p className="text-xs text-muted-foreground">Consumo</p>
-            <p className="mt-1 text-xl font-semibold text-foreground">
-              {kmPerLiter(saved.kmPerLiter)}
-            </p>
-          </AppCard>
-          <AppCard className="p-4">
-            <p className="text-xs text-muted-foreground">Custo por km</p>
-            <p className="mt-1 text-xl font-semibold text-foreground">
-              {saved.costPerKm ? brl(saved.costPerKm) : "—"}
-            </p>
-          </AppCard>
+        <div className="space-y-3">
+          <VerdictCard verdict={saved.verdict} />
+
+          {saved.opportunity ? (
+            <AppCard>
+              <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <MapPin className="h-4 w-4 text-primary" /> Tem posto mais barato por perto
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                O {saved.opportunity.stationName} está a {brl(saved.opportunity.price)}/L. Nessa
+                mesma quantidade você teria pago {brl(saved.opportunity.amount)} a menos.
+              </p>
+              <ActionLink to="/postos" variant="soft" size="md" className="mt-3 w-full">
+                Ver postos
+              </ActionLink>
+            </AppCard>
+          ) : null}
+
+          {saved.kmPerLiter ? (
+            <AppCard className="p-4">
+              <p className="text-sm text-muted-foreground">
+                Seu carro fez{" "}
+                <span className="font-semibold text-foreground">
+                  {kmPerLiter(saved.kmPerLiter)}
+                </span>{" "}
+                desde o último abastecimento.
+              </p>
+            </AppCard>
+          ) : null}
         </div>
 
         <div className="mt-6 space-y-3">
-          <Action onClick={() => navigate({ to: "/app" })}>Voltar para o início</Action>
+          <ActionLink to="/app">Voltar para o início</ActionLink>
+          <ActionLink to="/historico" variant="secondary">
+            Ver detalhes no histórico
+          </ActionLink>
           <Action
-            variant="secondary"
+            variant="ghost"
             onClick={() => {
               setSaved(null);
               setTotal("");
-              setPrice("");
+              setLitersInput("");
               setOdometer("");
             }}
           >
@@ -215,18 +290,6 @@ function AbastecerPage() {
       />
 
       <form onSubmit={submit} className="space-y-5">
-        {list.length > 1 ? (
-          <ChoiceGroup
-            label="Veículo"
-            value={vehicle.id}
-            onChange={setVehicleId}
-            options={list.map((v) => ({
-              value: v.id,
-              label: v.nickname || `${v.brand} ${v.model}`,
-            }))}
-          />
-        ) : null}
-
         <ChoiceGroup
           label="Combustível"
           value={fuelTypeId}
@@ -235,12 +298,13 @@ function AbastecerPage() {
         />
 
         <NumericField
-          label="Valor abastecido"
+          label="Quanto você abasteceu"
           value={total}
           onChange={setTotal}
           prefix="R$"
           autoFocus
         />
+
         <NumericField
           label="Preço por litro"
           value={price}
@@ -248,32 +312,79 @@ function AbastecerPage() {
           prefix="R$"
           suffix="/L"
           hint={
-            litersValue > 0 ? `${num(litersValue, 2)} litros` : "Calculamos os litros para você"
-          }
-        />
-        <NumericField
-          label="Quilometragem atual"
-          value={odometer}
-          onChange={setOdometer}
-          inputMode="numeric"
-          suffix="km"
-          hint={
-            previousOdometer
-              ? `Último registro: ${num(previousOdometer, 0)} km`
-              : "Odômetro do painel"
+            amounts.liters > 0
+              ? `Dá ${num(amounts.liters, 2)} litros`
+              : suggestedPrice
+                ? "Preenchemos com o preço do último abastecimento"
+                : "Com o valor, calculamos os litros para você"
           }
         />
 
-        <ToggleRow label="Enchi o tanque" checked={fullTank} onChange={setFullTank} />
+        <button
+          type="button"
+          onClick={() => setDetails((v) => !v)}
+          aria-expanded={details}
+          className="flex min-h-11 w-full items-center justify-between text-sm font-semibold text-primary"
+        >
+          Ver detalhes (opcional)
+          <ChevronDown className={`h-4 w-4 transition-transform ${details ? "rotate-180" : ""}`} />
+        </button>
+
+        {details ? (
+          <div className="space-y-5 rounded-3xl border border-border bg-card/60 p-4">
+            {list.length > 1 ? (
+              <ChoiceGroup
+                label="Veículo"
+                value={vehicle.id}
+                onChange={setVehicleId}
+                options={list.map((v) => ({
+                  value: v.id,
+                  label: v.nickname || `${v.brand} ${v.model}`,
+                }))}
+              />
+            ) : null}
+
+            <NumericField
+              label="Litros abastecidos"
+              value={litersInput}
+              onChange={setLitersInput}
+              suffix="L"
+              hint="Só se você preferir informar os litros no lugar do preço."
+            />
+
+            <NumericField
+              label="Quilometragem atual"
+              value={odometer}
+              onChange={setOdometer}
+              inputMode="numeric"
+              suffix="km"
+              hint={
+                previousOdometer
+                  ? `Último registro: ${num(previousOdometer, 0)} km. Sem isso, não calculamos o consumo.`
+                  : "Odômetro do painel (opcional)"
+              }
+            />
+
+            {(stations.data ?? []).length > 0 ? (
+              <SelectField
+                label="Posto"
+                value={stationId}
+                onChange={setStationId}
+                options={[
+                  { value: "", label: "Não informar" },
+                  ...(stations.data ?? []).map((s) => ({ value: s.id, label: s.name })),
+                ]}
+              />
+            ) : null}
+
+            <ToggleRow label="Enchi o tanque" checked={fullTank} onChange={setFullTank} />
+          </div>
+        ) : null}
 
         {preview.kmPerLiter ? (
-          <AppCard className="border-primary/25 bg-accent/40 p-4">
-            <p className="text-xs text-muted-foreground">Prévia deste abastecimento</p>
-            <p className="mt-1 text-sm font-medium text-foreground">
-              {num(preview.distance ?? 0, 0)} km rodados · {kmPerLiter(preview.kmPerLiter)} ·{" "}
-              {brl(preview.costPerKm ?? 0)}/km
-            </p>
-          </AppCard>
+          <p className="text-sm text-muted-foreground">
+            Seu carro fez {kmPerLiter(preview.kmPerLiter)} nesse trecho.
+          </p>
         ) : null}
 
         {error ? (
@@ -282,9 +393,9 @@ function AbastecerPage() {
           </p>
         ) : null}
 
-        <Action type="submit" loading={create.isPending}>
+        <Action type="submit" loading={create.isPending} disabled={!canSubmit}>
           {create.isPending ? null : <Fuel className="h-5 w-5" />}
-          Salvar abastecimento
+          Registrar abastecimento
         </Action>
       </form>
     </AppShell>
