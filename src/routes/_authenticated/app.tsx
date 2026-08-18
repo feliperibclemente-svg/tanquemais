@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, Fuel, Sparkles } from "lucide-react";
 import { ActionLink, AppCard, AppShell, ScreenSkeleton } from "@/components/ds";
-import { VerdictPill } from "@/components/app/Verdict";
 import { useHomeData } from "@/hooks/use-tanque";
 import { brl, kmPerLiter, num, relativeDate } from "@/lib/format";
 import { track } from "@/lib/analytics";

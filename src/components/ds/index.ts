@@ -34,3 +34,4 @@ export {
   ScreenSkeleton,
 } from "@/components/app/Surface";
 export { AppShell } from "@/components/app/AppShell";
+export { VerdictCard, VerdictPill } from "@/components/app/Verdict";

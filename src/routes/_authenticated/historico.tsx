@@ -10,8 +10,8 @@ import {
   EmptyState,
   PageHeader,
   ScreenSkeleton,
+  VerdictPill,
 } from "@/components/ds";
-import { VerdictPill } from "@/components/app/Verdict";
 import { FUEL_LABEL } from "@/constants/app";
 import { brl, fullDate, kmPerLiter, num, shortDate } from "@/lib/format";
 import { useDeleteFueling, useFuelings } from "@/hooks/use-tanque";

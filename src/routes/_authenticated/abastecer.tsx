@@ -15,7 +15,6 @@ import {
   SelectField,
   ToggleRow,
 } from "@/components/ds";
-import { VerdictCard } from "@/components/app/Verdict";
 import { FUEL_TYPES } from "@/constants/app";
 import { brl, kmPerLiter, num } from "@/lib/format";
 import {
