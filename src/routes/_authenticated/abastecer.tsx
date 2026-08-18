@@ -369,7 +369,7 @@ function AbastecerPage() {
               <SelectField
                 label="Posto"
                 value={stationId}
-                onChange={setStationId}
+                onChange={(event) => setStationId(event.target.value)}
                 options={[
                   { value: "", label: "Não informar" },
                   ...(stations.data ?? []).map((s) => ({ value: s.id, label: s.name })),
