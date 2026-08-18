@@ -14,8 +14,8 @@ import {
   ScreenSkeleton,
   SelectField,
   ToggleRow,
+  VerdictCard,
 } from "@/components/ds";
-import { VerdictCard } from "@/components/app/Verdict";
 import { FUEL_TYPES } from "@/constants/app";
 import { brl, kmPerLiter, num } from "@/lib/format";
 import {
@@ -369,7 +369,7 @@ function AbastecerPage() {
               <SelectField
                 label="Posto"
                 value={stationId}
-                onChange={setStationId}
+                onChange={(event) => setStationId(event.target.value)}
                 options={[
                   { value: "", label: "Não informar" },
                   ...(stations.data ?? []).map((s) => ({ value: s.id, label: s.name })),
