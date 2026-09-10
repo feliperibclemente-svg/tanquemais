@@ -163,3 +163,101 @@ function Row({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function toDateInput(iso: string) {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Correção de um abastecimento já registrado. Recalcula litros e consumo. */
+function EditFueling({ row, onDone }: { row: FuelingComputed; onDone: () => void }) {
+  const update = useUpdateFueling();
+  const [total, setTotal] = useState(Number(row.total_cost).toFixed(2).replace(".", ","));
+  const [price, setPrice] = useState(Number(row.price_per_liter).toFixed(3).replace(".", ","));
+  const [odometer, setOdometer] = useState(String(Math.round(Number(row.odometer))));
+  const [date, setDate] = useState(toDateInput(row.filled_at));
+  const [error, setError] = useState<string | null>(null);
+
+  const amounts = deriveAmounts({
+    total: parseDecimal(total),
+    price: parseDecimal(price),
+    liters: 0,
+  });
+
+  async function save() {
+    setError(null);
+    const odo = parseDecimal(odometer);
+    if (!(amounts.total > 0) || !(amounts.price > 0)) {
+      setError("Informe o valor pago e o preço por litro.");
+      return;
+    }
+    if (!(odo >= 0)) {
+      setError("Quilometragem inválida.");
+      return;
+    }
+    const filledAt = new Date(`${date}T12:00:00`);
+    if (Number.isNaN(filledAt.getTime())) {
+      setError("Data inválida.");
+      return;
+    }
+    try {
+      await update.mutateAsync({
+        id: row.id,
+        patch: {
+          total_cost: Number(amounts.total.toFixed(2)),
+          price_per_liter: Number(amounts.price.toFixed(3)),
+          liters: Number(amounts.liters.toFixed(3)),
+          odometer: odo,
+          filled_at: filledAt.toISOString(),
+          // recalculados a partir do odômetro dos registros vizinhos
+          km_per_liter: null,
+          cost_per_km: null,
+        },
+      });
+      onDone();
+    } catch {
+      setError("Não conseguimos salvar agora. Tente novamente.");
+    }
+  }
+
+  return (
+    <div className="space-y-4 border-t border-border px-4 py-4">
+      <NumericField label="Valor pago" value={total} onChange={setTotal} prefix="R$" />
+      <NumericField
+        label="Preço por litro"
+        value={price}
+        onChange={setPrice}
+        prefix="R$"
+        suffix="/L"
+        hint={amounts.liters > 0 ? `Dá ${num(amounts.liters, 2)} litros` : undefined}
+      />
+      <NumericField
+        label="Quilometragem"
+        value={odometer}
+        onChange={setOdometer}
+        inputMode="numeric"
+        suffix="km"
+      />
+      <TextField
+        label="Data"
+        type="date"
+        value={date}
+        onChange={(event) => setDate(event.target.value)}
+      />
+      {error ? (
+        <p role="alert" className="text-sm font-medium text-destructive">
+          {error}
+        </p>
+      ) : null}
+      <div className="flex gap-2">
+        <Action size="md" loading={update.isPending} onClick={save}>
+          Salvar alterações
+        </Action>
+        <Action variant="ghost" size="md" onClick={onDone}>
+          Cancelar
+        </Action>
+      </div>
+    </div>
+  );
+}
