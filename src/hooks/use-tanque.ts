@@ -190,6 +190,24 @@ export function useCreateFueling() {
   });
 }
 
+export function useUpdateFueling() {
+  const { user } = useAuth();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<Fueling> }) =>
+      fuelingsRepository.update(id, patch),
+    onSuccess: () => {
+      const id = user?.id ?? "";
+      client.invalidateQueries({ queryKey: queryKeys.fuelings(id) });
+      client.invalidateQueries({ queryKey: queryKeys.vehicles(id) });
+      client.invalidateQueries({ queryKey: ["vehicle-stats"] });
+      track("fueling_updated");
+      toast.success("Abastecimento atualizado");
+    },
+    onError: reportMutationError("fueling.update"),
+  });
+}
+
 export function useDeleteFueling() {
   const { user } = useAuth();
   const client = useQueryClient();
