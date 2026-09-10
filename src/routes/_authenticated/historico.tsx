@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Action,
   ActionLink,
@@ -8,15 +8,18 @@ import {
   AppShell,
   ConfirmAction,
   EmptyState,
+  NumericField,
   PageHeader,
+  parseDecimal,
   ScreenSkeleton,
+  TextField,
   VerdictPill,
 } from "@/components/ds";
 import { FUEL_LABEL } from "@/constants/app";
 import { brl, fullDate, kmPerLiter, num, shortDate } from "@/lib/format";
-import { useDeleteFueling, useFuelings } from "@/hooks/use-tanque";
-import { computeFuelings } from "@/services/analytics";
-import { historyVerdicts } from "@/services/verdict";
+import { useDeleteFueling, useFuelings, useUpdateFueling } from "@/hooks/use-tanque";
+import { computeFuelings, type FuelingComputed } from "@/services/analytics";
+import { deriveAmounts, historyVerdicts } from "@/services/verdict";
 import type { Fueling } from "@/types/domain";
 
 export const Route = createFileRoute("/_authenticated/historico")({
