@@ -46,6 +46,7 @@ function HistoricoPage() {
   const fuelings = useFuelings();
   const remove = useDeleteFueling();
   const [open, setOpen] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
 
   const rows = useMemo(
     () => computeFuelings((fuelings.data ?? []) as Fueling[]),
@@ -61,7 +62,7 @@ function HistoricoPage() {
         <ScreenSkeleton cards={3} />
       ) : rows.length === 0 ? (
         <EmptyState
-          title="Nada por aqui ainda"
+          title="Seu histórico começa aqui."
           description="Assim que você registrar um abastecimento ele aparece nesta lista."
           action={
             <ActionLink to="/abastecer" size="md" className="mt-1">
