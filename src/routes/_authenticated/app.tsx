@@ -53,6 +53,31 @@ function HomePage() {
   const last = stats.last;
   const verdict = last ? historyVerdicts(rows).get(last.id) : undefined;
 
+  if (!primaryVehicle) {
+    return (
+      <AppShell fab={false}>
+        <header>
+          <p className="text-sm text-muted-foreground">
+            {greeting()}
+            {firstName ? `, ${firstName}` : ""}
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Tanque+</h1>
+        </header>
+        <AppCard className="mt-5 text-center">
+          <p className="text-lg font-semibold text-foreground">
+            Cadastre seu veículo para começar.
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Com o veículo cadastrado a gente calcula consumo, gasto e custo por quilômetro.
+          </p>
+          <ActionLink to="/veiculo" size="lg" className="mt-4">
+            Adicionar veículo
+          </ActionLink>
+        </AppCard>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell fab={false}>
       <motion.div
@@ -114,14 +139,17 @@ function HomePage() {
 
         {/* Três números que geram decisão */}
         <div className="grid grid-cols-3 gap-3">
-          <Mini label="Preço médio" value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}` : "—"} hint="por litro" />
           <Mini
-            label="Economia"
-            value={stats.savings > 0 ? brl(stats.savings) : "—"}
-            hint="acumulada"
-            tone="good"
+            label="Gasto no mês"
+            value={stats.monthSpend > 0 ? brl(stats.monthSpend) : "—"}
+            hint="abastecimentos do mês"
           />
-          <Mini label="Consumo" value={kmPerLiter(stats.avgKmPerLiter)} hint="média" />
+          <Mini
+            label="Preço médio"
+            value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}` : "—"}
+            hint="por litro"
+          />
+          <Mini label="Consumo" value={kmPerLiter(stats.avgKmPerLiter)} hint="média km/L" />
         </div>
 
         {/* TanqueIA em uma frase — detalhes ficam no painel */}
