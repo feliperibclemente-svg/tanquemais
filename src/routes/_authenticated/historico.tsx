@@ -99,7 +99,9 @@ function HistoricoPage() {
                     </span>
                   </button>
 
-                  {expanded ? (
+                  {expanded && editing === row.id ? (
+                    <EditFueling row={row} onDone={() => setEditing(null)} />
+                  ) : expanded ? (
                     <div className="space-y-2 border-t border-border px-4 py-4 text-sm">
                       <Row label="Data" value={fullDate(row.filled_at)} />
                       <Row label="Combustível" value={FUEL_LABEL[row.fuel_type_id] ?? row.fuel_type_id} />
@@ -121,16 +123,26 @@ function HistoricoPage() {
                           {verdict.referencePrice ? ` (${brl(verdict.referencePrice)}/L)` : ""}.
                         </p>
                       ) : null}
-                      <ConfirmAction
-                        title="Excluir abastecimento?"
-                        description="Esse registro sai do histórico e das estatísticas de consumo."
-                        onConfirm={() => remove.mutate(row.id)}
-                        trigger={
-                          <Action variant="danger-ghost" size="sm" className="mt-2 px-0">
-                            <Trash2 className="h-4 w-4" /> Excluir abastecimento
-                          </Action>
-                        }
-                      />
+                      <div className="flex items-center gap-2 pt-2">
+                        <Action
+                          variant="ghost"
+                          size="sm"
+                          className="px-0"
+                          onClick={() => setEditing(row.id)}
+                        >
+                          <Pencil className="h-4 w-4" /> Editar
+                        </Action>
+                        <ConfirmAction
+                          title="Excluir abastecimento?"
+                          description="Esse registro sai do histórico e das estatísticas de consumo."
+                          onConfirm={() => remove.mutate(row.id)}
+                          trigger={
+                            <Action variant="danger-ghost" size="sm" className="ml-auto">
+                              <Trash2 className="h-4 w-4" /> Excluir
+                            </Action>
+                          }
+                        />
+                      </div>
                     </div>
                   ) : null}
                 </AppCard>
