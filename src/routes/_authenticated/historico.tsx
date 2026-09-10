@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Action,
   ActionLink,
@@ -8,15 +8,18 @@ import {
   AppShell,
   ConfirmAction,
   EmptyState,
+  NumericField,
   PageHeader,
+  parseDecimal,
   ScreenSkeleton,
+  TextField,
   VerdictPill,
 } from "@/components/ds";
 import { FUEL_LABEL } from "@/constants/app";
 import { brl, fullDate, kmPerLiter, num, shortDate } from "@/lib/format";
-import { useDeleteFueling, useFuelings } from "@/hooks/use-tanque";
-import { computeFuelings } from "@/services/analytics";
-import { historyVerdicts } from "@/services/verdict";
+import { useDeleteFueling, useFuelings, useUpdateFueling } from "@/hooks/use-tanque";
+import { computeFuelings, type FuelingComputed } from "@/services/analytics";
+import { deriveAmounts, historyVerdicts } from "@/services/verdict";
 import type { Fueling } from "@/types/domain";
 
 export const Route = createFileRoute("/_authenticated/historico")({
@@ -43,6 +46,7 @@ function HistoricoPage() {
   const fuelings = useFuelings();
   const remove = useDeleteFueling();
   const [open, setOpen] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
 
   const rows = useMemo(
     () => computeFuelings((fuelings.data ?? []) as Fueling[]),
@@ -58,7 +62,7 @@ function HistoricoPage() {
         <ScreenSkeleton cards={3} />
       ) : rows.length === 0 ? (
         <EmptyState
-          title="Nada por aqui ainda"
+          title="Seu histórico começa aqui."
           description="Assim que você registrar um abastecimento ele aparece nesta lista."
           action={
             <ActionLink to="/abastecer" size="md" className="mt-1">
@@ -95,7 +99,9 @@ function HistoricoPage() {
                     </span>
                   </button>
 
-                  {expanded ? (
+                  {expanded && editing === row.id ? (
+                    <EditFueling row={row} onDone={() => setEditing(null)} />
+                  ) : expanded ? (
                     <div className="space-y-2 border-t border-border px-4 py-4 text-sm">
                       <Row label="Data" value={fullDate(row.filled_at)} />
                       <Row label="Combustível" value={FUEL_LABEL[row.fuel_type_id] ?? row.fuel_type_id} />
@@ -117,16 +123,26 @@ function HistoricoPage() {
                           {verdict.referencePrice ? ` (${brl(verdict.referencePrice)}/L)` : ""}.
                         </p>
                       ) : null}
-                      <ConfirmAction
-                        title="Excluir abastecimento?"
-                        description="Esse registro sai do histórico e das estatísticas de consumo."
-                        onConfirm={() => remove.mutate(row.id)}
-                        trigger={
-                          <Action variant="danger-ghost" size="sm" className="mt-2 px-0">
-                            <Trash2 className="h-4 w-4" /> Excluir abastecimento
-                          </Action>
-                        }
-                      />
+                      <div className="flex items-center gap-2 pt-2">
+                        <Action
+                          variant="ghost"
+                          size="sm"
+                          className="px-0"
+                          onClick={() => setEditing(row.id)}
+                        >
+                          <Pencil className="h-4 w-4" /> Editar
+                        </Action>
+                        <ConfirmAction
+                          title="Excluir abastecimento?"
+                          description="Esse registro sai do histórico e das estatísticas de consumo."
+                          onConfirm={() => remove.mutate(row.id)}
+                          trigger={
+                            <Action variant="danger-ghost" size="sm" className="ml-auto">
+                              <Trash2 className="h-4 w-4" /> Excluir
+                            </Action>
+                          }
+                        />
+                      </div>
                     </div>
                   ) : null}
                 </AppCard>
@@ -144,6 +160,104 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between gap-3">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function toDateInput(iso: string) {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Correção de um abastecimento já registrado. Recalcula litros e consumo. */
+function EditFueling({ row, onDone }: { row: FuelingComputed; onDone: () => void }) {
+  const update = useUpdateFueling();
+  const [total, setTotal] = useState(Number(row.total_cost).toFixed(2).replace(".", ","));
+  const [price, setPrice] = useState(Number(row.price_per_liter).toFixed(3).replace(".", ","));
+  const [odometer, setOdometer] = useState(String(Math.round(Number(row.odometer))));
+  const [date, setDate] = useState(toDateInput(row.filled_at));
+  const [error, setError] = useState<string | null>(null);
+
+  const amounts = deriveAmounts({
+    total: parseDecimal(total),
+    price: parseDecimal(price),
+    liters: 0,
+  });
+
+  async function save() {
+    setError(null);
+    const odo = parseDecimal(odometer);
+    if (!(amounts.total > 0) || !(amounts.price > 0)) {
+      setError("Informe o valor pago e o preço por litro.");
+      return;
+    }
+    if (!(odo >= 0)) {
+      setError("Quilometragem inválida.");
+      return;
+    }
+    const filledAt = new Date(`${date}T12:00:00`);
+    if (Number.isNaN(filledAt.getTime())) {
+      setError("Data inválida.");
+      return;
+    }
+    try {
+      await update.mutateAsync({
+        id: row.id,
+        patch: {
+          total_cost: Number(amounts.total.toFixed(2)),
+          price_per_liter: Number(amounts.price.toFixed(3)),
+          liters: Number(amounts.liters.toFixed(3)),
+          odometer: odo,
+          filled_at: filledAt.toISOString(),
+          // recalculados a partir do odômetro dos registros vizinhos
+          km_per_liter: null,
+          cost_per_km: null,
+        },
+      });
+      onDone();
+    } catch {
+      setError("Não conseguimos salvar agora. Tente novamente.");
+    }
+  }
+
+  return (
+    <div className="space-y-4 border-t border-border px-4 py-4">
+      <NumericField label="Valor pago" value={total} onChange={setTotal} prefix="R$" />
+      <NumericField
+        label="Preço por litro"
+        value={price}
+        onChange={setPrice}
+        prefix="R$"
+        suffix="/L"
+        hint={amounts.liters > 0 ? `Dá ${num(amounts.liters, 2)} litros` : undefined}
+      />
+      <NumericField
+        label="Quilometragem"
+        value={odometer}
+        onChange={setOdometer}
+        inputMode="numeric"
+        suffix="km"
+      />
+      <TextField
+        label="Data"
+        type="date"
+        value={date}
+        onChange={(event) => setDate(event.target.value)}
+      />
+      {error ? (
+        <p role="alert" className="text-sm font-medium text-destructive">
+          {error}
+        </p>
+      ) : null}
+      <div className="flex gap-2">
+        <Action size="md" loading={update.isPending} onClick={save}>
+          Salvar alterações
+        </Action>
+        <Action variant="ghost" size="md" onClick={onDone}>
+          Cancelar
+        </Action>
+      </div>
     </div>
   );
 }

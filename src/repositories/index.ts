@@ -164,6 +164,10 @@ export const fuelingsRepository = {
     );
   },
 
+  async update(id: string, patch: Partial<Fueling>): Promise<Fueling> {
+    return unwrap(await supabase.from("fuelings").update(patch).eq("id", id).select("*").single());
+  },
+
   async remove(id: string): Promise<void> {
     const { error } = await supabase.from("fuelings").delete().eq("id", id);
     if (error) throw error;
