@@ -252,3 +252,105 @@ function VeiculoPage() {
     </AppShell>
   );
 }
+
+/** Correção dos dados de um veículo já cadastrado. */
+function EditVehicle({ vehicle, onDone }: { vehicle: Vehicle; onDone: () => void }) {
+  const update = useUpdateVehicle();
+  const [values, setValues] = useState({
+    nickname: vehicle.nickname ?? "",
+    brand: vehicle.brand,
+    model: vehicle.model,
+    year: vehicle.year ? String(vehicle.year) : "",
+    fuel_type_id: vehicle.fuel_type_id ?? "gasolina",
+    tank_liters: vehicle.tank_liters ? String(vehicle.tank_liters) : "",
+    current_odometer: String(Math.round(Number(vehicle.current_odometer))),
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    const parsed = vehicleSchema.safeParse({
+      ...values,
+      year: values.year || undefined,
+      tank_liters: values.tank_liters || undefined,
+    });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Confira os dados do veículo.");
+      return;
+    }
+    await update.mutateAsync({
+      id: vehicle.id,
+      patch: {
+        nickname: parsed.data.nickname || null,
+        brand: parsed.data.brand,
+        model: parsed.data.model,
+        year: parsed.data.year ?? null,
+        fuel_type_id: parsed.data.fuel_type_id,
+        tank_liters: parsed.data.tank_liters ?? null,
+        current_odometer: parsed.data.current_odometer,
+      },
+    });
+    onDone();
+  }
+
+  return (
+    <form onSubmit={submit} className="mt-4 space-y-3 border-t border-border pt-4">
+      <TextField
+        label="Apelido"
+        hint="Opcional — ex: Carro do trabalho"
+        value={values.nickname}
+        onChange={(e) => setValues({ ...values, nickname: e.target.value })}
+      />
+      <div className="grid grid-cols-2 gap-3">
+        <TextField
+          label="Marca"
+          value={values.brand}
+          onChange={(e) => setValues({ ...values, brand: e.target.value })}
+        />
+        <TextField
+          label="Modelo"
+          value={values.model}
+          onChange={(e) => setValues({ ...values, model: e.target.value })}
+        />
+        <TextField
+          label="Ano"
+          inputMode="numeric"
+          value={values.year}
+          onChange={(e) => setValues({ ...values, year: e.target.value })}
+        />
+        <TextField
+          label="Tanque (L)"
+          inputMode="numeric"
+          value={values.tank_liters}
+          onChange={(e) => setValues({ ...values, tank_liters: e.target.value })}
+        />
+      </div>
+      <SelectField
+        label="Combustível padrão"
+        value={values.fuel_type_id}
+        onChange={(e) => setValues({ ...values, fuel_type_id: e.target.value })}
+        options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.label }))}
+      />
+      <TextField
+        label="Quilometragem atual"
+        inputMode="numeric"
+        value={values.current_odometer}
+        onChange={(e) => setValues({ ...values, current_odometer: e.target.value })}
+      />
+      {error ? (
+        <p role="alert" className="text-sm font-medium text-destructive">
+          {error}
+        </p>
+      ) : null}
+      <div className="flex gap-2">
+        <Action type="submit" size="md" loading={update.isPending}>
+          Salvar alterações
+        </Action>
+        <Action type="button" variant="ghost" size="md" onClick={onDone}>
+          Cancelar
+        </Action>
+      </div>
+    </form>
+  );
+}
