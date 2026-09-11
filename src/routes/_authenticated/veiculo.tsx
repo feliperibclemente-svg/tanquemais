@@ -60,6 +60,7 @@ function VeiculoPage() {
   const remove = useDeleteVehicle();
 
   const [form, setForm] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
   const [values, setValues] = useState(EMPTY);
   const [error, setError] = useState<string | null>(null);
 
