@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Star, Trash2 } from "lucide-react";
+import { Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Action,
@@ -15,9 +15,15 @@ import {
 } from "@/components/ds";
 import { FUEL_LABEL, FUEL_TYPES } from "@/constants/app";
 import { int } from "@/lib/format";
-import { useCreateVehicle, useDeleteVehicle, useVehicles } from "@/hooks/use-tanque";
+import {
+  useCreateVehicle,
+  useDeleteVehicle,
+  useUpdateVehicle,
+  useVehicles,
+} from "@/hooks/use-tanque";
 import { useAuth } from "@/providers/AuthProvider";
 import { vehiclesRepository } from "@/repositories";
+import type { Vehicle } from "@/types/domain";
 import { vehicleSchema } from "@/validators";
 
 export const Route = createFileRoute("/_authenticated/veiculo")({
