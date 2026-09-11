@@ -95,23 +95,8 @@ function PerfilPage() {
             <p className="truncate text-lg font-semibold text-foreground">
               {data?.full_name || "Motorista Tanque+"}
             </p>
-            <p className="text-sm text-muted-foreground">
-              Nível {level.level} · {level.title}
-            </p>
+            <p className="truncate text-sm text-muted-foreground">{user?.email}</p>
           </div>
-        </div>
-        <div className="mt-4">
-          <div className="h-2 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${Math.round(level.progress * 100)}%` }}
-            />
-          </div>
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            {level.next
-              ? `${data?.xp ?? 0} XP · faltam ${level.next.xp - (data?.xp ?? 0)} para ${level.next.title}`
-              : `${data?.xp ?? 0} XP · nível máximo`}
-          </p>
         </div>
       </AppCard>
 
