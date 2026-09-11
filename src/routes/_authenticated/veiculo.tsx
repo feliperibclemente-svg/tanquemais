@@ -204,12 +204,19 @@ function VeiculoPage() {
                   <span className="font-medium text-foreground">{int(v.current_odometer)} km</span>
                 </p>
 
-                <div className="mt-4 flex items-center gap-2 border-t border-border pt-3">
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3">
                   {!v.is_primary ? (
                     <Action variant="ghost" size="sm" onClick={() => makePrimary(v.id)}>
                       <Star className="h-4 w-4" /> Tornar principal
                     </Action>
                   ) : null}
+                  <Action
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditing(editing === v.id ? null : v.id)}
+                  >
+                    <Pencil className="h-4 w-4" /> Editar
+                  </Action>
                   <ConfirmAction
                     title="Remover veículo?"
                     description="Os abastecimentos ligados a este veículo também deixarão de ser exibidos."
@@ -222,6 +229,10 @@ function VeiculoPage() {
                     }
                   />
                 </div>
+
+                {editing === v.id ? (
+                  <EditVehicle vehicle={v} onDone={() => setEditing(null)} />
+                ) : null}
               </AppCard>
             </li>
           ))}
