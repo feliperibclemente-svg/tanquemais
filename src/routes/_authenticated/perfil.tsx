@@ -13,7 +13,7 @@ import {
   StatTile,
   ToggleRow,
 } from "@/components/ds";
-import { levelFromXp } from "@/constants/app";
+
 import { brl, kmPerLiter, liters as fmtLiters } from "@/lib/format";
 import { useHomeData, useProfile, useUpdateProfile } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,7 +80,7 @@ function PerfilPage() {
   }
 
   const data = profile.data;
-  const level = levelFromXp(data?.xp ?? 0);
+  
 
   return (
     <AppShell>
