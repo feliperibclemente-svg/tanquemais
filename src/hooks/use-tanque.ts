@@ -258,6 +258,11 @@ export function useHomeData() {
 
   return {
     isLoading: profile.isLoading || vehicles.isLoading || fuelings.isLoading,
+    isError: vehicles.isError || fuelings.isError,
+    refetch: () => {
+      void vehicles.refetch();
+      void fuelings.refetch();
+    },
     profile: profile.data ?? null,
     vehicles: vehicles.data ?? [],
     primaryVehicle: primary,

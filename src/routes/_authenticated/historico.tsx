@@ -8,6 +8,7 @@ import {
   AppShell,
   ConfirmAction,
   EmptyState,
+  ErrorState,
   NumericField,
   PageHeader,
   parseDecimal,
@@ -60,6 +61,11 @@ function HistoricoPage() {
 
       {fuelings.isLoading ? (
         <ScreenSkeleton cards={3} />
+      ) : fuelings.isError ? (
+        <ErrorState
+          title="Não conseguimos carregar seu histórico"
+          onRetry={() => void fuelings.refetch()}
+        />
       ) : rows.length === 0 ? (
         <EmptyState
           title="Seu histórico começa aqui."

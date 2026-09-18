@@ -5,6 +5,7 @@ import {
   AppCard,
   AppShell,
   EmptyState,
+  ErrorState,
   PageHeader,
   ScreenSkeleton,
   StatTile,
@@ -33,12 +34,21 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  const { isLoading, stats, rows } = useHomeData();
+  const { isLoading, isError, refetch, stats, rows } = useHomeData();
 
   if (isLoading) {
     return (
       <AppShell>
         <ScreenSkeleton cards={3} />
+      </AppShell>
+    );
+  }
+
+  if (isError) {
+    return (
+      <AppShell>
+        <PageHeader title="Painel" />
+        <ErrorState onRetry={refetch} />
       </AppShell>
     );
   }
@@ -62,7 +72,7 @@ function DashboardPage() {
   }
 
   const series = stats.series.slice(-6);
-  const annual = stats.monthSpend * 12;
+
 
   return (
     <AppShell>
@@ -70,7 +80,11 @@ function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-3">
         <StatTile label="Gasto no mês" value={brl(stats.monthSpend)} />
-        <StatTile label="Projeção anual" value={brl(annual)} hint="No ritmo atual" />
+        <StatTile
+          label="Preço médio"
+          value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}/L` : "—"}
+          hint="Do que você já pagou"
+        />
         <StatTile label="Consumo médio" value={kmPerLiter(stats.avgKmPerLiter)} tone="good" />
         <StatTile
           label="Custo por km"

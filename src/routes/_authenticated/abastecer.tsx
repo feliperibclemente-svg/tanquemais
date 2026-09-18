@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, ChevronDown, Fuel, MapPin } from "lucide-react";
 import {
   Action,
@@ -88,12 +88,17 @@ function AbastecerPage() {
 
   const suggestedPrice = lastForVehicle ? Number(lastForVehicle.price_per_liter) : null;
   const [total, setTotal] = useState("");
-  const [price, setPrice] = useState(
-    suggestedPrice ? suggestedPrice.toFixed(2).replace(".", ",") : "",
-  );
+  const [price, setPrice] = useState("");
+  const [priceTouched, setPriceTouched] = useState(false);
   const [litersInput, setLitersInput] = useState("");
   const [odometer, setOdometer] = useState("");
-  const [stationId, setStationId] = useState<string>(lastForVehicle?.station_id ?? "");
+  const [stationId, setStationId] = useState<string>("");
+
+  /* O histórico chega depois do primeiro render: só então dá para sugerir o preço. */
+  useEffect(() => {
+    if (priceTouched || !suggestedPrice) return;
+    setPrice(suggestedPrice.toFixed(2).replace(".", ","));
+  }, [suggestedPrice, priceTouched]);
   const [fullTank, setFullTank] = useState(true);
   const [details, setDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -308,7 +313,10 @@ function AbastecerPage() {
         <NumericField
           label="Preço por litro"
           value={price}
-          onChange={setPrice}
+          onChange={(value) => {
+            setPriceTouched(true);
+            setPrice(value);
+          }}
           prefix="R$"
           suffix="/L"
           hint={

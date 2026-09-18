@@ -22,10 +22,10 @@ export function AppShell({ children, fab = true }: { children: ReactNode; fab?: 
       <main className="flex-1 px-5 pb-32 pt-6">
         <Link
           to="/beta"
-          className="mb-4 inline-flex min-h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-[11px] font-semibold text-accent-foreground"
+          className="mb-4 inline-flex min-h-8 items-center gap-1.5 text-[11px] font-medium text-muted-foreground"
         >
           <FlaskConical className="h-3.5 w-3.5" />
-          Versão Beta · saiba o que esperar
+          Versão Beta
         </Link>
         {children}
       </main>
