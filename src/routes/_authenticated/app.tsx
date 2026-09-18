@@ -198,12 +198,14 @@ function TanqueIALine({
   vehicleLabel?: string;
 }) {
   const main = insights[0];
+  /** Sem dados suficientes a IA não é acionada: ela interpreta números, não os inventa. */
+  const hasData = !!main && main.id !== "empty";
   const facts = insights.slice(0, 3).map((i) => `${i.title}: ${i.body}`);
   const phrase = useServerFn(phraseInsight);
 
   const ai = useQuery({
     queryKey: ["tanque-ia", facts],
-    enabled: facts.length > 0,
+    enabled: hasData && facts.length > 0,
     staleTime: 15 * 60_000,
     retry: 1,
     queryFn: async () => {
