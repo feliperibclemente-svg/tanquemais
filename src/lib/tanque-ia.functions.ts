@@ -7,6 +7,19 @@ const factsSchema = z.object({
   vehicle: z.string().max(80).optional(),
 });
 
+/** Todos os dígitos de um texto, normalizados (sem separadores de milhar). */
+function numbersIn(text: string): string[] {
+  return (text.match(/\d+(?:[.,]\d+)*/g) ?? []).map((n) =>
+    n.replace(/\.(?=\d{3}\b)/g, "").replace(",", "."),
+  );
+}
+
+/** Verdadeiro quando todo número citado pela IA existe nos fatos calculados. */
+function numbersAreGrounded(text: string, facts: string[]): boolean {
+  const allowed = new Set(facts.flatMap(numbersIn));
+  return numbersIn(text).every((n) => allowed.has(n) || allowed.has(n.replace(/\.0+$/, "")));
+}
+
 /**
  * A IA apenas redige. Todos os números vêm calculados do cliente/servidor —
  * o modelo é instruído a nunca criar valores novos.
