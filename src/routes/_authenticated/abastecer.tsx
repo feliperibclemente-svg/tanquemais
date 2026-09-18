@@ -313,7 +313,10 @@ function AbastecerPage() {
         <NumericField
           label="Preço por litro"
           value={price}
-          onChange={setPrice}
+          onChange={(value) => {
+            setPriceTouched(true);
+            setPrice(value);
+          }}
           prefix="R$"
           suffix="/L"
           hint={
