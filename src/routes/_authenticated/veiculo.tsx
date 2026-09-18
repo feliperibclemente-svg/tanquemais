@@ -8,6 +8,7 @@ import {
   AppShell,
   ConfirmAction,
   EmptyState,
+  ErrorState,
   PageHeader,
   ScreenSkeleton,
   SelectField,
@@ -176,6 +177,11 @@ function VeiculoPage() {
 
       {vehicles.isLoading ? (
         <ScreenSkeleton cards={2} />
+      ) : vehicles.isError ? (
+        <ErrorState
+          title="Não conseguimos carregar seus veículos"
+          onRetry={() => void vehicles.refetch()}
+        />
       ) : list.length > 0 ? (
         <ul className="space-y-3">
           {list.map((v) => (
