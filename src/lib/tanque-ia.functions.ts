@@ -48,6 +48,11 @@ export const phraseInsight = createServerFn({ method: "POST" })
         choices?: { message?: { content?: string } }[];
       };
       const text = json.choices?.[0]?.message?.content?.trim() ?? null;
+      /**
+       * Guarda-corpo: se o modelo escrever qualquer número que não esteja nos
+       * fatos calculados, descartamos a frase e o app usa o texto determinístico.
+       */
+      if (text && !numbersAreGrounded(text, data.facts)) return { text: null as string | null };
       return { text };
     } catch {
       return { text: null as string | null };
