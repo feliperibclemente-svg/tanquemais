@@ -5,6 +5,7 @@ import {
   AppCard,
   AppShell,
   EmptyState,
+  ErrorState,
   PageHeader,
   ScreenSkeleton,
   StatTile,
@@ -33,12 +34,21 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  const { isLoading, stats, rows } = useHomeData();
+  const { isLoading, isError, refetch, stats, rows } = useHomeData();
 
   if (isLoading) {
     return (
       <AppShell>
         <ScreenSkeleton cards={3} />
+      </AppShell>
+    );
+  }
+
+  if (isError) {
+    return (
+      <AppShell>
+        <PageHeader title="Painel" />
+        <ErrorState onRetry={refetch} />
       </AppShell>
     );
   }
