@@ -4,7 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, Fuel, Sparkles } from "lucide-react";
-import { ActionLink, AppCard, AppShell, ScreenSkeleton, VerdictPill } from "@/components/ds";
+import {
+  ActionLink,
+  AppCard,
+  AppShell,
+  ErrorState,
+  ScreenSkeleton,
+  VerdictPill,
+} from "@/components/ds";
 import { useHomeData } from "@/hooks/use-tanque";
 import { brl, kmPerLiter, num, relativeDate } from "@/lib/format";
 import { track } from "@/lib/analytics";
@@ -39,12 +46,21 @@ function greeting() {
 }
 
 function HomePage() {
-  const { isLoading, profile, primaryVehicle, stats, insights, rows } = useHomeData();
+  const { isLoading, isError, refetch, profile, primaryVehicle, stats, insights, rows } =
+    useHomeData();
 
   if (isLoading) {
     return (
       <AppShell fab={false}>
         <ScreenSkeleton cards={2} />
+      </AppShell>
+    );
+  }
+
+  if (isError) {
+    return (
+      <AppShell fab={false}>
+        <ErrorState onRetry={refetch} />
       </AppShell>
     );
   }
