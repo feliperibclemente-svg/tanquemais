@@ -12,6 +12,14 @@ export interface FuelingComputed extends Fueling {
   computed_cost_per_km: number | null;
 }
 
+/**
+ * Faixa plausível de consumo (km/L). Fora disso o dado veio de odômetro digitado
+ * errado e é descartado para não contaminar médias mostradas ao usuário.
+ */
+const MIN_KML = 1;
+const MAX_KML = 40;
+const plausible = (v: number | null) => (v && v >= MIN_KML && v <= MAX_KML ? v : null);
+
 /** Ordena por data e calcula distância/consumo a partir do abastecimento anterior do mesmo veículo. */
 export function computeFuelings(fuelings: Fueling[]): FuelingComputed[] {
   const asc = [...fuelings].sort(
@@ -29,7 +37,7 @@ export function computeFuelings(fuelings: Fueling[]): FuelingComputed[] {
     return {
       ...f,
       distance,
-      computed_km_per_liter: f.km_per_liter ?? distance / f.liters,
+      computed_km_per_liter: plausible(f.km_per_liter ?? distance / f.liters),
       computed_cost_per_km: f.cost_per_km ?? f.total_cost / distance,
     };
   });
