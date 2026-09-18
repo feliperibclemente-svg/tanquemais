@@ -34,4 +34,5 @@ export {
   ScreenSkeleton,
 } from "@/components/app/Surface";
 export { AppShell } from "@/components/app/AppShell";
+export { ErrorState } from "@/components/app/ErrorState";
 export { VerdictCard, VerdictPill } from "@/components/app/Verdict";
