@@ -158,7 +158,7 @@ function HomePage() {
           <Mini
             label="Gasto no mês"
             value={stats.monthSpend > 0 ? brl(stats.monthSpend) : "—"}
-            hint="abastecimentos do mês"
+            hint="soma dos abastecimentos"
           />
           <Mini
             label="Preço médio"
