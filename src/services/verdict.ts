@@ -75,10 +75,7 @@ export function priceVerdict(
     };
   }
 
-  const label =
-    reference.count === 1
-      ? "seu abastecimento anterior"
-      : `sua média dos últimos ${reference.count} abastecimentos`;
+  const label = `seu preço habitual dos últimos ${reference.count} abastecimentos`;
 
   const delta = current.pricePerLiter - reference.price;
   const amount = Math.abs(delta) * (current.liters || 0);

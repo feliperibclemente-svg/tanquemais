@@ -33,8 +33,8 @@ const highlights = [
   { icon: BarChart3, title: "Consumo real", body: "km/L, custo por km e comparação mês a mês." },
   {
     icon: MapPin,
-    title: "Postos mais baratos",
-    body: "Preços da comunidade com índice de confiabilidade.",
+    title: "Histórico completo",
+    body: "Todo abastecimento salvo na sua conta, do jeito que aconteceu.",
   },
   { icon: Sparkles, title: "TanqueIA", body: "Recomendações com base nos seus próprios números." },
 ];
