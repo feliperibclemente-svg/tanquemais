@@ -27,10 +27,17 @@ export interface PriceVerdict {
 }
 
 const REFERENCE_WINDOW = 5;
+/** Com uma única referência um registro digitado errado viraria "economia" absurda. */
+const MIN_REFERENCES = 2;
 
-const avg = (values: number[]) => values.reduce((s, n) => s + n, 0) / values.length;
+/** Mediana: resiste a um preço digitado errado, ao contrário da média. */
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+};
 
-/** Média recente do próprio usuário para o mesmo combustível. */
+/** Preço habitual recente do próprio usuário para o mesmo combustível. */
 export function recentAveragePrice(
   history: FuelingComputed[],
   fuelTypeId: string | null,
@@ -41,8 +48,8 @@ export function recentAveragePrice(
     .filter((p) => p > 0)
     .slice(0, REFERENCE_WINDOW);
 
-  if (prices.length === 0) return null;
-  return { price: avg(prices), count: prices.length };
+  if (prices.length < MIN_REFERENCES) return null;
+  return { price: median(prices), count: prices.length };
 }
 
 /**
