@@ -176,9 +176,7 @@ function Telemetry() {
   useEffect(() => {
     installTelemetry();
     trackPageView(window.location.pathname);
-    return router.subscribe("onResolved", ({ toLocation }) =>
-      trackPageView(toLocation.pathname),
-    );
+    return router.subscribe("onResolved", ({ toLocation }) => trackPageView(toLocation.pathname));
   }, [router]);
 
   return null;

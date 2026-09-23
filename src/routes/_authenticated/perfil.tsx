@@ -80,7 +80,6 @@ function PerfilPage() {
   }
 
   const data = profile.data;
-  
 
   return (
     <AppShell>
@@ -171,7 +170,6 @@ function PerfilPage() {
             <li>Comunidade e ranking de economia</li>
           </ul>
         </AppCard>
-
 
         <Action variant="danger" onClick={signOut}>
           <LogOut className="h-4 w-4" /> Sair da conta

@@ -167,8 +167,11 @@ export function stationOpportunity(
  */
 export function deriveAmounts(input: { total: number; price: number; liters: number }) {
   const { total, price, liters } = input;
-  if (total > 0 && price > 0) return { total, price, liters: total / price, derived: "liters" as const };
-  if (liters > 0 && price > 0) return { total: liters * price, price, liters, derived: "total" as const };
-  if (total > 0 && liters > 0) return { total, price: total / liters, liters, derived: "price" as const };
+  if (total > 0 && price > 0)
+    return { total, price, liters: total / price, derived: "liters" as const };
+  if (liters > 0 && price > 0)
+    return { total: liters * price, price, liters, derived: "total" as const };
+  if (total > 0 && liters > 0)
+    return { total, price: total / liters, liters, derived: "price" as const };
   return { total, price, liters, derived: null };
 }

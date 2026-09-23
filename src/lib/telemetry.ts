@@ -72,7 +72,6 @@ export function log(level: LogLevel, message: string, context: Record<string, un
   }
 
   if (level === "error" || level === "warn") {
-    // eslint-disable-next-line no-console
     console.log(JSON.stringify(record));
   }
 }
@@ -90,7 +89,8 @@ export function recentLogs(): LogRecord[] {
 }
 
 function describe(error: unknown) {
-  if (error instanceof Error) return { name: error.name, message: error.message, stack: error.stack };
+  if (error instanceof Error)
+    return { name: error.name, message: error.message, stack: error.stack };
   if (error instanceof Response) return { name: "Response", message: `HTTP ${error.status}` };
   return { name: "Unknown", message: String(error) };
 }

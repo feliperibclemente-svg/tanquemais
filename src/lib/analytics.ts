@@ -96,9 +96,7 @@ export function trackRetention(userId: string) {
   const first = done[firstKey] ?? today;
   if (done[lastKey] === today) return;
 
-  const days = Math.round(
-    (new Date(today).getTime() - new Date(first).getTime()) / 86_400_000,
-  );
+  const days = Math.round((new Date(today).getTime() - new Date(first).getTime()) / 86_400_000);
   if (days > 0) track("retention_day_return", { day: days });
   try {
     localStorage.setItem(
