@@ -73,7 +73,6 @@ function DashboardPage() {
 
   const series = stats.series.slice(-6);
 
-
   return (
     <AppShell>
       <PageHeader title="Painel" subtitle="Seus números de consumo e gasto" />
@@ -102,7 +101,6 @@ function DashboardPage() {
             </Suspense>
           </div>
         </AppCard>
-
 
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Resumo geral</p>

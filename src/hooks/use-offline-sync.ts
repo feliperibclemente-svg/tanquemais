@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { fuelingsRepository } from "@/repositories";
-import { flushQueue, queuedFuelings, subscribeQueue, type QueuedFueling } from "@/lib/offline-queue";
+import {
+  flushQueue,
+  queuedFuelings,
+  subscribeQueue,
+  type QueuedFueling,
+} from "@/lib/offline-queue";
 import { track } from "@/lib/analytics";
 import { logger } from "@/lib/telemetry";
 import { queryKeys } from "@/hooks/use-tanque";
@@ -42,9 +47,7 @@ export function useOfflineSync() {
       client.invalidateQueries({ queryKey: queryKeys.vehicles(user.id) });
       client.invalidateQueries({ queryKey: ["vehicle-stats"] });
       toast.success(
-        synced === 1
-          ? "1 abastecimento sincronizado"
-          : `${synced} abastecimentos sincronizados`,
+        synced === 1 ? "1 abastecimento sincronizado" : `${synced} abastecimentos sincronizados`,
       );
     };
 

@@ -49,10 +49,7 @@ function HistoricoPage() {
   const [open, setOpen] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
 
-  const rows = useMemo(
-    () => computeFuelings((fuelings.data ?? []) as Fueling[]),
-    [fuelings.data],
-  );
+  const rows = useMemo(() => computeFuelings((fuelings.data ?? []) as Fueling[]), [fuelings.data]);
   const verdicts = useMemo(() => historyVerdicts(rows), [rows]);
 
   return (
@@ -110,7 +107,10 @@ function HistoricoPage() {
                   ) : expanded ? (
                     <div className="space-y-2 border-t border-border px-4 py-4 text-sm">
                       <Row label="Data" value={fullDate(row.filled_at)} />
-                      <Row label="Combustível" value={FUEL_LABEL[row.fuel_type_id] ?? row.fuel_type_id} />
+                      <Row
+                        label="Combustível"
+                        value={FUEL_LABEL[row.fuel_type_id] ?? row.fuel_type_id}
+                      />
                       <Row label="Litros" value={`${num(Number(row.liters), 2)} L`} />
                       <Row label="Odômetro" value={`${num(Number(row.odometer), 0)} km`} />
                       <Row

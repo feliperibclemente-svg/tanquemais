@@ -27,10 +27,17 @@ export interface PriceVerdict {
 }
 
 const REFERENCE_WINDOW = 5;
+/** Com uma única referência um registro digitado errado viraria "economia" absurda. */
+const MIN_REFERENCES = 2;
 
-const avg = (values: number[]) => values.reduce((s, n) => s + n, 0) / values.length;
+/** Mediana: resiste a um preço digitado errado, ao contrário da média. */
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+};
 
-/** Média recente do próprio usuário para o mesmo combustível. */
+/** Preço habitual recente do próprio usuário para o mesmo combustível. */
 export function recentAveragePrice(
   history: FuelingComputed[],
   fuelTypeId: string | null,
@@ -41,8 +48,8 @@ export function recentAveragePrice(
     .filter((p) => p > 0)
     .slice(0, REFERENCE_WINDOW);
 
-  if (prices.length === 0) return null;
-  return { price: avg(prices), count: prices.length };
+  if (prices.length < MIN_REFERENCES) return null;
+  return { price: median(prices), count: prices.length };
 }
 
 /**
@@ -68,10 +75,7 @@ export function priceVerdict(
     };
   }
 
-  const label =
-    reference.count === 1
-      ? "seu abastecimento anterior"
-      : `sua média dos últimos ${reference.count} abastecimentos`;
+  const label = `seu preço habitual dos últimos ${reference.count} abastecimentos`;
 
   const delta = current.pricePerLiter - reference.price;
   const amount = Math.abs(delta) * (current.liters || 0);
@@ -167,8 +171,11 @@ export function stationOpportunity(
  */
 export function deriveAmounts(input: { total: number; price: number; liters: number }) {
   const { total, price, liters } = input;
-  if (total > 0 && price > 0) return { total, price, liters: total / price, derived: "liters" as const };
-  if (liters > 0 && price > 0) return { total: liters * price, price, liters, derived: "total" as const };
-  if (total > 0 && liters > 0) return { total, price: total / liters, liters, derived: "price" as const };
+  if (total > 0 && price > 0)
+    return { total, price, liters: total / price, derived: "liters" as const };
+  if (liters > 0 && price > 0)
+    return { total: liters * price, price, liters, derived: "total" as const };
+  if (total > 0 && liters > 0)
+    return { total, price: total / liters, liters, derived: "price" as const };
   return { total, price, liters, derived: null };
 }

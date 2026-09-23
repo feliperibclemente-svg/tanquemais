@@ -3,14 +3,7 @@ import { useState } from "react";
 import { Bug, Lightbulb, Send, Sparkles } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Action,
-  AppCard,
-  AppShell,
-  ChoiceGroup,
-  PageHeader,
-  TextAreaField,
-} from "@/components/ds";
+import { Action, AppCard, AppShell, ChoiceGroup, PageHeader, TextAreaField } from "@/components/ds";
 import { feedbackRepository, type FeedbackKind } from "@/repositories";
 import { useAuth } from "@/providers/AuthProvider";
 import { track } from "@/lib/analytics";
@@ -66,8 +59,7 @@ function FeedbackPage() {
   });
 
   const send = useMutation({
-    mutationFn: () =>
-      feedbackRepository.create(user!.id, { kind, rating, message, page: path }),
+    mutationFn: () => feedbackRepository.create(user!.id, { kind, rating, message, page: path }),
     onSuccess: () => {
       track("feedback_submitted", { kind, rating: rating ?? 0, length: message.length });
       queryClient.invalidateQueries({ queryKey: ["feedback", user?.id ?? ""] });
@@ -133,9 +125,7 @@ function FeedbackPage() {
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">
-            1 = frustrante · 5 = excelente (opcional)
-          </p>
+          <p className="text-xs text-muted-foreground">1 = frustrante · 5 = excelente (opcional)</p>
         </div>
 
         <TextAreaField
