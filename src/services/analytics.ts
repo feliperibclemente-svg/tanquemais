@@ -75,15 +75,17 @@ export interface MonthPoint {
 const monthFmt = new Intl.DateTimeFormat("pt-BR", { month: "short" });
 
 export function monthlySeries(rows: FuelingComputed[]): MonthPoint[] {
-  const map = new Map<string, { gasto: number; litros: number; kml: number[]; precos: number[] }>();
+  const map = new Map<string, { gasto: number; litros: number; km: number; kmLitros: number }>();
 
   for (const f of rows) {
     const key = monthKey(f.filled_at);
-    const entry = map.get(key) ?? { gasto: 0, litros: 0, kml: [], precos: [] };
+    const entry = map.get(key) ?? { gasto: 0, litros: 0, km: 0, kmLitros: 0 };
     entry.gasto += Number(f.total_cost) || 0;
     entry.litros += Number(f.liters) || 0;
-    if (f.computed_km_per_liter) entry.kml.push(f.computed_km_per_liter);
-    if (f.price_per_liter) entry.precos.push(Number(f.price_per_liter));
+    if (f.computed_km_per_liter && f.distance) {
+      entry.km += f.distance;
+      entry.kmLitros += Number(f.liters) || 0;
+    }
     map.set(key, entry);
   }
 
@@ -94,8 +96,8 @@ export function monthlySeries(rows: FuelingComputed[]): MonthPoint[] {
       label: monthFmt.format(new Date(`${key}-01T12:00:00`)).replace(".", ""),
       gasto: Number(e.gasto.toFixed(2)),
       litros: Number(e.litros.toFixed(1)),
-      consumo: e.kml.length ? Number(avg(e.kml).toFixed(2)) : null,
-      precoMedio: e.precos.length ? Number(avg(e.precos).toFixed(3)) : null,
+      consumo: e.kmLitros > 0 ? Number((e.km / e.kmLitros).toFixed(2)) : null,
+      precoMedio: e.litros > 0 ? Number((e.gasto / e.litros).toFixed(3)) : null,
     }));
 }
 
@@ -131,10 +133,13 @@ export function overview(rows: FuelingComputed[]): Overview {
 
   const kmls = rows.map((r) => r.computed_km_per_liter).filter((v): v is number => !!v);
   const prices = rows.map((r) => Number(r.price_per_liter)).filter((v) => v > 0);
-  const distances = rows.map((r) => r.distance ?? 0);
-  const totalKm = distances.reduce((s, n) => s + n, 0);
   const totalSpend = rows.reduce((s, r) => s + (Number(r.total_cost) || 0), 0);
   const totalLiters = rows.reduce((s, r) => s + (Number(r.liters) || 0), 0);
+  /** Trechos válidos: têm distância e consumo plausível. Base única para km/L e R$/km. */
+  const valid = rows.filter((r) => r.computed_km_per_liter && r.distance);
+  const totalKm = valid.reduce((s, r) => s + (r.distance ?? 0), 0);
+  const validLiters = valid.reduce((s, r) => s + (Number(r.liters) || 0), 0);
+  const validCost = valid.reduce((s, r) => s + (Number(r.total_cost) || 0), 0);
 
   const cheapest = prices.length ? Math.min(...prices) : 0;
   const savings = cheapest
@@ -150,11 +155,11 @@ export function overview(rows: FuelingComputed[]): Overview {
     totalSpend,
     totalLiters,
     totalKm,
-    avgKmPerLiter: kmls.length ? avg(kmls) : null,
+    avgKmPerLiter: validLiters > 0 ? totalKm / validLiters : null,
     bestKmPerLiter: kmls.length ? Math.max(...kmls) : null,
     worstKmPerLiter: kmls.length ? Math.min(...kmls) : null,
-    avgPricePerLiter: prices.length ? avg(prices) : null,
-    costPerKm: totalKm > 0 ? totalSpend / totalKm : null,
+    avgPricePerLiter: totalLiters > 0 ? totalSpend / totalLiters : null,
+    costPerKm: totalKm > 0 ? validCost / totalKm : null,
     savings: Math.max(0, savings),
     last: rows[0] ?? null,
     series,
