@@ -10,6 +10,7 @@ import {
   ChoiceGroup,
   PageHeader,
   ScreenSkeleton,
+  SelectField,
   StatTile,
   ToggleRow,
 } from "@/components/ds";
@@ -41,6 +42,26 @@ const visibilities = [
   { key: "public", label: "Público" },
   { key: "friends", label: "Amigos" },
   { key: "private", label: "Privado" },
+] as const;
+
+/** Valor vazio = não preenchido (salvo como null, remove a informação). */
+const ageRanges = [
+  { value: "", label: "Não preenchido" },
+  { value: "18-24", label: "18–24" },
+  { value: "25-34", label: "25–34" },
+  { value: "35-44", label: "35–44" },
+  { value: "45-54", label: "45–54" },
+  { value: "55+", label: "55+" },
+  { value: "nao_informar", label: "Prefiro não informar" },
+] as const;
+
+const genders = [
+  { value: "", label: "Não preenchido" },
+  { value: "mulher", label: "Mulher" },
+  { value: "homem", label: "Homem" },
+  { value: "nao_binario", label: "Não binário" },
+  { value: "outro", label: "Outro" },
+  { value: "nao_informar", label: "Prefiro não informar" },
 ] as const;
 
 function PerfilPage() {
@@ -107,6 +128,27 @@ function PerfilPage() {
       </div>
 
       <section className="mt-5 space-y-4">
+        <AppCard>
+          <p className="text-sm font-semibold text-foreground">Sobre você (opcional)</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Ajuda a entender quem usa o beta. Só você vê essas informações.
+          </p>
+          <div className="mt-3 space-y-3">
+            <SelectField
+              label="Faixa etária"
+              value={data?.age_range ?? ""}
+              onChange={(e) => updateProfile.mutate({ age_range: e.target.value || null })}
+              options={ageRanges}
+            />
+            <SelectField
+              label="Gênero"
+              value={data?.gender ?? ""}
+              onChange={(e) => updateProfile.mutate({ gender: e.target.value || null })}
+              options={genders}
+            />
+          </div>
+        </AppCard>
+
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Privacidade</p>
           <p className="mt-1 text-xs text-muted-foreground">
