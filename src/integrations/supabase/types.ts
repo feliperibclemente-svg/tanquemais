@@ -639,11 +639,13 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age_range: string | null
           avatar_url: string | null
           bio: string | null
           city: string | null
           created_at: string
           full_name: string | null
+          gender: string | null
           hide_odometer: boolean
           id: string
           level: number
@@ -655,11 +657,13 @@ export type Database = {
           xp: number
         }
         Insert: {
+          age_range?: string | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
           created_at?: string
           full_name?: string | null
+          gender?: string | null
           hide_odometer?: boolean
           id: string
           level?: number
@@ -671,11 +675,13 @@ export type Database = {
           xp?: number
         }
         Update: {
+          age_range?: string | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
           created_at?: string
           full_name?: string | null
+          gender?: string | null
           hide_odometer?: boolean
           id?: string
           level?: number
