@@ -33,7 +33,7 @@ export const fuelingSchema = z
     fuel_type_id: z.string().min(1, "Escolha o combustível"),
     filled_at: z.string().min(1),
     liters: z.coerce.number().positive("Litros deve ser maior que zero").max(500),
-    price_per_liter: z.coerce.number().positive("Preço inválido").max(50),
+    price_per_liter: z.coerce.number().positive("Preço inválido").max(20, "Preço por litro acima de R$ 20"),
     total_cost: z.coerce.number().nonnegative().max(20_000),
     odometer: z.coerce.number().nonnegative("Quilometragem inválida").max(2_000_000),
     full_tank: z.boolean(),
