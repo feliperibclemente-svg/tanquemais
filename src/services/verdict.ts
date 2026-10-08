@@ -28,7 +28,10 @@ export interface PriceVerdict {
 
 const REFERENCE_WINDOW = 5;
 /** Com uma única referência um registro digitado errado viraria "economia" absurda. */
-const MIN_REFERENCES = 2;
+const MIN_REFERENCES = 3;
+const REFERENCE_DAYS = 90;
+const MIN_PRICE = 2;
+const MAX_PRICE = 12;
 
 /** Mediana: resiste a um preço digitado errado, ao contrário da média. */
 const median = (values: number[]) => {
@@ -41,11 +44,19 @@ const median = (values: number[]) => {
 export function recentAveragePrice(
   history: FuelingComputed[],
   fuelTypeId: string | null,
+  vehicleId: string | null = null,
+  at: Date = new Date(),
 ): { price: number; count: number } | null {
+  const since = at.getTime() - REFERENCE_DAYS * 86_400_000;
   const prices = history
     .filter((r) => (fuelTypeId ? r.fuel_type_id === fuelTypeId : true))
+    .filter((r) => (vehicleId ? r.vehicle_id === vehicleId : true))
+    .filter((r) => {
+      const t = new Date(r.filled_at).getTime();
+      return t >= since && t <= at.getTime();
+    })
     .map((r) => Number(r.price_per_liter))
-    .filter((p) => p > 0)
+    .filter((p) => p >= MIN_PRICE && p <= MAX_PRICE)
     .slice(0, REFERENCE_WINDOW);
 
   if (prices.length < MIN_REFERENCES) return null;
@@ -58,9 +69,20 @@ export function recentAveragePrice(
  */
 export function priceVerdict(
   history: FuelingComputed[],
-  current: { pricePerLiter: number; liters: number; fuelTypeId: string | null },
+  current: {
+    pricePerLiter: number;
+    liters: number;
+    fuelTypeId: string | null;
+    vehicleId?: string | null;
+    at?: Date;
+  },
 ): PriceVerdict {
-  const reference = recentAveragePrice(history, current.fuelTypeId);
+  const reference = recentAveragePrice(
+    history,
+    current.fuelTypeId,
+    current.vehicleId ?? null,
+    current.at ?? new Date(),
+  );
 
   if (!reference || !current.pricePerLiter) {
     return {
@@ -126,6 +148,8 @@ export function historyVerdicts(rows: FuelingComputed[]): Map<string, PriceVerdi
         pricePerLiter: Number(row.price_per_liter),
         liters: Number(row.liters),
         fuelTypeId: row.fuel_type_id,
+        vehicleId: row.vehicle_id,
+        at: new Date(row.filled_at),
       }),
     );
   });
@@ -138,31 +162,14 @@ export interface StationOpportunity {
   amount: number;
 }
 
-/** Posto conhecido com preço abaixo do que a pessoa acabou de pagar. */
+/** Sem base de postos confiável no beta: nunca sugere posto mais barato. */
 export function stationOpportunity(
-  stations: StationWithPrice[],
-  fuelTypeId: string | null,
-  paidPricePerLiter: number,
-  liters: number,
+  _stations: StationWithPrice[],
+  _fuelTypeId: string | null,
+  _paidPricePerLiter: number,
+  _liters: number,
 ): StationOpportunity | null {
-  let best: { name: string; price: number } | null = null;
-
-  for (const station of stations) {
-    for (const price of station.station_prices ?? []) {
-      if (fuelTypeId && price.fuel_type_id !== fuelTypeId) continue;
-      const value = Number(price.price);
-      if (!(value > 0)) continue;
-      if (!best || value < best.price) best = { name: station.name, price: value };
-    }
-  }
-
-  if (!best || !paidPricePerLiter || best.price >= paidPricePerLiter - 0.01) return null;
-
-  return {
-    stationName: best.name,
-    price: best.price,
-    amount: (paidPricePerLiter - best.price) * (liters || 0),
-  };
+  return null;
 }
 
 /**

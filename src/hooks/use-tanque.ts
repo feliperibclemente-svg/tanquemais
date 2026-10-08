@@ -246,7 +246,10 @@ export function useHomeData() {
   const primary = vehicles.data?.find((v) => v.is_primary) ?? vehicles.data?.[0] ?? null;
   const stations = useStations(profile.data?.city ?? null);
 
-  const rows = computeFuelings((fuelings.data ?? []) as Fueling[]);
+  // Home, Painel e Perfil mostram só o veículo principal.
+  const rows = computeFuelings(
+    ((fuelings.data ?? []) as Fueling[]).filter((f) => !primary || f.vehicle_id === primary.id),
+  );
   const stats = overview(rows);
   const savings = savingsOpportunity(
     rows,
