@@ -143,7 +143,6 @@ export function monthlySeries(rows: FuelingComputed[]): MonthPoint[] {
     }));
 }
 
-const avg = (arr: number[]) => arr.reduce((s, n) => s + n, 0) / arr.length;
 
 export interface Overview {
   count: number;

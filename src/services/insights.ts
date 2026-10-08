@@ -22,23 +22,12 @@ export function buildInsights(o: Overview, savings: SavingsOpportunity): Insight
     return out;
   }
 
-  if (savings.amount > 0.5 && savings.stationName) {
-    out.push({
-      id: "savings",
-      icon: "piggy-bank",
-      severity: "good",
-      title: `Economize ${brl(savings.amount)} no próximo tanque`,
-      body: `O ${savings.stationName} está a ${brl(savings.cheapestPrice ?? 0)}/L — ${brl(
-        (savings.referencePrice ?? 0) - (savings.cheapestPrice ?? 0),
-      )} abaixo do que você costuma pagar.`,
-      savings: savings.amount,
-      action: { label: "Ver postos", to: "/postos" },
-    });
-  }
+  // Insight de posto mais barato desativado no beta (sem base de postos confiável).
+  void savings;
 
-  const [prev, current] = o.series.slice(-2);
-  if (prev?.consumo && current?.consumo) {
-    const diff = ((current.consumo - prev.consumo) / prev.consumo) * 100;
+  const trend = o.consumptionTrend;
+  if (trend) {
+    const diff = ((trend.current - trend.previous) / trend.previous) * 100;
     if (Math.abs(diff) >= 3) {
       out.push({
         id: "trend",
@@ -48,34 +37,33 @@ export function buildInsights(o: Overview, savings: SavingsOpportunity): Insight
           diff > 0
             ? `Consumo ${num(Math.abs(diff))}% melhor`
             : `Consumo ${num(Math.abs(diff))}% pior`,
-        body:
-          diff > 0
-            ? `Seu carro está fazendo ${num(current.consumo)} km/L, acima dos ${num(prev.consumo)} km/L do mês passado.`
-            : `Você caiu para ${num(current.consumo)} km/L. Calibragem, filtro de ar e trânsito pesado costumam explicar essa queda.`,
+        body: `Neste mês: ${num(trend.current)} km/L. No mês anterior: ${num(trend.previous)} km/L.`,
       });
     }
   }
 
-  if (o.monthDelta != null && Math.abs(o.monthDelta) >= 0.05) {
+  if (o.monthDelta != null) {
+    const day = new Date().getDate();
     out.push({
       id: "spend",
       icon: "wallet",
-      severity: o.monthDelta > 0 ? "warning" : "good",
+      severity: "info",
       title:
-        o.monthDelta > 0
-          ? `Gasto ${num(o.monthDelta * 100)}% acima do mês passado`
-          : `Gasto ${num(Math.abs(o.monthDelta) * 100)}% abaixo do mês passado`,
-      body: `Você já gastou ${brl(o.monthSpend)} neste mês contra ${brl(o.previousMonthSpend)} no anterior.`,
+        o.monthDelta >= 0
+          ? `Gasto ${num(o.monthDelta * 100)}% acima do mesmo período`
+          : `Gasto ${num(Math.abs(o.monthDelta) * 100)}% abaixo do mesmo período`,
+      body: `Gasto até o dia ${day}: ${brl(o.monthSpend)}. No mesmo período do mês passado: ${brl(o.previousMonthSpend)}.`,
     });
   }
 
   if (o.costPerKm) {
+    const measuredCost = o.costPerKm * o.totalKm;
     out.push({
       id: "cost",
       icon: "route",
       severity: "info",
       title: `Custo por km: ${brl(o.costPerKm)}`,
-      body: `Com ${num(o.totalKm, 0)} km rodados e ${brl(o.totalSpend)} abastecidos, esse é o seu custo real de combustível.`,
+      body: `Nos trechos medidos (${num(o.totalKm, 0)} km) você gastou ${brl(measuredCost)}: ${brl(o.costPerKm)} por km.`,
     });
   }
 
