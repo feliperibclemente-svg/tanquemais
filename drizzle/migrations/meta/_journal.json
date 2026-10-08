@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791476470294,
+      "tag": "0000_beta_lockdown_social_and_private_profiles",
+      "breakpoints": true
+    }
+  ]
+}
