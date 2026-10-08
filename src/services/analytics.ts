@@ -143,7 +143,6 @@ export function monthlySeries(rows: FuelingComputed[]): MonthPoint[] {
     }));
 }
 
-
 export interface Overview {
   count: number;
   monthSpend: number;

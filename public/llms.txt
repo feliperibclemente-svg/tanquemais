@@ -1,6 +1,6 @@
 # Tanque+
 
-> Assistente inteligente de economia automotiva: registre abastecimentos e acompanhe consumo, custo por quilômetro, gastos e os postos mais baratos.
+> Assistente de economia automotiva: registre abastecimentos e acompanhe consumo, custo por quilômetro e gastos.
 
 ## Pages
 
@@ -9,14 +9,9 @@
 
 ## App (requer login)
 
-- Início: gasto do mês, economia possível e insights da TanqueIA
+- Início: gasto do mês e insights da TanqueIA
 - Abastecer: cálculo automático de litros, consumo e custo por km
 - Histórico: lista cronológica de abastecimentos
 - Painel: gráficos de gastos, litros e evolução do consumo
 - Veículos: cadastro de carros, odômetro e combustível padrão
-- Postos: preços por combustível e índice de confiabilidade
-- Perfil: nível, privacidade e preferências
-
-## Agents
-
-- Servidor MCP público em /mcp com ferramentas de preços de referência, posto mais barato, gasolina x etanol, cálculo de consumo e clubes.
+- Perfil: dados opcionais e preferências

@@ -158,7 +158,17 @@ function AbastecerPage() {
       ? { kmPerLiter: row.computed_km_per_liter, costPerKm: row.computed_cost_per_km }
       : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vehicle, vehicleHistory, odometerValue, amounts.liters, amounts.total, amounts.price, fullTank, fuelTypeId, date]);
+  }, [
+    vehicle,
+    vehicleHistory,
+    odometerValue,
+    amounts.liters,
+    amounts.total,
+    amounts.price,
+    fullTank,
+    fuelTypeId,
+    date,
+  ]);
 
   const canSubmit =
     amounts.total > 0 && amounts.price > 0 && amounts.liters > 0 && odometerValue > 0;

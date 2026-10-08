@@ -225,7 +225,7 @@ function VeiculoPage() {
                   </Action>
                   <ConfirmAction
                     title="Remover veículo?"
-                    description="Os abastecimentos ligados a este veículo também deixarão de ser exibidos."
+                    description="Todos os abastecimentos deste veículo serão apagados permanentemente."
                     confirmLabel="Remover"
                     onConfirm={() => remove.mutate(v.id)}
                     trigger={

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { BarChart3, Fuel, MapPin, Sparkles } from "lucide-react";
 import { ActionLink } from "@/components/ds";
 import { useAuth } from "@/providers/AuthProvider";
+import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -16,8 +17,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Tanque+ — Assistente de economia de combustível" },
       {
         property: "og:description",
-        content:
-          "Consumo real, custo por quilômetro e os postos mais baratos perto de você, em um app só.",
+        content: "Consumo real, custo por quilômetro e gasto do mês, em um app só.",
       },
     ],
   }),
@@ -28,7 +28,7 @@ const highlights = [
   {
     icon: Fuel,
     title: "Abasteça em 20 segundos",
-    body: "Um campo por vez, litros calculados automaticamente.",
+    body: "Valor, preço e km. Litros e consumo a gente calcula.",
   },
   { icon: BarChart3, title: "Consumo real", body: "km/L, custo por km e comparação mês a mês." },
   {
@@ -88,9 +88,19 @@ function Landing() {
       <div className="mt-10 space-y-3">
         <ActionLink to="/auth">Começar agora</ActionLink>
         <p className="text-center text-xs text-muted-foreground">
-          Grátis. Seus dados ficam só na sua conta.
+          Grátis durante o beta. Seus abastecimentos são privados: outros usuários não veem.
         </p>
       </div>
+
+      <footer className="mt-10 text-center text-xs text-muted-foreground">
+        <a href={PRIVACY_URL} target="_blank" rel="noreferrer">
+          Privacidade
+        </a>
+        {" · "}
+        <a href={TERMS_URL} target="_blank" rel="noreferrer">
+          Termos
+        </a>
+      </footer>
     </div>
   );
 }
