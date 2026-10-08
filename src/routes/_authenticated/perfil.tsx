@@ -20,6 +20,7 @@ import { useHomeData, useProfile, useUpdateProfile } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { track } from "@/lib/analytics";
+import { PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL } from "@/constants/app";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   head: () => ({
@@ -37,12 +38,6 @@ export const Route = createFileRoute("/_authenticated/perfil")({
   }),
   component: PerfilPage,
 });
-
-const visibilities = [
-  { key: "public", label: "Público" },
-  { key: "friends", label: "Amigos" },
-  { key: "private", label: "Privado" },
-] as const;
 
 /** Valor vazio = não preenchido (salvo como null, remove a informação). */
 const ageRanges = [
@@ -131,7 +126,8 @@ function PerfilPage() {
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Sobre você (opcional)</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Ajuda a entender quem usa o beta. Só você vê essas informações.
+            Opcional. Usado apenas de forma agregada para entender quem usa o beta. Apague quando
+            quiser escolhendo 'Não preenchido'.
           </p>
           <div className="mt-3 space-y-3">
             <SelectField
@@ -145,31 +141,6 @@ function PerfilPage() {
               value={data?.gender ?? ""}
               onChange={(e) => updateProfile.mutate({ gender: e.target.value || null })}
               options={genders}
-            />
-          </div>
-        </AppCard>
-
-        <AppCard>
-          <p className="text-sm font-semibold text-foreground">Privacidade</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Define quem pode ver seu perfil quando os recursos sociais chegarem.
-          </p>
-          <ChoiceGroup
-            label="Visibilidade do perfil"
-            className="mt-3"
-            fill
-            value={data?.visibility ?? "private"}
-            onChange={(value) =>
-              updateProfile.mutate({ visibility: value as (typeof visibilities)[number]["key"] })
-            }
-            options={visibilities.map((v) => ({ value: v.key, label: v.label }))}
-          />
-
-          <div className="mt-3">
-            <ToggleRow
-              label="Ocultar quilometragem"
-              checked={!!data?.hide_odometer}
-              onChange={(checked) => updateProfile.mutate({ hide_odometer: checked })}
             />
           </div>
         </AppCard>
@@ -189,7 +160,7 @@ function PerfilPage() {
         </AppCard>
 
         <AppCard>
-          <p className="text-sm font-semibold text-foreground">Beta fechado</p>
+          <p className="text-sm font-semibold text-foreground">Versão beta</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Você está usando uma versão de testes. Algumas funcionalidades ainda vão evoluir — sua
             opinião decide o que vem primeiro.
@@ -211,6 +182,36 @@ function PerfilPage() {
             <li>IPVA, seguro e lembretes de documentos</li>
             <li>Comunidade e ranking de economia</li>
           </ul>
+        </AppCard>
+
+        <AppCard>
+          <p className="text-sm font-semibold text-foreground">Seus dados</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Para baixar ou excluir sua conta e seus dados, escreva para{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-primary">
+              {SUPPORT_EMAIL}
+            </a>
+            . Atendemos em até 15 dias.
+          </p>
+          <p className="mt-2 text-xs">
+            <a
+              href={PRIVACY_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-primary"
+            >
+              Privacidade
+            </a>
+            <span className="text-muted-foreground"> · </span>
+            <a
+              href={TERMS_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-primary"
+            >
+              Termos
+            </a>
+          </p>
         </AppCard>
 
         <Action variant="danger" onClick={signOut}>

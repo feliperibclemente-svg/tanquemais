@@ -33,9 +33,9 @@ export function VerdictPill({ verdict }: { verdict: PriceVerdict }) {
       <Icon className="h-4 w-4 shrink-0" strokeWidth={2.4} />
       <span className="truncate">
         {verdict.tone === "good" && verdict.amount
-          ? `Economia estimada: ${brl(verdict.amount)}`
+          ? `${brl(verdict.amount)} abaixo do seu preço habitual`
           : verdict.tone === "bad" && verdict.amount
-            ? `Acima da média: ${brl(verdict.amount)} a mais`
+            ? `${brl(verdict.amount)} acima do seu preço habitual`
             : verdict.headline}
       </span>
     </p>
@@ -58,8 +58,10 @@ export function VerdictCard({ verdict }: { verdict: PriceVerdict }) {
 
       {verdict.amount && verdict.tone !== "neutral" ? (
         <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-          {verdict.tone === "good" ? "Você economizou " : "Você gastou a mais "}
           <span className={tone.text}>{brl(verdict.amount)}</span>
+          {verdict.tone === "good"
+            ? " a menos que seu preço habitual"
+            : " a mais que seu preço habitual"}
         </p>
       ) : null}
 

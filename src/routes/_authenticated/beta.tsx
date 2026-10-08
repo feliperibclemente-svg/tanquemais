@@ -39,7 +39,7 @@ const items = [
   {
     icon: ShieldCheck,
     title: "Seus dados são seus",
-    text: "Veículos, abastecimentos e estatísticas ficam protegidos e visíveis somente para você.",
+    text: "Veículos e abastecimentos ficam protegidos e não são visíveis para outros usuários.",
   },
   {
     icon: MessageSquareHeart,
@@ -55,7 +55,7 @@ function BetaPage() {
 
   return (
     <AppShell fab={false}>
-      <PageHeader title="Você está no Beta" subtitle="Versão de testes fechada do Tanque+" />
+      <PageHeader title="Você está no Beta" subtitle="Versão de testes do Tanque+" />
 
       <AppCard className="border-primary/25 bg-accent/40 p-4">
         <p className="text-sm text-foreground">

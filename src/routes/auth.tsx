@@ -8,6 +8,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/providers/AuthProvider";
 import { authSchema } from "@/validators";
 import { track } from "@/lib/analytics";
+import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -172,6 +173,30 @@ function AuthPage() {
         {error ? (
           <p role="alert" className="text-sm font-medium text-destructive">
             {error}
+          </p>
+        ) : null}
+
+        {mode === "signup" ? (
+          <p className="text-xs text-muted-foreground">
+            Ao criar a conta você concorda com os{" "}
+            <a
+              href={TERMS_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-primary"
+            >
+              Termos de Uso
+            </a>{" "}
+            e a{" "}
+            <a
+              href={PRIVACY_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-primary"
+            >
+              Política de Privacidade
+            </a>
+            .
           </p>
         ) : null}
 
