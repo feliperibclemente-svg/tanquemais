@@ -1,18 +1,19 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { FlaskConical, LogOut, MessageSquareHeart, Moon, Sun } from "lucide-react";
+import { Download, FlaskConical, LogOut, MessageSquareHeart, Moon, Sun, Trash2 } from "lucide-react";
 import {
   Action,
   ActionLink,
   AppCard,
   AppShell,
-  ChoiceGroup,
+  ConfirmAction,
   PageHeader,
   ScreenSkeleton,
   SelectField,
   StatTile,
-  ToggleRow,
 } from "@/components/ds";
 
 import { brl, kmPerLiter, liters as fmtLiters } from "@/lib/format";
@@ -21,6 +22,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { track } from "@/lib/analytics";
 import { PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL } from "@/constants/app";
+import { deleteMyAccount } from "@/lib/account.functions";
+import { queuedFuelings } from "@/lib/offline-queue";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   head: () => ({
@@ -67,6 +70,9 @@ function PerfilPage() {
   const updateProfile = useUpdateProfile();
   const { stats, isLoading } = useHomeData();
 
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const removeAccount = useServerFn(deleteMyAccount);
+  const [busy, setBusy] = useState<"export" | "delete" | null>(null);
   const [dark, setDark] = useState(false);
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -79,7 +85,73 @@ function PerfilPage() {
     localStorage.setItem("tanque:theme", next ? "dark" : "light");
   }
 
+  /** Exporta perfil, veículos, abastecimentos e feedbacks em JSON. */
+  async function exportData() {
+    if (!user) return;
+    setBusy("export");
+    try {
+      const [p, v, f, fb] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+        supabase.from("vehicles").select("*").eq("user_id", user.id),
+        supabase.from("fuelings").select("*").eq("user_id", user.id).order("filled_at"),
+        supabase.from("feedback").select("*").eq("user_id", user.id),
+      ]);
+      const error = p.error ?? v.error ?? f.error ?? fb.error;
+      if (error) throw error;
+      const blob = new Blob(
+        [
+          JSON.stringify(
+            {
+              exported_at: new Date().toISOString(),
+              email: user.email,
+              profile: p.data,
+              vehicles: v.data,
+              fuelings: f.data,
+              feedback: fb.data,
+            },
+            null,
+            2,
+          ),
+        ],
+        { type: "application/json" },
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `tanque-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Não conseguimos gerar o arquivo agora. Tente novamente.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function deleteAccount() {
+    setBusy("delete");
+    try {
+      await removeAccount();
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await supabase.auth.signOut();
+      toast.success("Sua conta e seus dados foram excluídos.");
+      navigate({ to: "/", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não conseguimos excluir sua conta agora.");
+      setBusy(null);
+    }
+  }
+
   async function signOut() {
+    const pending = queuedFuelings().filter((i) => i.userId === user?.id).length;
+    if (
+      pending > 0 &&
+      !window.confirm(
+        `Você tem ${pending} abastecimento(s) ainda não enviado(s). Eles serão enviados quando você entrar de novo neste aparelho. Sair mesmo assim?`,
+      )
+    )
+      return;
     track("auth_sign_out");
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -166,7 +238,7 @@ function PerfilPage() {
             opinião decide o que vem primeiro.
           </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <ActionLink to="/feedback" size="md" className="w-full sm:w-auto">
+            <ActionLink to="/feedback" search={{ from: path }} size="md" className="w-full sm:w-auto">
               <MessageSquareHeart className="h-4 w-4" /> Enviar feedback
             </ActionLink>
             <ActionLink to="/beta" variant="secondary" size="md" className="w-full sm:w-auto">
@@ -208,6 +280,22 @@ function PerfilPage() {
               Termos
             </a>
           </p>
+          <div className="mt-3 flex flex-col gap-2">
+            <Action variant="secondary" size="md" loading={busy === "export"} onClick={exportData}>
+              <Download className="h-4 w-4" /> Baixar meus dados
+            </Action>
+            <ConfirmAction
+              title="Excluir sua conta?"
+              description="Sua conta, veículos, abastecimentos e feedbacks serão apagados permanentemente. Isso não pode ser desfeito."
+              confirmLabel="Excluir conta"
+              onConfirm={deleteAccount}
+              trigger={
+                <Action variant="danger" size="md" loading={busy === "delete"}>
+                  <Trash2 className="h-4 w-4" /> Excluir minha conta
+                </Action>
+              }
+            />
+          </div>
         </AppCard>
 
         <Action variant="danger" onClick={signOut}>

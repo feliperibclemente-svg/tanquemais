@@ -80,7 +80,7 @@ function BetaPage() {
       </div>
 
       <div className="mt-6">
-        <ActionLink to="/feedback" size="md">
+        <ActionLink to="/feedback" search={{ from: "/beta" }} size="md">
           Enviar feedback
         </ActionLink>
       </div>

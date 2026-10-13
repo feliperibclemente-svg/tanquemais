@@ -1,4 +1,5 @@
-import { createFileRoute, useRouterState } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { useState } from "react";
 import { Bug, Lightbulb, Send, Sparkles } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/feedback")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: z.object({ from: z.string().max(200).optional() }),
   component: FeedbackPage,
 });
 
@@ -43,7 +45,8 @@ const MAX = 2000;
 function FeedbackPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { from } = Route.useSearch();
+  const path = from ?? null;
 
   const [kind, setKind] = useState<FeedbackKind>("problema");
   const [rating, setRating] = useState<number | null>(null);
