@@ -6,6 +6,93 @@
  * e sempre registrado como log estruturado.
  */
 import { log } from "./telemetry";
+import { supabase } from "@/integrations/supabase/client";
+
+/* ------------------------- envio em lote ao banco ------------------------- */
+
+interface PendingEvent {
+  name: string;
+  props: Props;
+  route: string | null;
+  created_at: string;
+}
+
+const FLUSH_INTERVAL = 5_000;
+const MAX_BATCH = 50;
+let buffer: PendingEvent[] = [];
+let timerStarted = false;
+let sessionId: string | null = null;
+
+function currentSession(): string {
+  if (sessionId) return sessionId;
+  try {
+    sessionId = sessionStorage.getItem("tanque:session") ?? crypto.randomUUID();
+    sessionStorage.setItem("tanque:session", sessionId);
+  } catch {
+    sessionId = crypto.randomUUID();
+  }
+  return sessionId;
+}
+
+/** Nunca envia dados que identifiquem a pessoa. */
+const PII = /mail|name|nome|phone|telefone|cpf|address|endereco|plate|placa/i;
+function sanitize(props: Props): Props {
+  const out: Props = {};
+  for (const [k, v] of Object.entries(props)) {
+    if (PII.test(k)) continue;
+    if (typeof v === "string" && /@/.test(v)) continue;
+    out[k] = typeof v === "string" ? v.slice(0, 200) : v;
+  }
+  return out;
+}
+
+async function flushEvents() {
+  if (buffer.length === 0) return;
+  try {
+    const { data } = await supabase.auth.getSession();
+    const userId = data.session?.user.id;
+    if (!userId) {
+      buffer = [];
+      return;
+    }
+    const batch = buffer.splice(0, MAX_BATCH);
+    const session = currentSession();
+    await supabase.from("events").insert(
+      batch.map((e) => ({
+        user_id: userId,
+        session_id: session,
+        name: e.name,
+        props: e.props,
+        route: e.route,
+        created_at: e.created_at,
+      })),
+    );
+  } catch {
+    /* analytics nunca quebra o app */
+  }
+}
+
+function enqueue(name: string, props: Props) {
+  if (typeof window === "undefined") return;
+  try {
+    buffer.push({
+      name,
+      props: sanitize(props),
+      route: window.location.pathname,
+      created_at: new Date().toISOString(),
+    });
+    if (buffer.length > 500) buffer = buffer.slice(-500);
+    if (!timerStarted) {
+      timerStarted = true;
+      window.setInterval(() => void flushEvents(), FLUSH_INTERVAL);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") void flushEvents();
+      });
+    }
+  } catch {
+    /* noop */
+  }
+}
 
 export type AnalyticsEvent =
   /* funil de ativação */
@@ -50,6 +137,7 @@ declare global {
 export function track(event: AnalyticsEvent, props: Props = {}) {
   log("info", `analytics.${event}`, props);
   if (typeof window === "undefined") return;
+  enqueue(event, props);
   try {
     window.gtag?.("event", event, props);
     window.posthog?.capture?.(event, props);
@@ -112,6 +200,7 @@ export function trackRetention(userId: string) {
 export function trackPageView(path: string) {
   log("debug", "analytics.page_view", { path });
   if (typeof window === "undefined") return;
+  enqueue("page_view", { path });
   try {
     window.gtag?.("event", "page_view", { page_path: path });
     window.posthog?.capture?.("$pageview", { path });
