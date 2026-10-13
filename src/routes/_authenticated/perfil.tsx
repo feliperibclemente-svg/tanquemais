@@ -196,8 +196,6 @@ function PerfilPage() {
           <p className="mt-2 text-xs">
             <a
               href={PRIVACY_URL}
-              target="_blank"
-              rel="noreferrer"
               className="font-semibold text-primary"
             >
               Privacidade
@@ -205,8 +203,6 @@ function PerfilPage() {
             <span className="text-muted-foreground"> · </span>
             <a
               href={TERMS_URL}
-              target="_blank"
-              rel="noreferrer"
               className="font-semibold text-primary"
             >
               Termos

@@ -181,8 +181,6 @@ function AuthPage() {
             Ao criar a conta você concorda com os{" "}
             <a
               href={TERMS_URL}
-              target="_blank"
-              rel="noreferrer"
               className="font-semibold text-primary"
             >
               Termos de Uso
@@ -190,8 +188,6 @@ function AuthPage() {
             e a{" "}
             <a
               href={PRIVACY_URL}
-              target="_blank"
-              rel="noreferrer"
               className="font-semibold text-primary"
             >
               Política de Privacidade
