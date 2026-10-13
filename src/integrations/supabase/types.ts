@@ -194,6 +194,36 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          props: Json
+          route: string | null
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          props?: Json
+          route?: string | null
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          props?: Json
+          route?: string | null
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -1106,6 +1136,7 @@ export type Database = {
         Args: { _user_id: string; _vehicle_id: string }
         Returns: undefined
       }
+      set_primary_vehicle: { Args: { _vehicle_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

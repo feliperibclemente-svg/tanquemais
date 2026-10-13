@@ -60,6 +60,6 @@ export const QUERY_STALE_TIME = 60_000;
 export const PAGE_SIZE = 20;
 
 /** Contato e documentos legais do beta (preencher com os valores reais). */
-export const SUPPORT_EMAIL = "[E-MAIL]";
-export const PRIVACY_URL = "[URL_PRIVACIDADE]";
-export const TERMS_URL = "[URL_TERMOS]";
+export const SUPPORT_EMAIL = "[SEU_EMAIL]";
+export const PRIVACY_URL = "/privacidade";
+export const TERMS_URL = "/termos";

@@ -93,11 +93,11 @@ function Landing() {
       </div>
 
       <footer className="mt-10 text-center text-xs text-muted-foreground">
-        <a href={PRIVACY_URL} target="_blank" rel="noreferrer">
+        <a href={PRIVACY_URL} >
           Privacidade
         </a>
         {" · "}
-        <a href={TERMS_URL} target="_blank" rel="noreferrer">
+        <a href={TERMS_URL} >
           Termos
         </a>
       </footer>
