@@ -157,6 +157,8 @@ export interface Overview {
   avgPricePerLiter: number | null;
   costPerKm: number | null;
   savings: number;
+  /** Combustível do abastecimento mais recente: base de preço médio, melhor/pior e economia. */
+  fuelTypeId: string | null;
   /** Variação do consumo entre os dois últimos meses consecutivos comparáveis. */
   consumptionTrend: { previous: number; current: number } | null;
   last: FuelingComputed | null;
@@ -181,8 +183,12 @@ export function overview(rows: FuelingComputed[]): Overview {
     else if (key === prevKey && d.getDate() <= day) previousMonthSpend += Number(r.total_cost) || 0;
   }
 
-  const kmls = rows.map((r) => r.computed_km_per_liter).filter((v): v is number => !!v);
-  const prices = rows.map((r) => Number(r.price_per_liter)).filter((v) => v > 0);
+  const fuelTypeId = rows[0]?.fuel_type_id ?? null;
+  const sameFuel = rows.filter((r) => r.fuel_type_id === fuelTypeId);
+  const kmls = sameFuel.map((r) => r.computed_km_per_liter).filter((v): v is number => !!v);
+  const prices = sameFuel.map((r) => Number(r.price_per_liter)).filter((v) => v > 0);
+  const fuelSpend = sameFuel.reduce((s, r) => s + (Number(r.total_cost) || 0), 0);
+  const fuelLiters = sameFuel.reduce((s, r) => s + (Number(r.liters) || 0), 0);
   const totalSpend = rows.reduce((s, r) => s + (Number(r.total_cost) || 0), 0);
   const totalLiters = rows.reduce((s, r) => s + (Number(r.liters) || 0), 0);
   /** Trechos válidos: têm distância e consumo plausível. Base única para km/L e R$/km. */
@@ -193,7 +199,7 @@ export function overview(rows: FuelingComputed[]): Overview {
 
   const cheapest = prices.length ? Math.min(...prices) : 0;
   const savings = cheapest
-    ? rows.reduce((s, r) => s + (Number(r.price_per_liter) - cheapest) * Number(r.liters), 0)
+    ? sameFuel.reduce((s, r) => s + (Number(r.price_per_liter) - cheapest) * Number(r.liters), 0)
     : 0;
 
   return {
@@ -210,9 +216,10 @@ export function overview(rows: FuelingComputed[]): Overview {
     avgKmPerLiter: validLiters > 0 ? totalKm / validLiters : null,
     bestKmPerLiter: kmls.length ? Math.max(...kmls) : null,
     worstKmPerLiter: kmls.length ? Math.min(...kmls) : null,
-    avgPricePerLiter: totalLiters > 0 ? totalSpend / totalLiters : null,
+    avgPricePerLiter: fuelLiters > 0 ? fuelSpend / fuelLiters : null,
     costPerKm: totalKm > 0 ? validCost / totalKm : null,
     savings: Math.max(0, savings),
+    fuelTypeId,
     consumptionTrend: consumptionTrend(valid),
     last: rows[0] ?? null,
     series,
@@ -269,4 +276,31 @@ function consumptionTrend(valid: FuelingComputed[]): { previous: number; current
   const prev = groups.get(`${prevKey}|${latest.fuel_type_id}`);
   if (!cur || !prev || cur.n < 2 || prev.n < 2 || !cur.liters || !prev.liters) return null;
   return { previous: prev.km / prev.liters, current: cur.km / cur.liters };
+}
+
+/**
+ * Valida a quilometragem contra os registros vizinhos do mesmo veículo na linha do tempo.
+ * Retorna a mensagem de erro ou null quando está tudo certo.
+ */
+export function validateOdometer(
+  vehicleRows: Pick<Fueling, "id" | "filled_at" | "odometer">[],
+  filledAt: Date,
+  odometer: number,
+  ignoreId?: string,
+): string | null {
+  if (!(odometer > 0)) return "Informe a quilometragem atual.";
+  const t = filledAt.getTime();
+  const others = vehicleRows
+    .filter((r) => r.id !== ignoreId)
+    .sort((a, b) => new Date(a.filled_at).getTime() - new Date(b.filled_at).getTime());
+  const prev = [...others].reverse().find((r) => new Date(r.filled_at).getTime() <= t);
+  const next = others.find((r) => new Date(r.filled_at).getTime() > t);
+  const fmt = (n: number) => Math.round(n).toLocaleString("pt-BR");
+  if (prev && odometer <= Number(prev.odometer)) {
+    return `A quilometragem precisa ser maior que a do registro anterior (${fmt(Number(prev.odometer))} km).`;
+  }
+  if (next && odometer >= Number(next.odometer)) {
+    return `A quilometragem precisa ser menor que a do registro seguinte (${fmt(Number(next.odometer))} km).`;
+  }
+  return null;
 }

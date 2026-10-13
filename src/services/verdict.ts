@@ -6,6 +6,7 @@
  */
 import type { StationWithPrice } from "@/repositories";
 import { brl } from "@/lib/format";
+import { FUEL_LABEL } from "@/constants/app";
 import type { FuelingComputed } from "./analytics";
 
 export type VerdictTone = "good" | "bad" | "neutral";
@@ -41,6 +42,28 @@ const median = (values: number[]) => {
 };
 
 /** Preço habitual recente do próprio usuário para o mesmo combustível. */
+/** Quantas referências válidas existem (mesmo veículo, combustível, 90 dias, R$2–12). */
+export function referenceCount(
+  history: FuelingComputed[],
+  fuelTypeId: string | null,
+  vehicleId: string | null = null,
+  at: Date = new Date(),
+): number {
+  const since = at.getTime() - REFERENCE_DAYS * 86_400_000;
+  return history.filter((r) => {
+    const t = new Date(r.filled_at).getTime();
+    const p = Number(r.price_per_liter);
+    return (
+      (!fuelTypeId || r.fuel_type_id === fuelTypeId) &&
+      (!vehicleId || r.vehicle_id === vehicleId) &&
+      t >= since &&
+      t <= at.getTime() &&
+      p >= MIN_PRICE &&
+      p <= MAX_PRICE
+    );
+  }).length;
+}
+
 export function recentAveragePrice(
   history: FuelingComputed[],
   fuelTypeId: string | null,
@@ -85,11 +108,18 @@ export function priceVerdict(
   );
 
   if (!reference || !current.pricePerLiter) {
+    const have = referenceCount(
+      history,
+      current.fuelTypeId,
+      current.vehicleId ?? null,
+      current.at ?? new Date(),
+    );
+    const missing = Math.max(1, MIN_REFERENCES - have);
+    const fuel = current.fuelTypeId ? (FUEL_LABEL[current.fuelTypeId] ?? current.fuelTypeId) : "";
     return {
       tone: "neutral",
-      headline: "Ainda sem comparação",
-      detail:
-        "Este é um dos seus primeiros abastecimentos com esse combustível. Depois de mais alguns registros conseguimos dizer se o preço foi bom.",
+      headline: `${missing === 1 ? "Falta" : "Faltam"} ${missing} de ${fuel} para comparar`,
+      detail: `Com ${MIN_REFERENCES} abastecimentos de ${fuel} deste veículo nos últimos 90 dias dizemos se o preço foi bom.`,
       reference: null,
       referencePrice: null,
       deltaPerLiter: null,
