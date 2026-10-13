@@ -8,6 +8,13 @@
       "when": 1791476470294,
       "tag": "0000_beta_lockdown_social_and_private_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791910335557,
+      "tag": "0001_usage_events_and_vehicle_fixes",
+      "breakpoints": true
     }
   ]
 }
