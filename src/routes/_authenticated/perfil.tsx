@@ -238,7 +238,7 @@ function PerfilPage() {
             opinião decide o que vem primeiro.
           </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <ActionLink to="/feedback" search={{ from: path }} size="md" className="w-full sm:w-auto">
+            <ActionLink to="/feedback" search={{ from: path } as never} size="md" className="w-full sm:w-auto">
               <MessageSquareHeart className="h-4 w-4" /> Enviar feedback
             </ActionLink>
             <ActionLink to="/beta" variant="secondary" size="md" className="w-full sm:w-auto">
