@@ -60,6 +60,8 @@ export const QUERY_STALE_TIME = 60_000;
 export const PAGE_SIZE = 20;
 
 /** Contato e documentos legais do beta (preencher com os valores reais). */
-export const SUPPORT_EMAIL = "[SEU_EMAIL]";
+export const SUPPORT_EMAIL = "conectarf6@gmail.com";
+/** Responsável pelo tratamento dos dados (controlador, LGPD art. 5º, VI). */
+export const CONTROLLER_NAME = "Felipe Ribeiro Clemente";
 export const PRIVACY_URL = "/privacidade";
 export const TERMS_URL = "/termos";
