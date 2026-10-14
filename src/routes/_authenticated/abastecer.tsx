@@ -277,8 +277,13 @@ function AbastecerPage() {
             <CheckCircle2 className="h-7 w-7" strokeWidth={2.2} />
           </span>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-            Abastecimento registrado!
+            {saved.queued ? "Salvo no aparelho" : "Abastecimento registrado!"}
           </h1>
+          {saved.queued ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Você está sem conexão. Enviaremos automaticamente quando a internet voltar.
+            </p>
+          ) : null}
           <p className="mt-2 text-3xl font-bold tracking-tight text-foreground">
             {brl(saved.total)}
           </p>
@@ -288,7 +293,7 @@ function AbastecerPage() {
         </div>
 
         <div className="space-y-3">
-          <VerdictCard verdict={saved.verdict} />
+          {saved.queued ? null : <VerdictCard verdict={saved.verdict} />}
 
           {saved.kmPerLiter ? (
             <AppCard className="p-4">
