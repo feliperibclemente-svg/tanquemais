@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { computeBetaMetrics, weekStart } from "@/services/beta-metrics";
 import { canonicalVehicle } from "@/constants/vehicles";
 import {
   formatCents,
@@ -132,5 +133,63 @@ describe("preço por litro com 2 casas", () => {
     expect(maskCents("589", 2)).toBe("5,89");
     expect(formatCents(5.79, 2)).toBe("5,79");
     expect(nextCentsValue("0,05", "0,05,", 2, false)).toEqual({ value: "5,", natural: true });
+  });
+});
+
+describe("métricas do beta", () => {
+  const now = new Date("2026-10-14T12:00:00Z");
+  const daysAgo = (d: number, h = 0) =>
+    new Date(now.getTime() - d * 86_400_000 - h * 3_600_000).toISOString();
+  const metrics = computeBetaMetrics({
+    now,
+    users: [
+      { id: "a", created_at: daysAgo(30) },
+      { id: "b", created_at: daysAgo(10) },
+      { id: "c", created_at: daysAgo(0, 5) },
+    ],
+    vehicles: [
+      { user_id: "a", brand: "Fiat", model: "Argo" },
+      { user_id: "b", brand: "Fiat", model: "Argo" },
+    ],
+    fuelings: [
+      { user_id: "a", created_at: daysAgo(29) },
+      { user_id: "a", created_at: daysAgo(20) },
+      { user_id: "a", created_at: daysAgo(12) },
+      { user_id: "b", created_at: daysAgo(5) },
+    ],
+    events: [{ user_id: "c", name: "app_installed", created_at: daysAgo(0, 1) }],
+    feedback: [
+      { kind: "elogio", rating: 5, message: "Ótimo", page: "/app", created_at: daysAgo(1) },
+      {
+        kind: "problema",
+        rating: 3,
+        message: "Travou",
+        page: "/abastecer",
+        created_at: daysAgo(2),
+      },
+    ],
+  });
+  it("monta o funil", () => {
+    expect(metrics.funnel).toEqual({
+      signups: 3,
+      withVehicle: 2,
+      withFirstFueling: 2,
+      withThreeFuelings: 1,
+    });
+  });
+  it("ativação em 48 h só conta quem já teve 48 h", () => {
+    expect(metrics.activation48h).toEqual({ eligible: 2, activated: 1, rate: 0.5 });
+  });
+  it("3 abastecimentos em 21 dias", () => {
+    expect(metrics.threeIn21Days).toEqual({ eligible: 1, reached: 1, rate: 1 });
+  });
+  it("feedback, instalações e veículos", () => {
+    expect(metrics.feedback.averageRating).toBe(4);
+    expect(metrics.installs).toBe(1);
+    expect(metrics.topVehicles[0]).toEqual({ name: "Fiat Argo", count: 2 });
+    expect(metrics.weeks).toHaveLength(6);
+  });
+  it("semana começa na segunda", () => {
+    expect(weekStart(new Date("2026-10-14T12:00:00Z"))).toBe("2026-10-12");
   });
 });

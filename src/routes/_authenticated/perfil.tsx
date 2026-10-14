@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
+  BarChart3,
   Download,
   FlaskConical,
   LogOut,
@@ -34,6 +35,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { track } from "@/lib/analytics";
 import { PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL } from "@/constants/app";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { amIAdmin } from "@/lib/admin.functions";
 import { queuedFuelings } from "@/lib/offline-queue";
 import { photoToAvatarDataUrl } from "@/lib/image";
 import { profileSchema } from "@/validators";
@@ -88,6 +90,14 @@ function PerfilPage() {
   const removeAccount = useServerFn(deleteMyAccount);
   const [busy, setBusy] = useState<"export" | "delete" | null>(null);
   const [editing, setEditing] = useState(false);
+  const checkAdmin = useServerFn(amIAdmin);
+  const admin = useQuery({
+    queryKey: ["am-i-admin", user?.id ?? ""],
+    enabled: !!user,
+    staleTime: 10 * 60_000,
+    retry: false,
+    queryFn: () => checkAdmin(),
+  });
   const [dark, setDark] = useState(false);
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -270,6 +280,11 @@ function PerfilPage() {
             <ActionLink to="/beta" variant="secondary" size="md" className="w-full sm:w-auto">
               <FlaskConical className="h-4 w-4" /> Sobre o Beta
             </ActionLink>
+            {admin.data?.admin ? (
+              <ActionLink to="/admin" variant="secondary" size="md" className="w-full sm:w-auto">
+                <BarChart3 className="h-4 w-4" /> Painel do beta
+              </ActionLink>
+            ) : null}
           </div>
         </AppCard>
 
