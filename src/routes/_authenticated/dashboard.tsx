@@ -150,7 +150,7 @@ function Item({ label, value }: { label: string; value: string }) {
   );
 }
 
-const toField = (price: number | null) => (price ? formatCents(price, 3) : "");
+const toField = (price: number | null) => (price ? formatCents(price, 2) : "");
 
 /**
  * Regra dos 70% com os preços da bomba de hoje. Começa com os últimos preços pagos pelo
@@ -182,7 +182,7 @@ function EthanolCard({
           onChange={setGasoline}
           prefix="R$"
           suffix="/L"
-          cents={3}
+          cents={2}
         />
         <NumericField
           label="Etanol"
@@ -190,7 +190,7 @@ function EthanolCard({
           onChange={setEthanol}
           prefix="R$"
           suffix="/L"
-          cents={3}
+          cents={2}
         />
       </div>
       {advice ? (

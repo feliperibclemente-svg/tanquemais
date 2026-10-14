@@ -126,3 +126,11 @@ describe("catálogo de veículos", () => {
     expect(canonicalVehicle("Fiat", "147")).toEqual({ brand: "Fiat", model: "147" });
   });
 });
+
+describe("preço por litro com 2 casas", () => {
+  it("5 8 9 vira 5,89", () => {
+    expect(maskCents("589", 2)).toBe("5,89");
+    expect(formatCents(5.79, 2)).toBe("5,79");
+    expect(nextCentsValue("0,05", "0,05,", 2, false)).toEqual({ value: "5,", natural: true });
+  });
+});

@@ -21,8 +21,8 @@ export function maskDecimal(value: string, decimals = 2): string {
 
 /**
  * Máscara de dinheiro estilo "maquininha": os dígitos entram pela direita, então digitar
- * 5 0 0 0 vira "50,00" e 1 2 3 4 5 6 vira "1.234,56". Com 3 casas (preço da bomba),
- * 5 8 9 9 vira "5,899". Vírgula e ponto ficam sempre no lugar certo.
+ * 5 0 0 0 vira "50,00", 5 8 9 vira "5,89" e 1 2 3 4 5 6 vira "1.234,56". Vírgula e
+ * ponto ficam sempre no lugar certo. (Também aceita 3 casas, se um dia for preciso.)
  */
 export function maskCents(value: string, decimals: 2 | 3 = 2): string {
   const digits = value.replace(/\D/g, "").replace(/^0+/, "").slice(0, 9);
@@ -80,7 +80,7 @@ interface FieldProps {
   error?: string;
   autoFocus?: boolean;
   inputMode?: "decimal" | "numeric";
-  /** Máscara de dinheiro com 2 (valor) ou 3 (preço por litro) casas. Usa teclado numérico. */
+  /** Máscara de dinheiro (2 casas: reais e centavos). */
   cents?: 2 | 3;
   placeholder?: string;
 }

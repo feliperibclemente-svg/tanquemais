@@ -263,7 +263,7 @@ function EditFueling({
 }) {
   const update = useUpdateFueling();
   const [total, setTotal] = useState(formatCents(Number(row.total_cost), 2));
-  const [price, setPrice] = useState(formatCents(Number(row.price_per_liter), 3));
+  const [price, setPrice] = useState(formatCents(Number(row.price_per_liter), 2));
   const [odometer, setOdometer] = useState(String(Math.round(Number(row.odometer))));
   const [date, setDate] = useState(toDateInput(row.filled_at));
   const [fullTank, setFullTank] = useState(row.full_tank);
@@ -330,7 +330,7 @@ function EditFueling({
         onChange={setPrice}
         prefix="R$"
         suffix="/L"
-        cents={3}
+        cents={2}
         hint={amounts.liters > 0 ? `Dá ${num(amounts.liters, 2)} litros` : undefined}
       />
       <NumericField

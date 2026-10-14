@@ -392,7 +392,7 @@ function AbastecerPage() {
           }}
           prefix="R$"
           suffix={`/${unit}`}
-          cents={3}
+          cents={2}
           hint={
             amounts.liters > 0
               ? `Dá ${num(amounts.liters, 2)} ${unit === "L" ? "litros" : unit}`
@@ -403,10 +403,10 @@ function AbastecerPage() {
         {suggestedPrice ? (
           <button
             type="button"
-            onClick={() => setPrice(formatCents(suggestedPrice, 3))}
+            onClick={() => setPrice(formatCents(suggestedPrice, 2))}
             className="-mt-2 min-h-11 text-sm font-semibold text-primary"
           >
-            Mesmo do último: {brl(suggestedPrice, 3)}/{unit}
+            Mesmo do último: {brl(suggestedPrice)}/{unit}
           </button>
         ) : null}
 
