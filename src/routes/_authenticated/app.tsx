@@ -13,6 +13,7 @@ import {
   VerdictPill,
 } from "@/components/ds";
 import { useHomeData } from "@/hooks/use-tanque";
+import { FUEL_LABEL } from "@/constants/app";
 import { brl, kmPerLiter, num, relativeDate } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { phraseInsight } from "@/lib/tanque-ia.functions";
@@ -163,9 +164,13 @@ function HomePage() {
           <Mini
             label="Preço médio"
             value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}` : "—"}
-            hint="por litro"
+            hint={`por litro · ${stats.fuelTypeId ? (FUEL_LABEL[stats.fuelTypeId] ?? stats.fuelTypeId) : ""}`}
           />
-          <Mini label="Consumo" value={kmPerLiter(stats.avgKmPerLiter)} hint="média km/L" />
+          <Mini
+            label="Consumo"
+            value={kmPerLiter(stats.avgKmPerLiter)}
+            hint={stats.avgKmPerLiter ? "média km/L" : "Falta 1 tanque cheio para ver seu consumo real"}
+          />
         </div>
 
         {/* TanqueIA em uma frase — detalhes ficam no painel */}
