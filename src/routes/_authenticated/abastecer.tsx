@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CheckCircle2, ChevronDown, Fuel } from "lucide-react";
 import {
   Action,
@@ -25,7 +25,7 @@ import {
   useStations,
   useVehicles,
 } from "@/hooks/use-tanque";
-import { computeFuelings } from "@/services/analytics";
+import { computeFuelings, validateOdometer } from "@/services/analytics";
 import { deriveAmounts, priceVerdict } from "@/services/verdict";
 import type { PriceVerdict } from "@/services/verdict";
 import { fuelingSchema } from "@/validators";
@@ -58,6 +58,8 @@ interface Saved {
   price: number;
   kmPerLiter: number | null;
   verdict: PriceVerdict;
+  unit: string;
+  queued: boolean;
 }
 
 const todayLocal = () => {
@@ -112,17 +114,12 @@ function AbastecerPage() {
   const suggestedPrice = lastForVehicle ? Number(lastForVehicle.price_per_liter) : null;
   const [total, setTotal] = useState("");
   const [price, setPrice] = useState("");
-  const [priceTouched, setPriceTouched] = useState(false);
   const [litersInput, setLitersInput] = useState("");
   const [odometer, setOdometer] = useState("");
   const [stationId, setStationId] = useState<string>("");
   const [fullTank, setFullTank] = useState(true);
 
-  /* O histórico chega depois do primeiro render: só então dá para sugerir o preço. */
-  useEffect(() => {
-    if (priceTouched || !suggestedPrice) return;
-    setPrice(suggestedPrice.toFixed(2).replace(".", ","));
-  }, [suggestedPrice, priceTouched]);
+  const unit = FUEL_TYPES.find((f) => f.id === fuelTypeId)?.unit ?? "L";
   const [details, setDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<Saved | null>(null);
@@ -188,21 +185,14 @@ function AbastecerPage() {
       return;
     }
 
-    if (previousOdometer && odometerValue <= previousOdometer) {
-      setError(
-        `A quilometragem precisa ser maior que a do registro anterior (${num(previousOdometer, 0)} km).`,
-      );
-      return;
-    }
-
-    if (nextOdometer && odometerValue >= nextOdometer) {
-      setError(
-        `A quilometragem precisa ser menor que a do registro seguinte (${num(nextOdometer, 0)} km).`,
-      );
+    const odometerError = validateOdometer(vehicleHistory, filledAt, odometerValue);
+    if (odometerError) {
+      setError(odometerError);
       return;
     }
 
     const parsed = fuelingSchema.safeParse({
+      id: crypto.randomUUID(),
       vehicle_id: vehicle.id,
       station_id: stationId || null,
       fuel_type_id: fuelTypeId,
@@ -221,7 +211,7 @@ function AbastecerPage() {
     }
 
     try {
-      await create.mutateAsync({
+      const result = await create.mutateAsync({
         draft: parsed.data,
         computed: {
           km_per_liter: previewKml?.kmPerLiter ?? null,
@@ -234,6 +224,8 @@ function AbastecerPage() {
         total: parsed.data.total_cost,
         price: parsed.data.price_per_liter,
         kmPerLiter: previewKml?.kmPerLiter ?? null,
+        unit,
+        queued: result.queued,
         verdict: priceVerdict(
           vehicleHistory.filter((r) => new Date(r.filled_at).getTime() < filledAt.getTime()),
           {
@@ -291,7 +283,7 @@ function AbastecerPage() {
             {brl(saved.total)}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {num(saved.liters, 2)} L · {brl(saved.price)}/L
+            {num(saved.liters, 2)} {saved.unit} · {brl(saved.price)}/{saved.unit}
           </p>
         </div>
 
@@ -311,8 +303,7 @@ function AbastecerPage() {
           ) : (
             <AppCard className="p-4">
               <p className="text-sm text-muted-foreground">
-                No próximo abastecimento, complete o tanque e informe o km para ver seu consumo
-                real.
+                Falta 1 tanque cheio para ver seu consumo real.
               </p>
             </AppCard>
           )}
@@ -367,19 +358,26 @@ function AbastecerPage() {
           label="Preço por litro"
           value={price}
           onChange={(value) => {
-            setPriceTouched(true);
             setPrice(value);
           }}
           prefix="R$"
-          suffix="/L"
+          suffix={`/${unit}`}
           hint={
             amounts.liters > 0
-              ? `Dá ${num(amounts.liters, 2)} litros`
-              : suggestedPrice
-                ? "Preenchemos com o preço do último abastecimento"
-                : "Com o valor, calculamos os litros para você"
+              ? `Dá ${num(amounts.liters, 2)} ${unit === "L" ? "litros" : unit}`
+              : "Com o valor, calculamos os litros para você"
           }
         />
+
+        {suggestedPrice ? (
+          <button
+            type="button"
+            onClick={() => setPrice(suggestedPrice.toFixed(2).replace(".", ","))}
+            className="-mt-2 min-h-11 text-sm font-semibold text-primary"
+          >
+            Mesmo do último: {brl(suggestedPrice)}/{unit}
+          </button>
+        ) : null}
 
         <NumericField
           label="Quilometragem atual"
@@ -437,10 +435,10 @@ function AbastecerPage() {
             />
 
             <NumericField
-              label="Litros abastecidos"
+              label={unit === "L" ? "Litros abastecidos" : "m³ abastecidos"}
               value={litersInput}
               onChange={setLitersInput}
-              suffix="L"
+              suffix={unit}
               hint="Só se você preferir informar os litros no lugar do preço."
             />
 
