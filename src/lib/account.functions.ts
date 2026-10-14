@@ -33,8 +33,14 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Preços informados ficam, mas sem vínculo com a pessoa.
-    await supabaseAdmin.from("station_prices").update({ reported_by: null }).eq("reported_by", userId);
-    await supabaseAdmin.from("price_history").update({ reported_by: null }).eq("reported_by", userId);
+    await supabaseAdmin
+      .from("station_prices")
+      .update({ reported_by: null })
+      .eq("reported_by", userId);
+    await supabaseAdmin
+      .from("price_history")
+      .update({ reported_by: null })
+      .eq("reported_by", userId);
     await supabaseAdmin.from("stations").update({ created_by: null }).eq("created_by", userId);
     await supabaseAdmin.from("clubs").update({ created_by: null }).eq("created_by", userId);
     for (const [table, column] of USER_TABLES) {

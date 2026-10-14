@@ -13,6 +13,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useHomeData } from "@/hooks/use-tanque";
+import { FUEL_LABEL } from "@/constants/app";
+import { ethanolAdvice } from "@/services/insights";
 
 const DashboardCharts = lazy(() => import("@/components/charts/DashboardCharts"));
 
@@ -53,7 +55,7 @@ function DashboardPage() {
     );
   }
 
-  if (rows.length === 0) {
+  if (rows.length < 2) {
     return (
       <AppShell>
         <PageHeader title="Painel" />
@@ -72,6 +74,14 @@ function DashboardPage() {
   }
 
   const series = stats.series.slice(-6);
+  const fuelName = stats.fuelTypeId ? (FUEL_LABEL[stats.fuelTypeId] ?? stats.fuelTypeId) : "";
+  const lastPrice = (fuel: string) => {
+    const r = rows.find((x) => x.fuel_type_id === fuel);
+    return r ? Number(r.price_per_liter) : null;
+  };
+  const gas = lastPrice("gasolina");
+  const eth = lastPrice("etanol");
+  const advice = gas && eth ? ethanolAdvice(gas, eth) : null;
 
   return (
     <AppShell>
@@ -82,9 +92,14 @@ function DashboardPage() {
         <StatTile
           label="Preço médio"
           value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}/L` : "—"}
-          hint="Do que você já pagou"
+          hint={fuelName}
         />
-        <StatTile label="Consumo médio" value={kmPerLiter(stats.avgKmPerLiter)} tone="good" />
+        <StatTile
+          label="Consumo médio"
+          value={kmPerLiter(stats.avgKmPerLiter)}
+          tone="good"
+          hint={stats.avgKmPerLiter ? undefined : "Falta 1 tanque cheio para ver seu consumo real"}
+        />
         <StatTile
           label="Custo por km"
           value={stats.costPerKm ? brl(stats.costPerKm) : "—"}
@@ -103,13 +118,32 @@ function DashboardPage() {
         </AppCard>
 
         <AppCard>
+          <p className="text-sm font-semibold text-foreground">Etanol ou gasolina?</p>
+          {advice && gas && eth ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Pelos seus últimos preços (gasolina {brl(gas)}/L, etanol {brl(eth)}/L), o etanol custa{" "}
+              {num(advice.ratio * 100, 0)}% da gasolina.{" "}
+              <span className="font-semibold text-foreground">
+                {advice.worth ? "Etanol compensa." : "Gasolina compensa."}
+              </span>{" "}
+              Etanol vale a pena até {brl(advice.breakeven)}/L.
+            </p>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Registre ao menos um abastecimento de gasolina e um de etanol para comparar pela regra
+              dos 70%.
+            </p>
+          )}
+        </AppCard>
+
+        <AppCard>
           <p className="text-sm font-semibold text-foreground">Resumo geral</p>
           <dl className="mt-4 space-y-2 text-sm">
             <Item label="Abastecimentos" value={String(stats.count)} />
             <Item label="Litros abastecidos" value={fmtLiters(stats.totalLiters)} />
             <Item label="Total gasto" value={brl(stats.totalSpend)} />
             <Item
-              label="Preço médio pago"
+              label={`Preço médio pago (${fuelName})`}
               value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}/L` : "—"}
             />
             <Item label="Melhor consumo" value={kmPerLiter(stats.bestKmPerLiter)} />

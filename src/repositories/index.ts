@@ -101,15 +101,18 @@ export const vehiclesRepository = {
     if (error) throw error;
   },
 
-  async setPrimary(userId: string, id: string): Promise<void> {
-    await supabase.from("vehicles").update({ is_primary: false }).eq("user_id", userId);
-    await supabase.from("vehicles").update({ is_primary: true }).eq("id", id);
+  /** Troca o principal numa única transação no banco. */
+  async setPrimary(_userId: string, id: string): Promise<void> {
+    const { error } = await supabase.rpc("set_primary_vehicle", { _vehicle_id: id });
+    if (error) throw error;
   },
 };
 
 /* ------------------------------- fuelings -------------------------------- */
 
 export type FuelingDraft = {
+  /** Gerado no aparelho: reenvios nunca duplicam. */
+  id?: string;
   vehicle_id: string;
   station_id?: string | null;
   fuel_type_id: string;
@@ -140,11 +143,12 @@ export const fuelingsRepository = {
     userId: string,
     draft: FuelingDraft,
     computed: { km_per_liter: number | null; cost_per_km: number | null },
-  ): Promise<Fueling> {
-    return unwrap(
-      await supabase
-        .from("fuelings")
-        .insert({
+  ): Promise<Fueling | null> {
+    const { data, error } = await supabase
+      .from("fuelings")
+      .upsert(
+        {
+          ...(draft.id ? { id: draft.id } : {}),
           user_id: userId,
           vehicle_id: draft.vehicle_id,
           station_id: draft.station_id ?? null,
@@ -158,10 +162,13 @@ export const fuelingsRepository = {
           note: draft.note || null,
           km_per_liter: computed.km_per_liter,
           cost_per_km: computed.cost_per_km,
-        })
-        .select("*")
-        .single(),
-    );
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+      )
+      .select("*")
+      .maybeSingle();
+    if (error) throw error;
+    return data;
   },
 
   async update(id: string, patch: Partial<Fueling>): Promise<Fueling> {

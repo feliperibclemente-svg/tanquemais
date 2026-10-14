@@ -179,17 +179,11 @@ function AuthPage() {
         {mode === "signup" ? (
           <p className="text-xs text-muted-foreground">
             Ao criar a conta você concorda com os{" "}
-            <a
-              href={TERMS_URL}
-              className="font-semibold text-primary"
-            >
+            <a href={TERMS_URL} className="font-semibold text-primary">
               Termos de Uso
             </a>{" "}
             e a{" "}
-            <a
-              href={PRIVACY_URL}
-              className="font-semibold text-primary"
-            >
+            <a href={PRIVACY_URL} className="font-semibold text-primary">
               Política de Privacidade
             </a>
             .

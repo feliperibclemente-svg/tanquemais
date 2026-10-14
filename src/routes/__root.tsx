@@ -137,7 +137,17 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function OfflineBanner({ pendingCount }: { pendingCount: number }) {
+function OfflineBanner({
+  pendingCount,
+  failedCount,
+  onRetry,
+  onDiscard,
+}: {
+  pendingCount: number;
+  failedCount: number;
+  onRetry: () => void;
+  onDiscard: () => void;
+}) {
   const [offline, setOffline] = useState(false);
 
   useEffect(() => {
@@ -151,6 +161,33 @@ function OfflineBanner({ pendingCount }: { pendingCount: number }) {
     };
   }, []);
 
+  if (!offline && failedCount > 0) {
+    return (
+      <div
+        role="alert"
+        className="fixed inset-x-0 top-0 z-[60] flex flex-wrap items-center justify-center gap-x-3 bg-foreground px-4 py-2 text-xs font-medium text-background"
+      >
+        <span>
+          {failedCount === 1
+            ? "1 abastecimento não foi enviado."
+            : `${failedCount} abastecimentos não foram enviados.`}
+        </span>
+        <button type="button" className="min-h-8 font-semibold underline" onClick={onRetry}>
+          Tentar de novo
+        </button>
+        <button
+          type="button"
+          className="min-h-8 font-semibold underline"
+          onClick={() => {
+            if (window.confirm("Descartar esses abastecimentos? Eles não serão salvos."))
+              onDiscard();
+          }}
+        >
+          Descartar
+        </button>
+      </div>
+    );
+  }
   if (!offline && pendingCount === 0) return null;
   return (
     <div
@@ -166,8 +203,15 @@ function OfflineBanner({ pendingCount }: { pendingCount: number }) {
 
 /** Fila offline + banner de sincronização. */
 function OfflineSync() {
-  const { pendingCount } = useOfflineSync();
-  return <OfflineBanner pendingCount={pendingCount} />;
+  const { pendingCount, failedCount, retry, discard } = useOfflineSync();
+  return (
+    <OfflineBanner
+      pendingCount={pendingCount}
+      failedCount={failedCount}
+      onRetry={() => void retry()}
+      onDiscard={() => void discard()}
+    />
+  );
 }
 
 /** Telemetria: handlers globais, web vitals e page views. */

@@ -28,6 +28,7 @@ export type VehicleInput = z.infer<typeof vehicleSchema>;
 
 export const fuelingSchema = z
   .object({
+    id: z.string().uuid().optional(),
     vehicle_id: z.string().uuid("Selecione um veículo"),
     station_id: z.string().uuid().nullable().optional(),
     fuel_type_id: z.string().min(1, "Escolha o combustível"),

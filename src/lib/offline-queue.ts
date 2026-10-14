@@ -15,6 +15,8 @@ export interface QueuedFueling {
   userId: string;
   createdAt: string;
   attempts: number;
+  /** Após 5 falhas: não reenviamos sozinhos, mas também não descartamos. */
+  failed?: boolean;
   draft: FuelingDraft;
   computed: { km_per_liter: number | null; cost_per_km: number | null };
 }
@@ -56,13 +58,14 @@ export function enqueueFueling(
   computed: QueuedFueling["computed"],
 ): QueuedFueling {
   const item: QueuedFueling = {
-    id: crypto.randomUUID(),
+    id: draft.id ?? crypto.randomUUID(),
     userId,
     createdAt: new Date().toISOString(),
     attempts: 0,
-    draft,
+    draft: { ...draft, id: draft.id ?? undefined },
     computed,
   };
+  if (!item.draft.id) item.draft.id = item.id;
   write([...read(), item]);
   logger.info("offline.fueling.queued", { id: item.id });
   return item;
@@ -73,10 +76,26 @@ function removeFromQueue(id: string) {
 }
 
 function bumpAttempt(id: string) {
-  const items = read()
-    .map((item) => (item.id === id ? { ...item, attempts: item.attempts + 1 } : item))
-    .filter((item) => item.attempts < MAX_ATTEMPTS);
+  const items = read().map((item) => {
+    if (item.id !== id) return item;
+    const attempts = item.attempts + 1;
+    return { ...item, attempts, failed: attempts >= MAX_ATTEMPTS };
+  });
   write(items);
+}
+
+/** Volta os itens com falha para a fila automática. */
+export function retryFailed(userId: string) {
+  write(
+    read().map((item) =>
+      item.userId === userId && item.failed ? { ...item, failed: false, attempts: 0 } : item,
+    ),
+  );
+}
+
+/** Descarta definitivamente os itens com falha do usuário. */
+export function discardFailed(userId: string) {
+  write(read().filter((item) => !(item.userId === userId && item.failed)));
 }
 
 /** Um erro de rede deve ir para a fila; erros de validação/permissão, não. */
@@ -91,13 +110,13 @@ export type QueueProcessor = (item: QueuedFueling) => Promise<unknown>;
 let flushing = false;
 
 /** Reenvia todos os itens pendentes. Retorna quantos foram sincronizados. */
-export async function flushQueue(process: QueueProcessor): Promise<number> {
+export async function flushQueue(userId: string, process: QueueProcessor): Promise<number> {
   if (flushing || typeof navigator === "undefined" || !navigator.onLine) return 0;
   flushing = true;
   let synced = 0;
 
   try {
-    for (const item of read()) {
+    for (const item of read().filter((i) => i.userId === userId && !i.failed)) {
       try {
         await process(item);
         removeFromQueue(item.id);

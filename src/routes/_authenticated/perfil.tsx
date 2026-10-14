@@ -3,7 +3,15 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Download, FlaskConical, LogOut, MessageSquareHeart, Moon, Sun, Trash2 } from "lucide-react";
+import {
+  Download,
+  FlaskConical,
+  LogOut,
+  MessageSquareHeart,
+  Moon,
+  Sun,
+  Trash2,
+} from "lucide-react";
 import {
   Action,
   ActionLink,
@@ -238,7 +246,12 @@ function PerfilPage() {
             opinião decide o que vem primeiro.
           </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <ActionLink to="/feedback" search={{ from: path } as never} size="md" className="w-full sm:w-auto">
+            <ActionLink
+              to="/feedback"
+              search={{ from: path } as never}
+              size="md"
+              className="w-full sm:w-auto"
+            >
               <MessageSquareHeart className="h-4 w-4" /> Enviar feedback
             </ActionLink>
             <ActionLink to="/beta" variant="secondary" size="md" className="w-full sm:w-auto">
@@ -266,17 +279,11 @@ function PerfilPage() {
             . Atendemos em até 15 dias.
           </p>
           <p className="mt-2 text-xs">
-            <a
-              href={PRIVACY_URL}
-              className="font-semibold text-primary"
-            >
+            <a href={PRIVACY_URL} className="font-semibold text-primary">
               Privacidade
             </a>
             <span className="text-muted-foreground"> · </span>
-            <a
-              href={TERMS_URL}
-              className="font-semibold text-primary"
-            >
+            <a href={TERMS_URL} className="font-semibold text-primary">
               Termos
             </a>
           </p>
