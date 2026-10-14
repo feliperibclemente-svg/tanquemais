@@ -97,9 +97,13 @@ function VeiculoPage() {
 
   async function makePrimary(id: string) {
     if (!user) return;
-    await vehiclesRepository.setPrimary(user.id, id);
-    await vehicles.refetch();
-    toast.success("Veículo principal atualizado");
+    try {
+      await vehiclesRepository.setPrimary(user.id, id);
+      await vehicles.refetch();
+      toast.success("Veículo principal atualizado");
+    } catch {
+      toast.error("Não conseguimos trocar o veículo principal. Tente novamente.");
+    }
   }
 
   return (
