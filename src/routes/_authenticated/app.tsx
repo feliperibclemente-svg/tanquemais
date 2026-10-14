@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
@@ -72,28 +72,8 @@ function HomePage() {
   const verdict = last ? historyVerdicts(rows).get(last.id) : undefined;
 
   if (!primaryVehicle) {
-    return (
-      <AppShell fab={false}>
-        <header>
-          <p className="text-sm text-muted-foreground">
-            {greeting()}
-            {firstName ? `, ${firstName}` : ""}
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Tanque+</h1>
-        </header>
-        <AppCard className="mt-5 text-center">
-          <p className="text-lg font-semibold text-foreground">
-            Cadastre seu veículo para começar.
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Com o veículo cadastrado a gente calcula consumo, gasto e custo por quilômetro.
-          </p>
-          <ActionLink to="/veiculo" size="lg" className="mt-4">
-            Adicionar veículo
-          </ActionLink>
-        </AppCard>
-      </AppShell>
-    );
+    // Primeiro acesso: o cadastro guiado leva direto ao primeiro abastecimento.
+    return <Navigate to="/boas-vindas" replace />;
   }
 
   return (

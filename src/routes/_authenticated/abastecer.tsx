@@ -277,7 +277,7 @@ function AbastecerPage() {
           title="Cadastre um veículo primeiro"
           description="Precisamos do veículo para calcular consumo e economia."
           action={
-            <ActionLink to="/veiculo" size="md" className="mt-1">
+            <ActionLink to="/boas-vindas" size="md" className="mt-1">
               Cadastrar veículo
             </ActionLink>
           }

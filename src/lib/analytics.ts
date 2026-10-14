@@ -106,6 +106,8 @@ export type AnalyticsEvent =
   | "funnel_vehicle_added"
   | "funnel_first_fueling"
   | "funnel_activated"
+  | "onboarding_started"
+  | "onboarding_vehicle_saved"
   | "retention_day_return"
   /* uso */
   | "profile_updated"

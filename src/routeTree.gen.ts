@@ -21,6 +21,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedAbastecerRouteImport } from './routes/_authenticated/abastecer'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedBetaRouteImport } from './routes/_authenticated/beta'
+import { Route as AuthenticatedBoasVindasRouteImport } from './routes/_authenticated/boas-vindas'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -91,6 +92,11 @@ const AuthenticatedBetaRoute = AuthenticatedBetaRouteImport.update({
   path: '/beta',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBoasVindasRoute = AuthenticatedBoasVindasRouteImport.update({
+  id: '/boas-vindas',
+  path: '/boas-vindas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/abastecer': typeof AuthenticatedAbastecerRoute
   '/app': typeof AuthenticatedAppRoute
   '/beta': typeof AuthenticatedBetaRoute
+  '/boas-vindas': typeof AuthenticatedBoasVindasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/abastecer': typeof AuthenticatedAbastecerRoute
   '/app': typeof AuthenticatedAppRoute
   '/beta': typeof AuthenticatedBetaRoute
+  '/boas-vindas': typeof AuthenticatedBoasVindasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/_authenticated/abastecer': typeof AuthenticatedAbastecerRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/beta': typeof AuthenticatedBetaRoute
+  '/_authenticated/boas-vindas': typeof AuthenticatedBoasVindasRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/abastecer'
     | '/app'
     | '/beta'
+    | '/boas-vindas'
     | '/dashboard'
     | '/feedback'
     | '/historico'
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
     | '/abastecer'
     | '/app'
     | '/beta'
+    | '/boas-vindas'
     | '/dashboard'
     | '/feedback'
     | '/historico'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/_authenticated/abastecer'
     | '/_authenticated/app'
     | '/_authenticated/beta'
+    | '/_authenticated/boas-vindas'
     | '/_authenticated/dashboard'
     | '/_authenticated/feedback'
     | '/_authenticated/historico'
@@ -365,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBetaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/boas-vindas': {
+      id: '/_authenticated/boas-vindas'
+      path: '/boas-vindas'
+      fullPath: '/boas-vindas'
+      preLoaderRoute: typeof AuthenticatedBoasVindasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -428,6 +447,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAbastecerRoute: typeof AuthenticatedAbastecerRoute
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedBetaRoute: typeof AuthenticatedBetaRoute
+  AuthenticatedBoasVindasRoute: typeof AuthenticatedBoasVindasRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
@@ -440,6 +460,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAbastecerRoute: AuthenticatedAbastecerRoute,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedBetaRoute: AuthenticatedBetaRoute,
+  AuthenticatedBoasVindasRoute: AuthenticatedBoasVindasRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
