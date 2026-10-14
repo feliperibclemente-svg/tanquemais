@@ -169,7 +169,9 @@ function HomePage() {
           <Mini
             label="Consumo"
             value={kmPerLiter(stats.avgKmPerLiter)}
-            hint={stats.avgKmPerLiter ? "média km/L" : "Falta 1 tanque cheio para ver seu consumo real"}
+            hint={
+              stats.avgKmPerLiter ? "média km/L" : "Falta 1 tanque cheio para ver seu consumo real"
+            }
           />
         </div>
 

@@ -179,7 +179,8 @@ function OfflineBanner({
           type="button"
           className="min-h-8 font-semibold underline"
           onClick={() => {
-            if (window.confirm("Descartar esses abastecimentos? Eles não serão salvos.")) onDiscard();
+            if (window.confirm("Descartar esses abastecimentos? Eles não serão salvos."))
+              onDiscard();
           }}
         >
           Descartar

@@ -6,9 +6,15 @@ export const Route = createFileRoute("/privacidade")({
   head: () => ({
     meta: [
       { title: "Política de Privacidade — Tanque+" },
-      { name: "description", content: "Quais dados o Tanque+ coleta no beta, por quê e como exercer seus direitos." },
+      {
+        name: "description",
+        content: "Quais dados o Tanque+ coleta no beta, por quê e como exercer seus direitos.",
+      },
       { property: "og:title", content: "Política de Privacidade — Tanque+" },
-      { property: "og:description", content: "Como o Tanque+ trata seus dados durante o beta gratuito." },
+      {
+        property: "og:description",
+        content: "Como o Tanque+ trata seus dados durante o beta gratuito.",
+      },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -43,7 +49,10 @@ function Privacidade() {
       </section>
       <section>
         <h2>Não vendemos seus dados</h2>
-        <p>Seus dados não são vendidos nem compartilhados com anunciantes. Outros usuários não veem seus abastecimentos.</p>
+        <p>
+          Seus dados não são vendidos nem compartilhados com anunciantes. Outros usuários não veem
+          seus abastecimentos.
+        </p>
       </section>
       <section>
         <h2>Base legal</h2>
@@ -62,8 +71,11 @@ function Privacidade() {
       <section>
         <h2>Contato</h2>
         <p>
-          Dúvidas ou pedidos: <a className="font-semibold text-primary" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
-          Respondemos em até 15 dias.
+          Dúvidas ou pedidos:{" "}
+          <a className="font-semibold text-primary" href={`mailto:${SUPPORT_EMAIL}`}>
+            {SUPPORT_EMAIL}
+          </a>
+          . Respondemos em até 15 dias.
         </p>
       </section>
     </LegalPage>

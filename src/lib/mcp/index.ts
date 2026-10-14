@@ -1,6 +1,6 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import listStations from "./tools/list-stations";
-import cheapestStation from "./tools/cheapest-station";
+// cheapest_station desativada durante o beta (sem base de postos confiável).
 import fuelEconomy from "./tools/fuel-economy";
 import gasolineVsEthanol from "./tools/gasoline-vs-ethanol";
 import listClubs from "./tools/list-clubs";
@@ -17,5 +17,5 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [listStations, cheapestStation, gasolineVsEthanol, fuelEconomy, listClubs],
+  tools: [listStations, gasolineVsEthanol, fuelEconomy, listClubs],
 });

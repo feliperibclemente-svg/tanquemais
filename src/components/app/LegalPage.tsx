@@ -12,7 +12,9 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
         <span className="text-lg font-semibold tracking-tight text-foreground">Tanque+</span>
       </Link>
       <h1 className="mt-8 text-3xl font-extrabold tracking-tight text-foreground">{title}</h1>
-      <p className="mt-1 text-xs text-muted-foreground">Versão beta · atualizado em outubro de 2026</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Versão beta · atualizado em outubro de 2026
+      </p>
       <div className="mt-6 space-y-5 text-sm leading-relaxed text-foreground [&_h2]:mb-1 [&_h2]:text-base [&_h2]:font-semibold [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5">
         {children}
       </div>

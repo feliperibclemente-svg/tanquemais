@@ -21,30 +21,42 @@ function Termos() {
     <LegalPage title="Termos de Uso">
       <section>
         <h2>O que é o Tanque+</h2>
-        <p>Um app gratuito, em versão beta, para registrar abastecimentos e acompanhar consumo e gastos.</p>
+        <p>
+          Um app gratuito, em versão beta, para registrar abastecimentos e acompanhar consumo e
+          gastos.
+        </p>
       </section>
       <section>
         <h2>Versão de testes</h2>
         <p>
-          Por ser beta, o app pode ter falhas, mudar ou ficar fora do ar. Os cálculos são estimativas
-          feitas com os dados que você informa; confira antes de tomar decisões importantes.
+          Por ser beta, o app pode ter falhas, mudar ou ficar fora do ar. Os cálculos são
+          estimativas feitas com os dados que você informa; confira antes de tomar decisões
+          importantes.
         </p>
       </section>
       <section>
         <h2>Sua conta</h2>
-        <p>Você é responsável pelos dados que registra e por manter seu acesso seguro. Não use o app para fins ilegais.</p>
+        <p>
+          Você é responsável pelos dados que registra e por manter seu acesso seguro. Não use o app
+          para fins ilegais.
+        </p>
       </section>
       <section>
         <h2>Seus dados</h2>
         <p>
-          O tratamento dos seus dados segue a nossa <a className="font-semibold text-primary" href="/privacidade">Política de Privacidade</a>.
-          Você pode excluir sua conta a qualquer momento pelo Perfil.
+          O tratamento dos seus dados segue a nossa{" "}
+          <a className="font-semibold text-primary" href="/privacidade">
+            Política de Privacidade
+          </a>
+          . Você pode excluir sua conta a qualquer momento pelo Perfil.
         </p>
       </section>
       <section>
         <h2>Contato</h2>
         <p>
-          <a className="font-semibold text-primary" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
+          <a className="font-semibold text-primary" href={`mailto:${SUPPORT_EMAIL}`}>
+            {SUPPORT_EMAIL}
+          </a>
         </p>
       </section>
     </LegalPage>
