@@ -9,6 +9,7 @@ import {
   AppCard,
   AppShell,
   ErrorState,
+  InstallCard,
   ScreenSkeleton,
   VerdictPill,
 } from "@/components/ds";
@@ -167,6 +168,8 @@ function HomePage() {
             primaryVehicle ? `${primaryVehicle.brand} ${primaryVehicle.model}` : undefined
           }
         />
+
+        <InstallCard />
       </motion.div>
     </AppShell>
   );

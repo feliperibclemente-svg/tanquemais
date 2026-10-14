@@ -1,0 +1,30 @@
+{
+  "name": "Tanque+ — Economize combustível",
+  "short_name": "Tanque+",
+  "description": "Registre abastecimentos em segundos e veja seu consumo real.",
+  "lang": "pt-BR",
+  "start_url": "/app?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8FAF8",
+  "theme_color": "#22C55E",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrar abastecimento",
+      "short_name": "Abastecer",
+      "url": "/abastecer?source=pwa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
