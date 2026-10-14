@@ -6,6 +6,7 @@ import {
   Action,
   AppCard,
   AppShell,
+  BrandModelFields,
   ConfirmAction,
   EmptyState,
   ErrorState,
@@ -15,6 +16,7 @@ import {
   TextField,
 } from "@/components/ds";
 import { FUEL_LABEL, FUEL_TYPES } from "@/constants/app";
+import { canonicalVehicle } from "@/constants/vehicles";
 import { int } from "@/lib/format";
 import {
   useCreateVehicle,
@@ -72,6 +74,7 @@ function VeiculoPage() {
     setError(null);
     const parsed = vehicleSchema.safeParse({
       ...values,
+      ...canonicalVehicle(values.brand, values.model),
       year: values.year || undefined,
       tank_liters: values.tank_liters || undefined,
     });
@@ -131,17 +134,12 @@ function VeiculoPage() {
               value={values.nickname}
               onChange={(e) => setValues({ ...values, nickname: e.target.value })}
             />
+            <BrandModelFields
+              brand={values.brand}
+              model={values.model}
+              onChange={(next) => setValues({ ...values, ...next })}
+            />
             <div className="grid grid-cols-2 gap-3">
-              <TextField
-                label="Marca"
-                value={values.brand}
-                onChange={(e) => setValues({ ...values, brand: e.target.value })}
-              />
-              <TextField
-                label="Modelo"
-                value={values.model}
-                onChange={(e) => setValues({ ...values, model: e.target.value })}
-              />
               <TextField
                 label="Ano"
                 inputMode="numeric"
@@ -282,6 +280,7 @@ function EditVehicle({ vehicle, onDone }: { vehicle: Vehicle; onDone: () => void
     setError(null);
     const parsed = vehicleSchema.safeParse({
       ...values,
+      ...canonicalVehicle(values.brand, values.model),
       year: values.year || undefined,
       tank_liters: values.tank_liters || undefined,
     });
@@ -312,17 +311,12 @@ function EditVehicle({ vehicle, onDone }: { vehicle: Vehicle; onDone: () => void
         value={values.nickname}
         onChange={(e) => setValues({ ...values, nickname: e.target.value })}
       />
+      <BrandModelFields
+        brand={values.brand}
+        model={values.model}
+        onChange={(next) => setValues({ ...values, ...next })}
+      />
       <div className="grid grid-cols-2 gap-3">
-        <TextField
-          label="Marca"
-          value={values.brand}
-          onChange={(e) => setValues({ ...values, brand: e.target.value })}
-        />
-        <TextField
-          label="Modelo"
-          value={values.model}
-          onChange={(e) => setValues({ ...values, model: e.target.value })}
-        />
         <TextField
           label="Ano"
           inputMode="numeric"

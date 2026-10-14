@@ -6,6 +6,7 @@
  *
  * - Ação/ActionLink ....... botões e links de ação (primary, secondary, soft, ghost, danger)
  * - ChoiceGroup ........... chips de seleção única
+ * - BrandModelFields ...... marca e modelo pelo catálogo, com opção "Outra"
  * - TextField/SelectField . campos de formulário
  * - ToggleRow ............. linha de ligar/desligar
  * - NumericField .......... campo numérico grande (abastecimento)
@@ -36,5 +37,6 @@ export {
   ScreenSkeleton,
 } from "@/components/app/Surface";
 export { AppShell } from "@/components/app/AppShell";
+export { BrandModelFields } from "@/components/app/BrandModelFields";
 export { ErrorState } from "@/components/app/ErrorState";
 export { VerdictCard, VerdictPill } from "@/components/app/Verdict";

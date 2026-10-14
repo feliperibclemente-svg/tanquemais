@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { canonicalVehicle } from "@/constants/vehicles";
 import {
   formatCents,
   maskCents,
@@ -109,5 +110,19 @@ describe("campo de dinheiro aceita vírgula", () => {
   });
   it("apagar tudo volta para a máscara de maquininha", () => {
     expect(nextCentsValue("5,", "", 3, true)).toEqual({ value: "", natural: false });
+  });
+});
+
+describe("catálogo de veículos", () => {
+  it("padroniza a grafia de marcas e modelos conhecidos", () => {
+    expect(canonicalVehicle("chevrolet", "onix plus")).toEqual({
+      brand: "Chevrolet",
+      model: "Onix Plus",
+    });
+    expect(canonicalVehicle("citroen", "c3")).toEqual({ brand: "Citroën", model: "C3" });
+  });
+  it("mantém o que foi digitado quando não está no catálogo", () => {
+    expect(canonicalVehicle(" Lada ", "Niva ")).toEqual({ brand: "Lada", model: "Niva" });
+    expect(canonicalVehicle("Fiat", "147")).toEqual({ brand: "Fiat", model: "147" });
   });
 });
