@@ -3,7 +3,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { fuelingsRepository } from "@/repositories";
 import {
+  discardFailed,
   flushQueue,
+  retryFailed,
   queuedFuelings,
   subscribeQueue,
   type QueuedFueling,
@@ -36,7 +38,7 @@ export function useOfflineSync() {
 
     const sync = async () => {
       if (cancelled) return;
-      const synced = await flushQueue((item) =>
+      const synced = await flushQueue(user.id, (item) =>
         fuelingsRepository.create(item.userId, item.draft, item.computed),
       );
       if (cancelled || synced === 0) return;
@@ -54,7 +56,7 @@ export function useOfflineSync() {
     void sync();
     window.addEventListener("online", sync);
     const timer = window.setInterval(() => {
-      if (queuedFuelings().length > 0) void sync();
+      if (queuedFuelings().some((i) => i.userId === user.id && !i.failed)) void sync();
     }, RETRY_INTERVAL);
 
     return () => {
@@ -64,5 +66,13 @@ export function useOfflineSync() {
     };
   }, [user, client]);
 
-  return { pending, pendingCount: pending.length };
+  const mine = pending.filter((i) => i.userId === user?.id);
+  const failed = mine.filter((i) => i.failed);
+  return {
+    pending: mine,
+    pendingCount: mine.length - failed.length,
+    failedCount: failed.length,
+    retry: () => user && retryFailed(user.id),
+    discard: () => user && discardFailed(user.id),
+  };
 }
