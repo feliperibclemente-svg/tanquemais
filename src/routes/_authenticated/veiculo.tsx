@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Pencil, Plus, Star, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import {
   Action,
   AppCard,
@@ -11,6 +10,7 @@ import {
   EmptyState,
   ErrorState,
   PageHeader,
+  PrimaryStar,
   ScreenSkeleton,
   SelectField,
   TextField,
@@ -21,11 +21,10 @@ import { int } from "@/lib/format";
 import {
   useCreateVehicle,
   useDeleteVehicle,
+  useSetPrimaryVehicle,
   useUpdateVehicle,
   useVehicles,
 } from "@/hooks/use-tanque";
-import { useAuth } from "@/providers/AuthProvider";
-import { vehiclesRepository } from "@/repositories";
 import type { Vehicle } from "@/types/domain";
 import { vehicleSchema } from "@/validators";
 
@@ -57,10 +56,10 @@ const EMPTY = {
 };
 
 function VeiculoPage() {
-  const { user } = useAuth();
   const vehicles = useVehicles();
   const create = useCreateVehicle();
   const remove = useDeleteVehicle();
+  const setPrimary = useSetPrimaryVehicle();
 
   const [form, setForm] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -98,22 +97,11 @@ function VeiculoPage() {
     setValues(EMPTY);
   }
 
-  async function makePrimary(id: string) {
-    if (!user) return;
-    try {
-      await vehiclesRepository.setPrimary(user.id, id);
-      await vehicles.refetch();
-      toast.success("Veículo principal atualizado");
-    } catch {
-      toast.error("Não conseguimos trocar o veículo principal. Tente novamente.");
-    }
-  }
-
   return (
     <AppShell>
       <PageHeader
         title="Veículos"
-        subtitle="Seus carros cadastrados no Tanque+"
+        subtitle="Toque na estrela para escolher o principal"
         action={
           <Action
             size="icon"
@@ -200,11 +188,11 @@ function VeiculoPage() {
                       {v.fuel_type_id ? ` · ${FUEL_LABEL[v.fuel_type_id] ?? v.fuel_type_id}` : ""}
                     </p>
                   </div>
-                  {v.is_primary ? (
-                    <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-accent-foreground">
-                      Principal
-                    </span>
-                  ) : null}
+                  <PrimaryStar
+                    active={v.is_primary}
+                    disabled={setPrimary.isPending}
+                    onClick={() => setPrimary.mutate(v.id)}
+                  />
                 </div>
 
                 <p className="mt-3 text-sm text-muted-foreground">
@@ -213,11 +201,6 @@ function VeiculoPage() {
                 </p>
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-                  {!v.is_primary ? (
-                    <Action variant="ghost" size="sm" onClick={() => makePrimary(v.id)}>
-                      <Star className="h-4 w-4" /> Tornar principal
-                    </Action>
-                  ) : null}
                   <Action
                     variant="ghost"
                     size="sm"

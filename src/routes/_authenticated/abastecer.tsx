@@ -12,6 +12,7 @@ import {
   NumericField,
   PageHeader,
   parseDecimal,
+  PrimaryStar,
   ScreenSkeleton,
   SelectField,
   TextField,
@@ -23,6 +24,7 @@ import {
   useCreateFueling,
   useFuelings,
   useProfile,
+  useSetPrimaryVehicle,
   useStations,
   useVehicles,
 } from "@/hooks/use-tanque";
@@ -90,6 +92,7 @@ function AbastecerPage() {
   const profile = useProfile();
   const stations = useStations(profile.data?.city ?? null);
   const create = useCreateFueling();
+  const setPrimary = useSetPrimaryVehicle();
 
   const list = vehicles.data ?? [];
   const history = useMemo(
@@ -358,6 +361,27 @@ function AbastecerPage() {
       />
 
       <form onSubmit={submit} className="space-y-5">
+        {list.length > 1 ? (
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">Qual veículo?</p>
+            <ChoiceGroup
+              label="Veículo"
+              value={vehicle.id}
+              onChange={setVehicleId}
+              options={list.map((v) => ({
+                value: v.id,
+                label: `${v.is_primary ? "★ " : ""}${v.nickname || `${v.brand} ${v.model}`}`,
+              }))}
+            />
+            <PrimaryStar
+              withLabel
+              active={vehicle.is_primary}
+              disabled={setPrimary.isPending}
+              onClick={() => setPrimary.mutate(vehicle.id)}
+            />
+          </div>
+        ) : null}
+
         <ChoiceGroup
           label="Combustível"
           value={fuelTypeId}
@@ -432,18 +456,6 @@ function AbastecerPage() {
             { value: "nao", label: "Não" },
           ]}
         />
-
-        {list.length > 1 ? (
-          <ChoiceGroup
-            label="Veículo"
-            value={vehicle.id}
-            onChange={setVehicleId}
-            options={list.map((v) => ({
-              value: v.id,
-              label: v.nickname || `${v.brand} ${v.model}`,
-            }))}
-          />
-        ) : null}
 
         <button
           type="button"

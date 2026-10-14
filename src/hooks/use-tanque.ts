@@ -128,6 +128,21 @@ export function useUpdateVehicle() {
   });
 }
 
+/** Favorita um veículo como principal (troca atômica no banco). */
+export function useSetPrimaryVehicle() {
+  const { user } = useAuth();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => vehiclesRepository.setPrimary(user!.id, id),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: queryKeys.vehicles(user?.id ?? "") });
+      track("vehicle_set_primary");
+      toast.success("Veículo principal atualizado");
+    },
+    onError: reportMutationError("vehicle.set_primary"),
+  });
+}
+
 export function useDeleteVehicle() {
   const { user } = useAuth();
   const client = useQueryClient();

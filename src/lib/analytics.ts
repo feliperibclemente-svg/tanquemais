@@ -112,6 +112,7 @@ export type AnalyticsEvent =
   | "vehicle_created"
   | "vehicle_updated"
   | "vehicle_deleted"
+  | "vehicle_set_primary"
   | "fueling_created"
   | "fueling_queued_offline"
   | "fueling_synced"
