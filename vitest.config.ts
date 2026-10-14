@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 
 // Carrega o .env do projeto para os testes de permissão (RLS/GRANTs).
@@ -8,6 +9,7 @@ const isCI = Boolean(process.env["CI"]);
 const suffix = process.env["RLS_REPORT_NAME"] ?? "rls";
 
 export default defineConfig({
+  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
