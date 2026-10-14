@@ -8,7 +8,9 @@ import {
   FlaskConical,
   LogOut,
   MessageSquareHeart,
+  Camera,
   Moon,
+  Pencil,
   Sun,
   Trash2,
 } from "lucide-react";
@@ -22,6 +24,7 @@ import {
   ScreenSkeleton,
   SelectField,
   StatTile,
+  TextField,
 } from "@/components/ds";
 
 import { brl, kmPerLiter, liters as fmtLiters } from "@/lib/format";
@@ -32,6 +35,9 @@ import { track } from "@/lib/analytics";
 import { PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL } from "@/constants/app";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { queuedFuelings } from "@/lib/offline-queue";
+import { photoToAvatarDataUrl } from "@/lib/image";
+import { profileSchema } from "@/validators";
+import type { Profile } from "@/types/domain";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   head: () => ({
@@ -81,6 +87,7 @@ function PerfilPage() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const removeAccount = useServerFn(deleteMyAccount);
   const [busy, setBusy] = useState<"export" | "delete" | null>(null);
+  const [editing, setEditing] = useState(false);
   const [dark, setDark] = useState(false);
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -183,16 +190,22 @@ function PerfilPage() {
 
       <AppCard>
         <div className="flex items-center gap-4">
-          <span className="flex h-14 w-14 items-center justify-center rounded-3xl bg-accent text-xl font-bold text-accent-foreground">
-            {(data?.full_name ?? user?.email ?? "T").slice(0, 1).toUpperCase()}
-          </span>
-          <div className="min-w-0">
+          <Avatar url={data?.avatar_url ?? null} name={data?.full_name ?? user?.email ?? "T"} />
+          <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold text-foreground">
               {data?.full_name || "Motorista Tanque+"}
             </p>
-            <p className="truncate text-sm text-muted-foreground">{user?.email}</p>
+            <p className="truncate text-sm text-muted-foreground">
+              {[data?.city, data?.state].filter(Boolean).join(" · ") || user?.email}
+            </p>
           </div>
+          {!editing ? (
+            <Action variant="ghost" size="sm" onClick={() => setEditing(true)}>
+              <Pencil className="h-4 w-4" /> Editar
+            </Action>
+          ) : null}
         </div>
+        {editing && data ? <ProfileEditor profile={data} onDone={() => setEditing(false)} /> : null}
       </AppCard>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
@@ -310,5 +323,178 @@ function PerfilPage() {
         </Action>
       </section>
     </AppShell>
+  );
+}
+
+const UFS = [
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
+] as const;
+
+function Avatar({
+  url,
+  name,
+  size = "md",
+}: {
+  url: string | null;
+  name: string;
+  size?: "md" | "lg";
+}) {
+  const box = size === "lg" ? "h-20 w-20 text-2xl" : "h-14 w-14 text-xl";
+  return url ? (
+    <img
+      src={url}
+      alt=""
+      className={`${box} shrink-0 rounded-3xl object-cover`}
+      referrerPolicy="no-referrer"
+    />
+  ) : (
+    <span
+      className={`${box} flex shrink-0 items-center justify-center rounded-3xl bg-accent font-bold text-accent-foreground`}
+    >
+      {name.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
+const editorSchema = profileSchema.pick({ full_name: true, city: true, state: true });
+
+/** Edição de foto, nome, cidade e estado. A cidade ajuda nas comparações regionais de preço. */
+function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => void }) {
+  const update = useUpdateProfile();
+  const [name, setName] = useState(profile.full_name ?? "");
+  const [city, setCity] = useState(profile.city ?? "");
+  const [state, setState] = useState(profile.state ?? "");
+  const [photo, setPhoto] = useState<string | null>(profile.avatar_url ?? null);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function pickPhoto(file: File | undefined) {
+    if (!file) return;
+    setError(null);
+    setProcessing(true);
+    try {
+      setPhoto(await photoToAvatarDataUrl(file));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não conseguimos usar essa foto.");
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    const parsed = editorSchema.safeParse({ full_name: name, city, state });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Confira os dados.");
+      return;
+    }
+    try {
+      await update.mutateAsync({
+        full_name: parsed.data.full_name,
+        city: parsed.data.city || null,
+        state: parsed.data.state || null,
+        avatar_url: photo,
+      });
+      track("profile_updated", { photo: !!photo, city: !!parsed.data.city });
+      toast.success("Perfil atualizado");
+      onDone();
+    } catch {
+      /* o hook já mostra o erro */
+    }
+  }
+
+  return (
+    <form onSubmit={save} className="mt-4 space-y-3 border-t border-border pt-4">
+      <div className="flex items-center gap-4">
+        <Avatar url={photo} name={name || "T"} size="lg" />
+        <div className="flex flex-col items-start gap-1">
+          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-primary">
+            <Camera className="h-4 w-4" />
+            {processing ? "Preparando foto…" : photo ? "Trocar foto" : "Adicionar foto"}
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(event) => {
+                void pickPhoto(event.target.files?.[0]);
+                event.target.value = "";
+              }}
+            />
+          </label>
+          {photo ? (
+            <button
+              type="button"
+              onClick={() => setPhoto(null)}
+              className="min-h-8 text-xs font-medium text-muted-foreground"
+            >
+              Remover foto
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      <TextField
+        label="Nome"
+        value={name}
+        autoComplete="name"
+        onChange={(event) => setName(event.target.value)}
+      />
+      <div className="grid grid-cols-[1fr_6rem] gap-3">
+        <TextField
+          label="Cidade"
+          hint="Para comparar preços da sua região"
+          value={city}
+          autoComplete="address-level2"
+          onChange={(event) => setCity(event.target.value)}
+        />
+        <SelectField
+          label="UF"
+          value={state}
+          onChange={(event) => setState(event.target.value)}
+          options={[{ value: "", label: "—" }, ...UFS.map((uf) => ({ value: uf, label: uf }))]}
+        />
+      </div>
+
+      {error ? (
+        <p role="alert" className="text-sm font-medium text-destructive">
+          {error}
+        </p>
+      ) : null}
+      <div className="flex gap-2">
+        <Action type="submit" size="md" loading={update.isPending} disabled={processing}>
+          Salvar perfil
+        </Action>
+        <Action type="button" variant="ghost" size="md" onClick={onDone}>
+          Cancelar
+        </Action>
+      </div>
+    </form>
   );
 }

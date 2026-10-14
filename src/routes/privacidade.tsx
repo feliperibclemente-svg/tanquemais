@@ -46,6 +46,7 @@ function Privacidade() {
           <li>E-mail e nome da sua conta;</li>
           <li>Veículos cadastrados;</li>
           <li>Abastecimentos (valor, preço, litros, quilometragem, data);</li>
+          <li>Foto de perfil, cidade e estado, apenas se você informar (opcionais);</li>
           <li>Faixa etária e gênero, apenas se você informar (opcionais);</li>
           <li>Mensagens de feedback que você enviar;</li>
           <li>Eventos de uso do app (telas abertas e ações), sem e-mail ou nome.</li>

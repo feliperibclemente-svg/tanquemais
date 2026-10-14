@@ -108,6 +108,7 @@ export type AnalyticsEvent =
   | "funnel_activated"
   | "retention_day_return"
   /* uso */
+  | "profile_updated"
   | "vehicle_created"
   | "vehicle_updated"
   | "vehicle_deleted"
