@@ -10,6 +10,7 @@ import {
   ConfirmAction,
   EmptyState,
   ErrorState,
+  formatCents,
   NumericField,
   PageHeader,
   parseDecimal,
@@ -261,8 +262,8 @@ function EditFueling({
   onDone: () => void;
 }) {
   const update = useUpdateFueling();
-  const [total, setTotal] = useState(Number(row.total_cost).toFixed(2).replace(".", ","));
-  const [price, setPrice] = useState(Number(row.price_per_liter).toFixed(3).replace(".", ","));
+  const [total, setTotal] = useState(formatCents(Number(row.total_cost), 2));
+  const [price, setPrice] = useState(formatCents(Number(row.price_per_liter), 3));
   const [odometer, setOdometer] = useState(String(Math.round(Number(row.odometer))));
   const [date, setDate] = useState(toDateInput(row.filled_at));
   const [fullTank, setFullTank] = useState(row.full_tank);
@@ -322,13 +323,14 @@ function EditFueling({
 
   return (
     <div className="space-y-4 border-t border-border px-4 py-4">
-      <NumericField label="Valor pago" value={total} onChange={setTotal} prefix="R$" />
+      <NumericField label="Valor pago" value={total} onChange={setTotal} prefix="R$" cents={2} />
       <NumericField
         label="Preço por litro"
         value={price}
         onChange={setPrice}
         prefix="R$"
         suffix="/L"
+        cents={3}
         hint={amounts.liters > 0 ? `Dá ${num(amounts.liters, 2)} litros` : undefined}
       />
       <NumericField

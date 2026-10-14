@@ -8,6 +8,7 @@ import {
   AppShell,
   ChoiceGroup,
   EmptyState,
+  formatCents,
   NumericField,
   PageHeader,
   parseDecimal,
@@ -56,6 +57,9 @@ export const Route = createFileRoute("/_authenticated/abastecer")({
   }),
   component: AbastecerPage,
 });
+
+/** Valores redondos mais comuns na bomba. */
+const QUICK_AMOUNTS = [10, 20, 30, 40, 50, 100, 200, 300];
 
 interface Saved {
   liters: number;
@@ -361,13 +365,24 @@ function AbastecerPage() {
           options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.short }))}
         />
 
-        <NumericField
-          label="Quanto você abasteceu"
-          value={total}
-          onChange={setTotal}
-          prefix="R$"
-          autoFocus
-        />
+        <div className="space-y-2">
+          <NumericField
+            label="Quanto você abasteceu"
+            value={total}
+            onChange={setTotal}
+            prefix="R$"
+            cents={2}
+            autoFocus
+          />
+          <ChoiceGroup
+            label="Valores rápidos"
+            fill
+            className="grid grid-cols-4"
+            value={QUICK_AMOUNTS.includes(parseDecimal(total)) ? String(parseDecimal(total)) : ""}
+            onChange={(value) => setTotal(formatCents(Number(value)))}
+            options={QUICK_AMOUNTS.map((v) => ({ value: String(v), label: `R$ ${v}` }))}
+          />
+        </div>
 
         <NumericField
           label="Preço por litro"
@@ -377,6 +392,7 @@ function AbastecerPage() {
           }}
           prefix="R$"
           suffix={`/${unit}`}
+          cents={3}
           hint={
             amounts.liters > 0
               ? `Dá ${num(amounts.liters, 2)} ${unit === "L" ? "litros" : unit}`
@@ -387,10 +403,10 @@ function AbastecerPage() {
         {suggestedPrice ? (
           <button
             type="button"
-            onClick={() => setPrice(suggestedPrice.toFixed(2).replace(".", ","))}
+            onClick={() => setPrice(formatCents(suggestedPrice, 3))}
             className="-mt-2 min-h-11 text-sm font-semibold text-primary"
           >
-            Mesmo do último: {brl(suggestedPrice)}/{unit}
+            Mesmo do último: {brl(suggestedPrice, 3)}/{unit}
           </button>
         ) : null}
 

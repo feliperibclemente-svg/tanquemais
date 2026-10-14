@@ -1,4 +1,11 @@
 import { describe, expect, it } from "vitest";
+import {
+  formatCents,
+  maskCents,
+  maskInteger,
+  nextCentsValue,
+  parseDecimal,
+} from "@/components/app/NumericField";
 import { fullTanksMissing, validateOdometer } from "@/services/analytics";
 import { priceVerdict } from "@/services/verdict";
 
@@ -64,5 +71,43 @@ describe("fullTanksMissing", () => {
   });
   it("com um tanque cheio com km falta 1", () => {
     expect(fullTanksMissing([{ full_tank: true, odometer: 1000 }])).toBe(1);
+  });
+});
+
+describe("máscaras de valores", () => {
+  it("dinheiro entra pela direita com vírgula e milhar", () => {
+    expect(maskCents("5")).toBe("0,05");
+    expect(maskCents("5000")).toBe("50,00");
+    expect(maskCents("123456")).toBe("1.234,56");
+    expect(maskCents("R$ 0,507")).toBe("5,07");
+    expect(maskCents("")).toBe("");
+  });
+  it("preço por litro usa 3 casas", () => {
+    expect(maskCents("5899", 3)).toBe("5,899");
+    expect(formatCents(5.79, 3)).toBe("5,790");
+  });
+  it("valores rápidos viram reais inteiros", () => {
+    expect(formatCents(50)).toBe("50,00");
+    expect(parseDecimal(formatCents(300))).toBe(300);
+    expect(parseDecimal("1.234,56")).toBeCloseTo(1234.56);
+  });
+  it("quilometragem ganha separador de milhar", () => {
+    expect(maskInteger("45230")).toBe("45.230");
+    expect(parseDecimal(maskInteger("1234567"))).toBe(1234567);
+  });
+});
+
+describe("campo de dinheiro aceita vírgula", () => {
+  it("5 + vírgula + 89 vira 5,89 (não 0,589)", () => {
+    let state = nextCentsValue("", "5", 3, false);
+    expect(state.value).toBe("0,005");
+    state = nextCentsValue(state.value, `${state.value},`, 3, state.natural);
+    expect(state).toEqual({ value: "5,", natural: true });
+    state = nextCentsValue(state.value, "5,89", 3, state.natural);
+    expect(state.value).toBe("5,89");
+    expect(parseDecimal(state.value)).toBeCloseTo(5.89);
+  });
+  it("apagar tudo volta para a máscara de maquininha", () => {
+    expect(nextCentsValue("5,", "", 3, true)).toEqual({ value: "", natural: false });
   });
 });
