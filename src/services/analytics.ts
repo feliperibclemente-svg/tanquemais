@@ -304,3 +304,17 @@ export function validateOdometer(
   }
   return null;
 }
+
+/**
+ * Quantos tanques cheios ainda faltam para o primeiro consumo real (método tanque cheio →
+ * tanque cheio). Sem nenhum tanque cheio com km registrado faltam 2; com a âncora, falta 1.
+ */
+export function fullTanksMissing(rows: Pick<Fueling, "full_tank" | "odometer">[]): 1 | 2 {
+  return rows.some((r) => r.full_tank && Number(r.odometer) > 0) ? 1 : 2;
+}
+
+export function consumptionPendingText(missing: 1 | 2): string {
+  return missing === 1
+    ? "Falta 1 tanque cheio para ver seu consumo real"
+    : "Faltam 2 tanques cheios para ver seu consumo real";
+}

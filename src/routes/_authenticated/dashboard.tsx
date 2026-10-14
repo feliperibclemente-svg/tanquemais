@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import {
   ActionLink,
   AppCard,
   AppShell,
   EmptyState,
   ErrorState,
+  NumericField,
   PageHeader,
+  parseDecimal,
   ScreenSkeleton,
   StatTile,
 } from "@/components/ds";
@@ -15,6 +17,7 @@ import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useHomeData } from "@/hooks/use-tanque";
 import { FUEL_LABEL } from "@/constants/app";
 import { ethanolAdvice } from "@/services/insights";
+import { consumptionPendingText, fullTanksMissing } from "@/services/analytics";
 
 const DashboardCharts = lazy(() => import("@/components/charts/DashboardCharts"));
 
@@ -81,7 +84,6 @@ function DashboardPage() {
   };
   const gas = lastPrice("gasolina");
   const eth = lastPrice("etanol");
-  const advice = gas && eth ? ethanolAdvice(gas, eth) : null;
 
   return (
     <AppShell>
@@ -98,7 +100,7 @@ function DashboardPage() {
           label="Consumo médio"
           value={kmPerLiter(stats.avgKmPerLiter)}
           tone="good"
-          hint={stats.avgKmPerLiter ? undefined : "Falta 1 tanque cheio para ver seu consumo real"}
+          hint={stats.avgKmPerLiter ? undefined : consumptionPendingText(fullTanksMissing(rows))}
         />
         <StatTile
           label="Custo por km"
@@ -117,24 +119,7 @@ function DashboardPage() {
           </div>
         </AppCard>
 
-        <AppCard>
-          <p className="text-sm font-semibold text-foreground">Etanol ou gasolina?</p>
-          {advice && gas && eth ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Pelos seus últimos preços (gasolina {brl(gas)}/L, etanol {brl(eth)}/L), o etanol custa{" "}
-              {num(advice.ratio * 100, 0)}% da gasolina.{" "}
-              <span className="font-semibold text-foreground">
-                {advice.worth ? "Etanol compensa." : "Gasolina compensa."}
-              </span>{" "}
-              Etanol vale a pena até {brl(advice.breakeven)}/L.
-            </p>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Registre ao menos um abastecimento de gasolina e um de etanol para comparar pela regra
-              dos 70%.
-            </p>
-          )}
-        </AppCard>
+        <EthanolCard lastGasoline={gas} lastEthanol={eth} />
 
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Resumo geral</p>
@@ -161,5 +146,61 @@ function Item({ label, value }: { label: string; value: string }) {
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="font-medium text-foreground">{value}</dd>
     </div>
+  );
+}
+
+const toField = (price: number | null) => (price ? price.toFixed(2).replace(".", ",") : "");
+
+/**
+ * Regra dos 70% com os preços da bomba de hoje. Começa com os últimos preços pagos pelo
+ * usuário, mas os campos são editáveis: o que importa é o preço de agora.
+ */
+function EthanolCard({
+  lastGasoline,
+  lastEthanol,
+}: {
+  lastGasoline: number | null;
+  lastEthanol: number | null;
+}) {
+  const [gasoline, setGasoline] = useState(toField(lastGasoline));
+  const [ethanol, setEthanol] = useState(toField(lastEthanol));
+  const gas = parseDecimal(gasoline);
+  const eth = parseDecimal(ethanol);
+  const advice = gas > 0 && eth > 0 ? ethanolAdvice(gas, eth) : null;
+
+  return (
+    <AppCard>
+      <p className="text-sm font-semibold text-foreground">Etanol ou gasolina?</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Digite os preços da bomba de hoje. Usamos a regra dos 70%.
+      </p>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <NumericField
+          label="Gasolina"
+          value={gasoline}
+          onChange={setGasoline}
+          prefix="R$"
+          suffix="/L"
+        />
+        <NumericField
+          label="Etanol"
+          value={ethanol}
+          onChange={setEthanol}
+          prefix="R$"
+          suffix="/L"
+        />
+      </div>
+      {advice ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          O etanol custa {num(advice.ratio * 100, 0)}% da gasolina.{" "}
+          <span className="font-semibold text-foreground">
+            {advice.worth ? "Etanol compensa." : "Gasolina compensa."}
+          </span>{" "}
+          Com a gasolina a {brl(gas)}/L, o etanol vale a pena até {brl(advice.breakeven)}/L.
+        </p>
+      ) : (
+        <p className="mt-3 text-sm text-muted-foreground">Informe os dois preços para comparar.</p>
+      )}
+    </AppCard>
   );
 }

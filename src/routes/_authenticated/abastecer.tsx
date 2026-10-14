@@ -25,7 +25,12 @@ import {
   useStations,
   useVehicles,
 } from "@/hooks/use-tanque";
-import { computeFuelings, validateOdometer } from "@/services/analytics";
+import {
+  computeFuelings,
+  consumptionPendingText,
+  fullTanksMissing,
+  validateOdometer,
+} from "@/services/analytics";
 import { deriveAmounts, priceVerdict } from "@/services/verdict";
 import type { PriceVerdict } from "@/services/verdict";
 import { fuelingSchema } from "@/validators";
@@ -60,6 +65,7 @@ interface Saved {
   verdict: PriceVerdict;
   unit: string;
   queued: boolean;
+  tanksMissing: 1 | 2;
 }
 
 const todayLocal = () => {
@@ -226,6 +232,10 @@ function AbastecerPage() {
         kmPerLiter: previewKml?.kmPerLiter ?? null,
         unit,
         queued: result.queued,
+        tanksMissing: fullTanksMissing([
+          ...vehicleHistory,
+          { full_tank: parsed.data.full_tank, odometer: parsed.data.odometer },
+        ]),
         verdict: priceVerdict(
           vehicleHistory.filter((r) => new Date(r.filled_at).getTime() < filledAt.getTime()),
           {
@@ -308,7 +318,7 @@ function AbastecerPage() {
           ) : (
             <AppCard className="p-4">
               <p className="text-sm text-muted-foreground">
-                Falta 1 tanque cheio para ver seu consumo real.
+                {consumptionPendingText(saved.tanksMissing)}.
               </p>
             </AppCard>
           )}

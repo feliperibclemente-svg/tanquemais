@@ -18,6 +18,7 @@ import { brl, kmPerLiter, num, relativeDate } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { phraseInsight } from "@/lib/tanque-ia.functions";
 import { historyVerdicts } from "@/services/verdict";
+import { fullTanksMissing } from "@/services/analytics";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -170,7 +171,11 @@ function HomePage() {
             label="Consumo"
             value={kmPerLiter(stats.avgKmPerLiter)}
             hint={
-              stats.avgKmPerLiter ? "média km/L" : "Falta 1 tanque cheio para ver seu consumo real"
+              stats.avgKmPerLiter
+                ? "média km/L"
+                : fullTanksMissing(rows) === 1
+                  ? "falta 1 tanque cheio"
+                  : "faltam 2 tanques cheios"
             }
           />
         </div>
