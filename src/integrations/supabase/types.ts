@@ -672,12 +672,15 @@ export type Database = {
           age_range: string | null
           avatar_url: string | null
           bio: string | null
+          birth_date: string | null
           city: string | null
           created_at: string
+          first_name: string | null
           full_name: string | null
           gender: string | null
           hide_odometer: boolean
           id: string
+          last_name: string | null
           level: number
           onboarded: boolean
           state: string | null
@@ -690,12 +693,15 @@ export type Database = {
           age_range?: string | null
           avatar_url?: string | null
           bio?: string | null
+          birth_date?: string | null
           city?: string | null
           created_at?: string
+          first_name?: string | null
           full_name?: string | null
           gender?: string | null
           hide_odometer?: boolean
           id: string
+          last_name?: string | null
           level?: number
           onboarded?: boolean
           state?: string | null
@@ -708,12 +714,15 @@ export type Database = {
           age_range?: string | null
           avatar_url?: string | null
           bio?: string | null
+          birth_date?: string | null
           city?: string | null
           created_at?: string
+          first_name?: string | null
           full_name?: string | null
           gender?: string | null
           hide_odometer?: boolean
           id?: string
+          last_name?: string | null
           level?: number
           onboarded?: boolean
           state?: string | null
