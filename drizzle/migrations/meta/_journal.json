@@ -15,6 +15,13 @@
       "when": 1791910335557,
       "tag": "0001_usage_events_and_vehicle_fixes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792083160306,
+      "tag": "0002_profile_identity_and_age",
+      "breakpoints": true
     }
   ]
 }
