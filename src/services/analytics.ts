@@ -6,6 +6,17 @@ import { monthKey } from "@/lib/format";
  * Toda a matemática do Tanque+ vive aqui. Componentes só exibem resultados.
  * ========================================================================= */
 
+/**
+ * Problemas de dados detectados em um registro.
+ * - duplicate: mesmo veículo, km, litros e valor do registro anterior (toque duplo ou
+ *   reenvio). Fica fora de todos os cálculos de consumo e custo por km.
+ * - odometer: km menor ou igual ao do registro anterior. Os litros contam (o combustível
+ *   existiu), mas o km não é usado como referência.
+ * - outlier: consumo muito diferente do habitual do veículo (ex.: abastecimento não
+ *   registrado ou tanque não completado). Aparece no histórico, mas não entra nas médias.
+ */
+export type FuelingIssue = "duplicate" | "odometer" | "outlier";
+
 export interface FuelingComputed extends Fueling {
   /** Distância do intervalo tanque cheio → tanque cheio que termina neste registro. */
   distance: number | null;
@@ -14,6 +25,9 @@ export interface FuelingComputed extends Fueling {
   /** Litros e custo acumulados no intervalo medido (só quando há consumo). */
   interval_liters: number | null;
   interval_cost: number | null;
+  issue: FuelingIssue | null;
+  /** Consumo medido que ficou fora das médias por ser atípico (issue = "outlier"). */
+  outlier_km_per_liter: number | null;
 }
 
 /**
@@ -22,33 +36,69 @@ export interface FuelingComputed extends Fueling {
  */
 export const MIN_KML = 3;
 export const MAX_KML = 40;
+/** Com pelo menos esta quantidade de trechos, dá para saber o que é "habitual". */
+export const OUTLIER_MIN_INTERVALS = 4;
+/** Trecho atípico: consumo 50% acima ou abaixo da mediana do veículo no mesmo combustível. */
+export const OUTLIER_FACTOR = 1.5;
 
 const byDateThenOdometer = (a: Fueling, b: Fueling) =>
   new Date(a.filled_at).getTime() - new Date(b.filled_at).getTime() ||
   Number(a.odometer) - Number(b.odometer);
 
+const near = (a: number, b: number, tolerance = 0.01) => Math.abs(a - b) <= tolerance;
+
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+};
+
 /**
  * Método tanque cheio → tanque cheio, por veículo. Nunca usa km/L gravado no banco.
+ *
+ * Consumo do trecho = km entre dois tanques cheios ÷ litros colocados depois do primeiro
+ * (inclusive os parciais e o que completou o tanque no fim do trecho).
+ * Custo por km do trecho = valor pago nesses mesmos abastecimentos ÷ km do trecho.
  * Retorna mais recente primeiro.
  */
 export function computeFuelings(fuelings: Fueling[]): FuelingComputed[] {
   const asc = [...fuelings].sort(byDateThenOdometer);
-  const state = new Map<string, { anchorKm: number | null; liters: number; cost: number }>();
+  const state = new Map<
+    string,
+    { anchorKm: number | null; liters: number; cost: number; last: Fueling | null }
+  >();
 
   const rows: FuelingComputed[] = asc.map((f) => {
-    const empty = {
+    const empty: FuelingComputed = {
       ...f,
       distance: null,
       computed_km_per_liter: null,
       computed_cost_per_km: null,
       interval_liters: null,
       interval_cost: null,
+      issue: null,
+      outlier_km_per_liter: null,
     };
     const odometer = Number(f.odometer) || 0;
     const liters = Number(f.liters) || 0;
     const cost = Number(f.total_cost) || 0;
-    const s = state.get(f.vehicle_id) ?? { anchorKm: null, liters: 0, cost: 0 };
+    const s = state.get(f.vehicle_id) ?? { anchorKm: null, liters: 0, cost: 0, last: null };
     state.set(f.vehicle_id, s);
+    const previous = s.last;
+    s.last = f;
+
+    if (
+      previous &&
+      near(Number(previous.odometer), odometer, 0.5) &&
+      near(Number(previous.liters), liters) &&
+      near(Number(previous.total_cost), cost)
+    ) {
+      // Mesmo abastecimento registrado duas vezes: não soma litros nem custo.
+      s.last = previous;
+      return { ...empty, issue: "duplicate" };
+    }
+
+    const odometerIssue = !!previous && odometer > 0 && odometer <= Number(previous.odometer);
 
     if (s.anchorKm == null) {
       // Primeiro registro (ou ainda sem âncora): consumo null; vira âncora se for tanque cheio com km.
@@ -57,13 +107,16 @@ export function computeFuelings(fuelings: Fueling[]): FuelingComputed[] {
         s.liters = 0;
         s.cost = 0;
       }
-      return empty;
+      return odometerIssue ? { ...empty, issue: "odometer" } : empty;
     }
 
     s.liters += liters;
     s.cost += cost;
 
-    if (!f.full_tank || odometer <= s.anchorKm) return empty;
+    if (odometerIssue || odometer <= s.anchorKm) {
+      return { ...empty, issue: odometer > 0 ? "odometer" : null };
+    }
+    if (!f.full_tank) return empty;
 
     const distance = odometer - s.anchorKm;
     const kml = s.liters > 0 ? distance / s.liters : 0;
@@ -75,7 +128,7 @@ export function computeFuelings(fuelings: Fueling[]): FuelingComputed[] {
 
     if (kml < MIN_KML || kml > MAX_KML) return empty;
     return {
-      ...f,
+      ...empty,
       distance,
       computed_km_per_liter: kml,
       computed_cost_per_km: intervalCost / distance,
@@ -84,7 +137,37 @@ export function computeFuelings(fuelings: Fueling[]): FuelingComputed[] {
     };
   });
 
-  return rows.reverse();
+  return markOutliers(rows).reverse();
+}
+
+/**
+ * Trechos com consumo muito diferente do habitual do mesmo veículo e combustível saem das
+ * médias. Só é aplicado com histórico suficiente para existir um "habitual".
+ */
+function markOutliers(rows: FuelingComputed[]): FuelingComputed[] {
+  const groups = new Map<string, number[]>();
+  for (const r of rows) {
+    if (!r.computed_km_per_liter) continue;
+    const key = `${r.vehicle_id}|${r.fuel_type_id}`;
+    groups.set(key, [...(groups.get(key) ?? []), r.computed_km_per_liter]);
+  }
+  return rows.map((r) => {
+    const values = groups.get(`${r.vehicle_id}|${r.fuel_type_id}`);
+    if (!r.computed_km_per_liter || !values || values.length < OUTLIER_MIN_INTERVALS) return r;
+    const typical = median(values);
+    const kml = r.computed_km_per_liter;
+    if (kml <= typical * OUTLIER_FACTOR && kml >= typical / OUTLIER_FACTOR) return r;
+    return {
+      ...r,
+      issue: "outlier",
+      outlier_km_per_liter: kml,
+      distance: null,
+      computed_km_per_liter: null,
+      computed_cost_per_km: null,
+      interval_liters: null,
+      interval_cost: null,
+    };
+  });
 }
 
 /** Consumo do próximo abastecimento, dado o odômetro anterior. */
@@ -150,14 +233,20 @@ export interface Overview {
   monthDelta: number | null;
   totalSpend: number;
   totalLiters: number;
+  /** Km medidos entre tanques cheios (não é o total rodado: trechos sem medição ficam fora). */
   totalKm: number;
+  /** Consumo médio só do combustível mais recente (gasolina e etanol não se misturam). */
   avgKmPerLiter: number | null;
   bestKmPerLiter: number | null;
   worstKmPerLiter: number | null;
   avgPricePerLiter: number | null;
+  /** Custo de combustível por km medido, em todos os combustíveis (R$ é R$). */
   costPerKm: number | null;
-  savings: number;
-  /** Combustível do abastecimento mais recente: base de preço médio, melhor/pior e economia. */
+  /** Registros fora das contas por suspeita de duplicidade. */
+  duplicates: number;
+  /** Trechos com consumo atípico, fora das médias. */
+  outliers: number;
+  /** Combustível do abastecimento mais recente: base de preço médio, consumo e melhor/pior. */
   fuelTypeId: string | null;
   /** Variação do consumo entre os dois últimos meses consecutivos comparáveis. */
   consumptionTrend: { previous: number; current: number } | null;
@@ -165,7 +254,9 @@ export interface Overview {
   series: MonthPoint[];
 }
 
-export function overview(rows: FuelingComputed[]): Overview {
+export function overview(allRows: FuelingComputed[]): Overview {
+  // Registros duplicados não entram em gasto, litros nem consumo.
+  const rows = allRows.filter((r) => r.issue !== "duplicate");
   const series = monthlySeries(rows);
   const now = new Date();
   const thisKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -186,7 +277,6 @@ export function overview(rows: FuelingComputed[]): Overview {
   const fuelTypeId = rows[0]?.fuel_type_id ?? null;
   const sameFuel = rows.filter((r) => r.fuel_type_id === fuelTypeId);
   const kmls = sameFuel.map((r) => r.computed_km_per_liter).filter((v): v is number => !!v);
-  const prices = sameFuel.map((r) => Number(r.price_per_liter)).filter((v) => v > 0);
   const fuelSpend = sameFuel.reduce((s, r) => s + (Number(r.total_cost) || 0), 0);
   const fuelLiters = sameFuel.reduce((s, r) => s + (Number(r.liters) || 0), 0);
   const totalSpend = rows.reduce((s, r) => s + (Number(r.total_cost) || 0), 0);
@@ -194,13 +284,12 @@ export function overview(rows: FuelingComputed[]): Overview {
   /** Trechos válidos: têm distância e consumo plausível. Base única para km/L e R$/km. */
   const valid = rows.filter((r) => r.computed_km_per_liter && r.distance);
   const totalKm = valid.reduce((s, r) => s + (r.distance ?? 0), 0);
-  const validLiters = valid.reduce((s, r) => s + (r.interval_liters ?? 0), 0);
   const validCost = valid.reduce((s, r) => s + (r.interval_cost ?? 0), 0);
 
-  const cheapest = prices.length ? Math.min(...prices) : 0;
-  const savings = cheapest
-    ? sameFuel.reduce((s, r) => s + (Number(r.price_per_liter) - cheapest) * Number(r.liters), 0)
-    : 0;
+  // Consumo médio = km medidos ÷ litros dos trechos que terminaram com o combustível atual.
+  const fuelValid = valid.filter((r) => r.fuel_type_id === fuelTypeId);
+  const fuelKm = fuelValid.reduce((s, r) => s + (r.distance ?? 0), 0);
+  const fuelValidLiters = fuelValid.reduce((s, r) => s + (r.interval_liters ?? 0), 0);
 
   return {
     count: rows.length,
@@ -213,12 +302,13 @@ export function overview(rows: FuelingComputed[]): Overview {
     totalSpend,
     totalLiters,
     totalKm,
-    avgKmPerLiter: validLiters > 0 ? totalKm / validLiters : null,
+    avgKmPerLiter: fuelValidLiters > 0 ? fuelKm / fuelValidLiters : null,
     bestKmPerLiter: kmls.length ? Math.max(...kmls) : null,
     worstKmPerLiter: kmls.length ? Math.min(...kmls) : null,
     avgPricePerLiter: fuelLiters > 0 ? fuelSpend / fuelLiters : null,
     costPerKm: totalKm > 0 ? validCost / totalKm : null,
-    savings: Math.max(0, savings),
+    duplicates: allRows.length - rows.length,
+    outliers: rows.filter((r) => r.issue === "outlier").length,
     fuelTypeId,
     consumptionTrend: consumptionTrend(valid),
     last: rows[0] ?? null,

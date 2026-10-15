@@ -68,6 +68,7 @@ interface Saved {
   total: number;
   price: number;
   kmPerLiter: number | null;
+  atypical: boolean;
   verdict: PriceVerdict;
   unit: string;
   queued: boolean;
@@ -164,8 +165,16 @@ function AbastecerPage() {
     } as Fueling;
     const rows = computeFuelings([...(vehicleHistory as Fueling[]), draft]);
     const row = rows.find((r) => r.id === "__preview__");
-    return row?.computed_km_per_liter
-      ? { kmPerLiter: row.computed_km_per_liter, costPerKm: row.computed_cost_per_km }
+    if (row?.computed_km_per_liter) {
+      return {
+        kmPerLiter: row.computed_km_per_liter,
+        costPerKm: row.computed_cost_per_km,
+        atypical: false,
+      };
+    }
+    // Consumo muito fora do padrão: mostramos, mas avisamos e ele não entra nas médias.
+    return row?.outlier_km_per_liter
+      ? { kmPerLiter: row.outlier_km_per_liter, costPerKm: null, atypical: true }
       : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -237,6 +246,7 @@ function AbastecerPage() {
         total: parsed.data.total_cost,
         price: parsed.data.price_per_liter,
         kmPerLiter: previewKml?.kmPerLiter ?? null,
+        atypical: previewKml?.atypical ?? false,
         unit,
         queued: result.queued,
         tanksMissing: fullTanksMissing([
@@ -321,6 +331,12 @@ function AbastecerPage() {
                 </span>{" "}
                 desde o último tanque cheio.
               </p>
+              {saved.atypical ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Bem diferente do seu padrão. Se algum abastecimento ficou sem registro ou o tanque
+                  não foi completado, este trecho não entra nas médias.
+                </p>
+              ) : null}
             </AppCard>
           ) : (
             <AppCard className="p-4">

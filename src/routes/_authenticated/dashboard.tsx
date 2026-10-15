@@ -91,22 +91,32 @@ function DashboardPage() {
       <PageHeader title="Painel" subtitle="Seus números de consumo e gasto" />
 
       <div className="grid grid-cols-2 gap-3">
-        <StatTile label="Gasto no mês" value={brl(stats.monthSpend)} />
+        <StatTile
+          label="Gasto no mês"
+          value={brl(stats.monthSpend)}
+          hint="combustível, mês atual"
+        />
         <StatTile
           label="Preço médio"
           value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}/L` : "—"}
-          hint={fuelName}
+          hint={`${fuelName}, ponderado por litro`}
         />
         <StatTile
           label="Consumo médio"
           value={kmPerLiter(stats.avgKmPerLiter)}
           tone="good"
-          hint={stats.avgKmPerLiter ? undefined : consumptionPendingText(fullTanksMissing(rows))}
+          hint={
+            stats.avgKmPerLiter
+              ? `${fuelName}, entre tanques cheios`
+              : consumptionPendingText(fullTanksMissing(rows))
+          }
         />
         <StatTile
-          label="Custo por km"
+          label="Combustível por km"
           value={stats.costPerKm ? brl(stats.costPerKm) : "—"}
-          hint={`${num(stats.totalKm, 0)} km rodados`}
+          hint={
+            stats.totalKm > 0 ? `em ${num(stats.totalKm, 0)} km medidos` : "sem trechos medidos"
+          }
         />
       </div>
 
@@ -132,10 +142,12 @@ function DashboardPage() {
               label={`Preço médio pago (${fuelName})`}
               value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}/L` : "—"}
             />
-            <Item label="Melhor consumo" value={kmPerLiter(stats.bestKmPerLiter)} />
-            <Item label="Pior consumo" value={kmPerLiter(stats.worstKmPerLiter)} />
+            <Item label={`Melhor consumo (${fuelName})`} value={kmPerLiter(stats.bestKmPerLiter)} />
+            <Item label={`Pior consumo (${fuelName})`} value={kmPerLiter(stats.worstKmPerLiter)} />
           </dl>
         </AppCard>
+
+        <HowWeCalculate duplicates={stats.duplicates} outliers={stats.outliers} />
       </section>
     </AppShell>
   );
@@ -205,5 +217,52 @@ function EthanolCard({
         <p className="mt-3 text-sm text-muted-foreground">Informe os dois preços para comparar.</p>
       )}
     </AppCard>
+  );
+}
+
+/** Definições curtas de cada indicador, para o usuário saber de onde vem cada número. */
+function HowWeCalculate({ duplicates, outliers }: { duplicates: number; outliers: number }) {
+  return (
+    <details className="rounded-3xl border border-border bg-card p-4 text-sm">
+      <summary className="min-h-11 cursor-pointer list-none py-2 font-semibold text-foreground">
+        Como calculamos estes números
+      </summary>
+      <dl className="mt-2 space-y-3 text-muted-foreground">
+        <div>
+          <dt className="font-medium text-foreground">Gasto no mês</dt>
+          <dd>Soma do valor pago nos abastecimentos do veículo principal desde o dia 1º.</dd>
+        </div>
+        <div>
+          <dt className="font-medium text-foreground">Preço médio</dt>
+          <dd>
+            Total pago ÷ litros, só do combustível mais recente. Abastecimentos maiores pesam mais.
+          </dd>
+        </div>
+        <div>
+          <dt className="font-medium text-foreground">Consumo médio</dt>
+          <dd>
+            Km entre dois tanques cheios ÷ litros colocados nesse trecho. Abastecimentos parciais
+            entram na soma de litros. Gasolina e etanol são medidos separadamente.
+          </dd>
+        </div>
+        <div>
+          <dt className="font-medium text-foreground">Combustível por km</dt>
+          <dd>
+            Valor pago nos trechos medidos ÷ km desses trechos. Não inclui manutenção, impostos ou
+            seguro.
+          </dd>
+        </div>
+        <div>
+          <dt className="font-medium text-foreground">O que fica de fora</dt>
+          <dd>
+            Registros repetidos (mesmo km, litros e valor) e trechos com consumo muito diferente do
+            seu padrão, que costumam indicar um abastecimento não registrado.
+            {duplicates + outliers > 0
+              ? ` Hoje: ${duplicates} repetido(s) e ${outliers} trecho(s) atípico(s) — veja no Histórico.`
+              : ""}
+          </dd>
+        </div>
+      </dl>
+    </details>
   );
 }

@@ -41,6 +41,8 @@ export const Route = createFileRoute("/_authenticated/app")({
   component: HomePage,
 });
 
+const monthName = () => new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(new Date());
+
 function greeting() {
   const hour = new Date().getHours();
   if (hour < 12) return "Bom dia";
@@ -71,6 +73,7 @@ function HomePage() {
   const firstName = (profile?.full_name ?? "").split(" ")[0];
   const last = stats.last;
   const verdict = last ? historyVerdicts(rows).get(last.id) : undefined;
+  const fuelName = stats.fuelTypeId ? (FUEL_LABEL[stats.fuelTypeId] ?? stats.fuelTypeId) : "";
 
   if (!primaryVehicle) {
     // Primeiro acesso: o cadastro guiado leva direto ao primeiro abastecimento.
@@ -141,19 +144,19 @@ function HomePage() {
           <Mini
             label="Gasto no mês"
             value={stats.monthSpend > 0 ? brl(stats.monthSpend) : "—"}
-            hint="soma dos abastecimentos"
+            hint={`desde o dia 1º de ${monthName()}`}
           />
           <Mini
             label="Preço médio"
             value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}` : "—"}
-            hint={`por litro · ${stats.fuelTypeId ? (FUEL_LABEL[stats.fuelTypeId] ?? stats.fuelTypeId) : ""}`}
+            hint={`por litro pago · ${fuelName}`}
           />
           <Mini
             label="Consumo"
             value={kmPerLiter(stats.avgKmPerLiter)}
             hint={
               stats.avgKmPerLiter
-                ? "média km/L"
+                ? `medido · ${fuelName}`
                 : fullTanksMissing(rows) === 1
                   ? "falta 1 tanque cheio"
                   : "faltam 2 tanques cheios"
@@ -164,9 +167,7 @@ function HomePage() {
         {/* TanqueIA em uma frase — detalhes ficam no painel */}
         <TanqueIALine
           insights={insights}
-          vehicleLabel={
-            primaryVehicle ? `${primaryVehicle.brand} ${primaryVehicle.model}` : undefined
-          }
+          dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
         />
 
         <InstallCard />
@@ -196,32 +197,32 @@ function Mini({
       >
         {value}
       </p>
-      <p className="text-[10px] text-muted-foreground">{hint}</p>
+      <p className="text-[11px] leading-tight text-muted-foreground">{hint}</p>
     </div>
   );
 }
 
 function TanqueIALine({
   insights,
-  vehicleLabel,
+  dataKey,
 }: {
   insights: ReturnType<typeof useHomeData>["insights"];
-  vehicleLabel?: string;
+  /** Muda quando os registros mudam, para a frase ser refeita. */
+  dataKey: string;
 }) {
   const main = insights[0];
   /** Sem dados suficientes a IA não é acionada: ela interpreta números, não os inventa. */
   const hasData = !!main && main.id !== "empty";
-  const facts = insights.slice(0, 3).map((i) => `${i.title}: ${i.body}`);
   const phrase = useServerFn(phraseInsight);
 
   const ai = useQuery({
-    queryKey: ["tanque-ia", facts],
-    enabled: hasData && facts.length > 0,
+    queryKey: ["tanque-ia", dataKey],
+    enabled: hasData,
     staleTime: 15 * 60_000,
     retry: 1,
     queryFn: async () => {
-      track("tanque_ia_requested", { facts: facts.length });
-      return phrase({ data: { facts, vehicle: vehicleLabel } });
+      track("tanque_ia_requested");
+      return phrase();
     },
   });
 
@@ -245,6 +246,11 @@ function TanqueIALine({
       <p className="mt-3 text-sm leading-relaxed text-foreground">
         {ai.isFetching ? "Analisando seus números…" : text}
       </p>
+      {hasData && !ai.isFetching ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Calculado com os seus registros{main ? ` · ${main.title}` : ""}.
+        </p>
+      ) : null}
       <Link
         to="/dashboard"
         className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary"

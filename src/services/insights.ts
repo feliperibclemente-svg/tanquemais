@@ -25,6 +25,26 @@ export function buildInsights(o: Overview, savings: SavingsOpportunity): Insight
   // Insight de posto mais barato desativado no beta (sem base de postos confiável).
   void savings;
 
+  // Qualidade dos dados primeiro: números errados contaminam todo o resto.
+  if (o.duplicates > 0 || o.outliers > 0) {
+    const parts = [
+      o.duplicates > 0
+        ? `${o.duplicates === 1 ? "1 registro parece duplicado" : `${o.duplicates} registros parecem duplicados`} e ficou fora das contas`
+        : null,
+      o.outliers > 0
+        ? `${o.outliers === 1 ? "1 trecho teve" : `${o.outliers} trechos tiveram`} consumo fora do seu padrão e não entra nas médias`
+        : null,
+    ].filter(Boolean);
+    out.push({
+      id: "data-quality",
+      icon: "alert",
+      severity: "warning",
+      title: "Confira seu histórico",
+      body: `${parts.join("; ")}. Verifique no Histórico se foi engano.`,
+      action: { label: "Abrir histórico", to: "/historico" },
+    });
+  }
+
   const trend = o.consumptionTrend;
   if (trend) {
     const diff = ((trend.current - trend.previous) / trend.previous) * 100;
@@ -62,8 +82,8 @@ export function buildInsights(o: Overview, savings: SavingsOpportunity): Insight
       id: "cost",
       icon: "route",
       severity: "info",
-      title: `Custo por km: ${brl(o.costPerKm)}`,
-      body: `Nos trechos medidos (${num(o.totalKm, 0)} km) você gastou ${brl(measuredCost)}: ${brl(o.costPerKm)} por km.`,
+      title: `Custo de combustível por km: ${brl(o.costPerKm)}`,
+      body: `Gasto observado: nos ${num(o.totalKm, 0)} km medidos entre tanques cheios você gastou ${brl(measuredCost)} em combustível, ${brl(o.costPerKm)} por km.`,
     });
   }
 
