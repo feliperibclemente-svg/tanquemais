@@ -16,6 +16,7 @@ import { canonicalVehicle } from "@/constants/vehicles";
 import { useCreateVehicle, useProfile, useVehicles } from "@/hooks/use-tanque";
 import { track } from "@/lib/analytics";
 import { vehicleSchema } from "@/validators";
+import { Logo } from "@/components/app/Logo";
 
 export const Route = createFileRoute("/_authenticated/boas-vindas")({
   head: () => ({
@@ -180,10 +181,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 py-8">
       <Link to="/app" className="mb-8 flex items-center gap-2" aria-label="Tanque+">
-        <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary text-base font-bold text-primary-foreground">
-          T
-        </span>
-        <span className="text-base font-semibold tracking-tight text-foreground">Tanque+</span>
+        <Logo className="h-7" />
       </Link>
       {children}
     </div>

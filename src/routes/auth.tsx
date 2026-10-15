@@ -9,6 +9,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { authSchema } from "@/validators";
 import { track } from "@/lib/analytics";
 import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
+import { BrandMark } from "@/components/app/Logo";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -112,9 +113,7 @@ function AuthPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 py-10">
       <div className="mb-8 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-3xl bg-primary text-xl font-bold text-primary-foreground">
-          T
-        </span>
+        <BrandMark className="mx-auto h-14" />
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
           {mode === "signin" ? "Bem-vindo de volta" : "Criar sua conta"}
         </h1>

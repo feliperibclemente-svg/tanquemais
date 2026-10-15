@@ -4,6 +4,7 @@ import { BarChart3, Fuel, MapPin, Sparkles } from "lucide-react";
 import { ActionLink } from "@/components/ds";
 import { useAuth } from "@/providers/AuthProvider";
 import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
+import { Logo } from "@/components/app/Logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,10 +52,7 @@ function Landing() {
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-between px-6 py-10">
       <div>
         <div className="flex items-center gap-2">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground">
-            T
-          </span>
-          <span className="text-lg font-semibold tracking-tight text-foreground">Tanque+</span>
+          <Logo className="h-9" />
         </div>
 
         <h1 className="mt-10 text-4xl font-extrabold leading-tight tracking-tight text-foreground">
