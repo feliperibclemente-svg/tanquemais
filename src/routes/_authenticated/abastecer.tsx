@@ -14,6 +14,7 @@ import {
   parseDecimal,
   PrimaryStar,
   ScreenSkeleton,
+  TeoSays,
   SelectField,
   TextField,
   VerdictCard,
@@ -73,6 +74,8 @@ interface Saved {
   unit: string;
   queued: boolean;
   tanksMissing: 1 | 2;
+  /** Marco que merece o Teo: primeiro registro ou primeira medição de consumo. */
+  milestone: "first-fueling" | "first-consumption" | null;
 }
 
 const todayLocal = () => {
@@ -251,6 +254,14 @@ function AbastecerPage() {
         atypical: previewKml?.atypical ?? false,
         unit,
         queued: result.queued,
+        milestone:
+          vehicleHistory.length === 0
+            ? "first-fueling"
+            : previewKml &&
+                !previewKml.atypical &&
+                !vehicleHistory.some((r) => r.computed_km_per_liter)
+              ? "first-consumption"
+              : null,
         tanksMissing: fullTanksMissing([
           ...vehicleHistory,
           { full_tank: parsed.data.full_tank, odometer: parsed.data.odometer },
@@ -322,9 +333,23 @@ function AbastecerPage() {
         </div>
 
         <div className="space-y-3">
+          {saved.milestone === "first-fueling" ? (
+            <TeoSays spot="milestone-first-fueling" title="Primeiro registro feito!">
+              Daqui pra frente eu acompanho tudo.{" "}
+              {saved.tanksMissing === 1
+                ? "No próximo tanque cheio, já te mostro quantos km/L seu carro faz de verdade."
+                : "Com dois tanques cheios seguidos, te mostro quantos km/L seu carro faz de verdade."}
+            </TeoSays>
+          ) : saved.milestone === "first-consumption" && saved.kmPerLiter ? (
+            <TeoSays spot="milestone-first-consumption" title="Sua primeira medição real!">
+              Entre os dois tanques cheios, seu carro fez {kmPerLiter(saved.kmPerLiter)}. A cada
+              tanque completo, essa média fica mais precisa.
+            </TeoSays>
+          ) : null}
+
           {saved.queued ? null : <VerdictCard verdict={saved.verdict} />}
 
-          {saved.kmPerLiter ? (
+          {saved.milestone ? null : saved.kmPerLiter ? (
             <AppCard className="p-4">
               <p className="text-sm text-muted-foreground">
                 Seu carro fez{" "}

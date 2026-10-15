@@ -42,5 +42,6 @@ export { PrimaryStar } from "@/components/app/PrimaryStar";
 export { InstallCard } from "@/components/app/InstallCard";
 export { ReminderCard } from "@/components/app/ReminderCard";
 export { BrandMark, Logo, BRAND_GREEN } from "@/components/app/Logo";
+export { TeoAvatar, TeoSays } from "@/components/app/Teo";
 export { ErrorState } from "@/components/app/ErrorState";
 export { VerdictCard, VerdictPill } from "@/components/app/Verdict";

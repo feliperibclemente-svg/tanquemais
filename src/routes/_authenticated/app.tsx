@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronRight, Fuel, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronRight, Fuel } from "lucide-react";
 import {
   ActionLink,
   AppCard,
@@ -11,6 +11,7 @@ import {
   ErrorState,
   InstallCard,
   ReminderCard,
+  TeoAvatar,
   ScreenSkeleton,
   VerdictPill,
 } from "@/components/ds";
@@ -247,11 +248,12 @@ function TanqueIALine({
 
   return (
     <AppCard className="border-primary/25 bg-accent/40">
-      <div className="flex items-center gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <Sparkles className="h-4 w-4" strokeWidth={2.4} />
-        </span>
-        <p className="text-sm font-semibold text-foreground">TanqueIA</p>
+      <div className="flex items-center gap-3">
+        <TeoAvatar spot="home-insight" size="sm" />
+        <div className="leading-tight">
+          <p className="text-sm font-semibold text-foreground">Teo</p>
+          <p className="text-xs text-muted-foreground">sua TanqueIA</p>
+        </div>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-foreground">
         {ai.isFetching ? "Analisando seus números…" : text}

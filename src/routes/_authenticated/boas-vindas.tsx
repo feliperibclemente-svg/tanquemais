@@ -10,6 +10,7 @@ import {
   NumericField,
   parseDecimal,
   ScreenSkeleton,
+  TeoSays,
 } from "@/components/ds";
 import { FUEL_TYPES } from "@/constants/app";
 import { canonicalVehicle } from "@/constants/vehicles";
@@ -130,15 +131,17 @@ function WelcomePage() {
 
   return (
     <Shell>
-      <p className="text-sm text-muted-foreground">
-        Boas-vindas{firstName ? `, ${firstName}` : ""}!
-      </p>
-      <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+      <TeoSays
+        spot="welcome"
+        size="lg"
+        title={`Oi${firstName ? `, ${firstName}` : ""}! Eu sou o Teo.`}
+      >
+        Vou te mostrar quanto seu carro gasta de verdade. Para começar, me conta qual é o seu
+        veículo — só o essencial; o resto você completa depois, se quiser.
+      </TeoSays>
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
         Qual é o seu veículo?
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Só o essencial. Apelido, ano e tanque você completa depois, se quiser.
-      </p>
 
       <form onSubmit={submit} className="mt-6 space-y-5">
         <BrandModelFields brand={vehicle.brand} model={vehicle.model} onChange={setVehicle} />
