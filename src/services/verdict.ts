@@ -51,6 +51,7 @@ export function referenceCount(
 ): number {
   const since = at.getTime() - REFERENCE_DAYS * 86_400_000;
   return history.filter((r) => {
+    if (r.issue === "duplicate") return false;
     const t = new Date(r.filled_at).getTime();
     const p = Number(r.price_per_liter);
     return (
@@ -72,6 +73,7 @@ export function recentAveragePrice(
 ): { price: number; count: number } | null {
   const since = at.getTime() - REFERENCE_DAYS * 86_400_000;
   const prices = history
+    .filter((r) => r.issue !== "duplicate")
     .filter((r) => (fuelTypeId ? r.fuel_type_id === fuelTypeId : true))
     .filter((r) => (vehicleId ? r.vehicle_id === vehicleId : true))
     .filter((r) => {

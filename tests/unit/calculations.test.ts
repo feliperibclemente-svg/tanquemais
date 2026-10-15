@@ -7,6 +7,8 @@ import { computeFuelings, overview } from "@/services/analytics";
 import { buildInsights } from "@/services/insights";
 import { savingsOpportunity } from "@/services/analytics";
 import { checkPhrase, numbersAreGrounded } from "@/services/tanque-ia-guard";
+import { csvField, csvNumber, fuelingsToCsv } from "@/lib/csv";
+import { historyVerdicts } from "@/services/verdict";
 import type { Fueling } from "@/types/domain";
 
 /** Abastecimento em setembro/2026 (dia, km, litros, R$/L, tanque cheio?, combustível). */
@@ -201,5 +203,56 @@ describe("TanqueIA: gasto nunca vira economia", () => {
     const first = buildInsights(overview(dup), savingsOpportunity(dup, [], null, null))[0];
     expect(first.id).toBe("data-quality");
     expect(first.body).toMatch(/duplicado/);
+  });
+});
+
+describe("exportação CSV", () => {
+  const rows = computeFuelings([
+    f("1", 1, 10000, 40, 6),
+    f("2", 8, 10480, 40, 5.899),
+    { ...f("2", 8, 10480, 40, 5.899), id: "2b" },
+  ]);
+  const csv = fuelingsToCsv(rows, () => 'Carro "da família"; azul');
+  const lines = csv
+    .replace(/^\uFEFF/, "")
+    .trimEnd()
+    .split("\r\n");
+
+  it("tem BOM UTF-8, cabeçalho e uma linha por registro, em ordem cronológica", () => {
+    expect(csv.startsWith("\uFEFF")).toBe(true);
+    expect(lines).toHaveLength(4);
+    expect(lines[0].split(";")[0]).toBe("Data");
+    expect(lines[1].startsWith("01/09/2026;12:00;")).toBe(true);
+  });
+
+  it("usa vírgula decimal sem milhar e escapa aspas e ponto e vírgula", () => {
+    expect(lines[2]).toContain(
+      ';"Carro ""da família""; azul";Gasolina;L;40,000;5,899;235,96;10480;Sim;480;',
+    );
+  });
+
+  it("consumo e situação batem com o histórico", () => {
+    // 480 km ÷ 40 L = 12,00 km/L; o duplicado aparece sinalizado.
+    expect(lines[2]).toContain(";12,00;");
+    expect(lines[3].endsWith("Possível duplicado (fora das contas)")).toBe(true);
+  });
+
+  it("formatação numérica", () => {
+    expect(csvNumber(1234.5)).toBe("1234,50");
+    expect(csvNumber(null)).toBe("");
+    expect(csvField("a;b")).toBe('"a;b"');
+  });
+});
+
+describe("veredito de preço ignora duplicados", () => {
+  it("um registro repetido não conta como referência de preço habitual", () => {
+    const rows = computeFuelings([
+      f("1", 1, 10000, 40, 6),
+      f("2", 5, 10480, 40, 6),
+      { ...f("2", 5, 10480, 40, 6), id: "2b" },
+      f("3", 9, 10960, 40, 5),
+    ]);
+    // Só 2 referências reais antes do dia 9 (precisa de 3): ainda sem comparação.
+    expect(historyVerdicts(rows).get("3")?.headline).toBe("Falta 1 de Gasolina para comparar");
   });
 });

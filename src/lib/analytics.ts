@@ -119,6 +119,7 @@ export type AnalyticsEvent =
   | "fueling_queued_offline"
   | "fueling_synced"
   | "fueling_deleted"
+  | "export_csv"
   | "fueling_updated"
   | "tanque_ia_requested"
   | "tanque_ia_answered"

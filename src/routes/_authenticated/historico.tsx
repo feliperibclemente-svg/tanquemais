@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, Pencil, Trash2 } from "lucide-react";
 import {
   Action,
   ActionLink,
@@ -21,7 +21,14 @@ import {
 import { FUEL_LABEL, FUEL_TYPES } from "@/constants/app";
 import { brl, fullDate, kmPerLiter, num, shortDate } from "@/lib/format";
 import { useDeleteFueling, useFuelings, useUpdateFueling, useVehicles } from "@/hooks/use-tanque";
-import { computeFuelings, validateOdometer, type FuelingComputed } from "@/services/analytics";
+import {
+  computeFuelings,
+  validateOdometer,
+  type FuelingComputed,
+  type FuelingIssue,
+} from "@/services/analytics";
+import { downloadText, fuelingsToCsv } from "@/lib/csv";
+import { track } from "@/lib/analytics";
 import { deriveAmounts, historyVerdicts } from "@/services/verdict";
 import type { Fueling } from "@/types/domain";
 
@@ -65,19 +72,43 @@ function HistoricoPage() {
     [fuelings.data],
   );
   const verdicts = useMemo(() => historyVerdicts(allRows), [allRows]);
-  const rows = useMemo(
-    () =>
-      vehicleFilter === "all" ? allRows : allRows.filter((r) => r.vehicle_id === vehicleFilter),
-    [allRows, vehicleFilter],
-  );
+  const [period, setPeriod] = useState<PeriodId>("all");
+  const rows = useMemo(() => {
+    const since = periodStart(period);
+    return allRows.filter(
+      (r) =>
+        (vehicleFilter === "all" || r.vehicle_id === vehicleFilter) &&
+        (!since || new Date(r.filled_at) >= since),
+    );
+  }, [allRows, vehicleFilter, period]);
+  /** Totais do filtro atual, sem os registros duplicados (os mesmos números do Painel). */
+  const totals = useMemo(() => {
+    const counted = rows.filter((r) => r.issue !== "duplicate");
+    return {
+      count: counted.length,
+      spend: counted.reduce((s, r) => s + (Number(r.total_cost) || 0), 0),
+      liters: counted.reduce((s, r) => s + (Number(r.liters) || 0), 0),
+    };
+  }, [rows]);
+
+  function exportCsv() {
+    const csv = fuelingsToCsv(rows, vehicleName);
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadText(csv, `tanque-abastecimentos-${stamp}.csv`);
+    track("export_csv", { rows: rows.length, period });
+  }
   /** Agrupa por mês (mais recente primeiro) com o total gasto. */
   const months = useMemo(() => {
     const map = new Map<string, { label: string; total: number; items: FuelingComputed[] }>();
     for (const r of rows) {
       const d = new Date(r.filled_at);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const g = map.get(key) ?? { label: monthLabel.format(d), total: 0, items: [] };
-      g.total += Number(r.total_cost) || 0;
+      const g = map.get(key) ?? {
+        label: capitalizeFirst(monthLabel.format(d)),
+        total: 0,
+        items: [],
+      };
+      if (r.issue !== "duplicate") g.total += Number(r.total_cost) || 0;
       g.items.push(r);
       map.set(key, g);
     }
@@ -86,7 +117,7 @@ function HistoricoPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Histórico" subtitle="Toque para ver os detalhes" />
+      <PageHeader title="Histórico" subtitle="Filtre por período, confira e exporte" />
 
       {fuelings.isLoading ? (
         <ScreenSkeleton cards={3} />
@@ -95,7 +126,7 @@ function HistoricoPage() {
           title="Não conseguimos carregar seu histórico"
           onRetry={() => void fuelings.refetch()}
         />
-      ) : rows.length === 0 ? (
+      ) : allRows.length === 0 ? (
         <EmptyState
           title="Seu histórico começa aqui."
           description="Assim que você registrar um abastecimento ele aparece nesta lista."
@@ -121,10 +152,41 @@ function HistoricoPage() {
               ]}
             />
           ) : null}
+          <ChoiceGroup
+            label="Período"
+            value={period}
+            onChange={(value) => setPeriod(value as PeriodId)}
+            options={PERIODS.map((p) => ({ value: p.id, label: p.label }))}
+          />
+          <AppCard className="flex items-center justify-between gap-3 p-4">
+            <div className="min-w-0 text-sm">
+              <p className="font-semibold text-foreground">
+                {brl(totals.spend)} em {totals.count}{" "}
+                {totals.count === 1 ? "abastecimento" : "abastecimentos"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {num(totals.liters, 1)} L · {PERIODS.find((p) => p.id === period)?.label}
+              </p>
+            </div>
+            <Action
+              variant="secondary"
+              size="sm"
+              onClick={exportCsv}
+              disabled={rows.length === 0}
+              aria-label="Exportar planilha CSV"
+            >
+              <Download className="h-4 w-4" /> CSV
+            </Action>
+          </AppCard>
+          {rows.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nenhum abastecimento neste período.
+            </p>
+          ) : null}
           {months.map((month) => (
             <section key={month.label}>
               <div className="mb-2 flex items-baseline justify-between px-1">
-                <h2 className="text-sm font-semibold capitalize text-foreground">{month.label}</h2>
+                <h2 className="text-sm font-semibold text-foreground">{month.label}</h2>
                 <span className="text-sm font-semibold text-foreground">{brl(month.total)}</span>
               </div>
               <ul className="space-y-3">
@@ -153,7 +215,11 @@ function HistoricoPage() {
                                 {vehicleName(row.vehicle_id)}
                               </span>
                             ) : null}
-                            {verdict ? (
+                            {row.issue ? (
+                              <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-destructive/30 px-2 py-0.5 text-[11px] font-medium text-destructive">
+                                <AlertTriangle className="h-3 w-3" /> {ISSUE_SHORT[row.issue]}
+                              </span>
+                            ) : verdict ? (
                               <span className="mt-1 block">
                                 <VerdictPill verdict={verdict} />
                               </span>
@@ -183,7 +249,17 @@ function HistoricoPage() {
                               label="Rodou desde o anterior"
                               value={row.distance ? `${num(row.distance, 0)} km` : "—"}
                             />
-                            <Row label="Consumo" value={kmPerLiter(row.computed_km_per_liter)} />
+                            <Row
+                              label="Consumo"
+                              value={kmPerLiter(
+                                row.computed_km_per_liter ?? row.outlier_km_per_liter,
+                              )}
+                            />
+                            {row.issue ? (
+                              <p className="rounded-2xl bg-muted px-3 py-2 text-xs text-foreground">
+                                {ISSUE_HELP[row.issue]}
+                              </p>
+                            ) : null}
                             <Row
                               label="Custo por km"
                               value={row.computed_cost_per_km ? brl(row.computed_cost_per_km) : "—"}
@@ -234,6 +310,39 @@ function HistoricoPage() {
 }
 
 const monthLabel = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
+
+/** "outubro de 2026" → "Outubro de 2026" (o CSS capitalize deixaria "De"). */
+const capitalizeFirst = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+const PERIODS = [
+  { id: "month", label: "Este mês" },
+  { id: "3m", label: "3 meses" },
+  { id: "12m", label: "12 meses" },
+  { id: "all", label: "Tudo" },
+] as const;
+type PeriodId = (typeof PERIODS)[number]["id"];
+
+/** Início do período (meses de calendário, horário local); null = sem limite. */
+function periodStart(period: PeriodId, now = new Date()): Date | null {
+  if (period === "all") return null;
+  const back = period === "month" ? 0 : period === "3m" ? 2 : 11;
+  return new Date(now.getFullYear(), now.getMonth() - back, 1);
+}
+
+const ISSUE_SHORT: Record<FuelingIssue, string> = {
+  duplicate: "Possível duplicado",
+  odometer: "Km inconsistente",
+  outlier: "Consumo fora do padrão",
+};
+
+const ISSUE_HELP: Record<FuelingIssue, string> = {
+  duplicate:
+    "Mesmo km, litros e valor do registro anterior. Ele ficou fora do gasto e do consumo. Se foi registrado duas vezes por engano, exclua este.",
+  odometer:
+    "O km é menor ou igual ao do registro anterior. Os litros contam, mas o km não é usado para medir consumo. Corrija se foi erro de digitação.",
+  outlier:
+    "Consumo muito diferente do seu padrão — geralmente um abastecimento não registrado ou um tanque que não foi completado. Este trecho não entra nas médias.",
+};
 const unitOf = (fuel: string) => FUEL_TYPES.find((f) => f.id === fuel)?.unit ?? "L";
 
 function Row({ label, value }: { label: string; value: string }) {
