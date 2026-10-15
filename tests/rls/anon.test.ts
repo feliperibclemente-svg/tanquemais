@@ -14,18 +14,30 @@ describe("leitura anônima (anon)", () => {
   });
 
   describe("catálogo público continua legível", () => {
-    for (const table of ["stations", "fuel_types", "badges", "missions", "clubs"]) {
+    for (const table of ["fuel_types", "badges", "missions"]) {
       it(`${table} é legível`, async () => {
         const result = await restSelect(table, "*");
         expect(result.status).toBe(200);
         expect(Array.isArray(result.body)).toBe(true);
       });
     }
+
+    for (const table of ["stations", "clubs"]) {
+      it(`${table} é legível, mas sem created_by`, async () => {
+        const result = await restSelect(table, "id,name");
+        expect(result.status).toBe(200);
+        expect(Array.isArray(result.body)).toBe(true);
+        expect(isPermissionDenied(await restSelect(table, "created_by"))).toBe(true);
+      });
+    }
   });
 
   describe("preços são públicos, mas sem identificar quem reportou", () => {
     it("colunas de preço são legíveis", async () => {
-      const result = await restSelect("station_prices", "station_id,fuel_type_id,price,reported_at");
+      const result = await restSelect(
+        "station_prices",
+        "station_id,fuel_type_id,price,reported_at",
+      );
       expect(result.status).toBe(200);
       expect(Array.isArray(result.body)).toBe(true);
     });
@@ -78,6 +90,8 @@ describe("leitura anônima (anon)", () => {
       "vehicle_statistics",
       "user_badges",
       "likes",
+      "station_reviews",
+      "station_photos",
     ];
 
     for (const table of personal) {

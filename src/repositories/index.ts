@@ -183,7 +183,11 @@ export const fuelingsRepository = {
 
 /* ------------------------------- stations -------------------------------- */
 
-export type StationWithPrice = Station & {
+/** Colunas públicas de postos: quem cadastrou (created_by) não é exposto. */
+const STATION_COLUMNS =
+  "id, name, brand, address, city, state, latitude, longitude, is_24h, has_convenience, rating, reviews_count, fillups_count, reliability_score, created_at, updated_at";
+
+export type StationWithPrice = Omit<Station, "created_by"> & {
   station_prices: {
     fuel_type_id: string;
     price: number;
@@ -196,7 +200,7 @@ export const stationsRepository = {
   async list(city?: string | null): Promise<StationWithPrice[]> {
     let query = supabase
       .from("stations")
-      .select("*, station_prices(fuel_type_id, price, confirmations, reported_at)")
+      .select(`${STATION_COLUMNS}, station_prices(fuel_type_id, price, confirmations, reported_at)`)
       .order("rating", { ascending: false })
       .limit(40);
     if (city) query = query.eq("city", city);
