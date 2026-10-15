@@ -134,6 +134,7 @@ function WelcomePage() {
       <TeoSays
         spot="welcome"
         size="lg"
+        mood="cheer"
         title={`Oi${firstName ? `, ${firstName}` : ""}! Eu sou o Teo.`}
       >
         Vou te mostrar quanto seu carro gasta de verdade. Para começar, me conta qual é o seu

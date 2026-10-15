@@ -334,14 +334,18 @@ function AbastecerPage() {
 
         <div className="space-y-3">
           {saved.milestone === "first-fueling" ? (
-            <TeoSays spot="milestone-first-fueling" title="Primeiro registro feito!">
+            <TeoSays spot="milestone-first-fueling" mood="cheer" title="Primeiro registro feito!">
               Daqui pra frente eu acompanho tudo.{" "}
               {saved.tanksMissing === 1
                 ? "No próximo tanque cheio, já te mostro quantos km/L seu carro faz de verdade."
                 : "Com dois tanques cheios seguidos, te mostro quantos km/L seu carro faz de verdade."}
             </TeoSays>
           ) : saved.milestone === "first-consumption" && saved.kmPerLiter ? (
-            <TeoSays spot="milestone-first-consumption" title="Sua primeira medição real!">
+            <TeoSays
+              spot="milestone-first-consumption"
+              mood="cheer"
+              title="Sua primeira medição real!"
+            >
               Entre os dois tanques cheios, seu carro fez {kmPerLiter(saved.kmPerLiter)}. A cada
               tanque completo, essa média fica mais precisa.
             </TeoSays>

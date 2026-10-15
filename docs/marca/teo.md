@@ -30,9 +30,9 @@ Pouco, para continuar especial:
 2. **Card da TanqueIA na Home** — a frase do dia vem "dele".
 3. **Marcos** — primeiro registro e primeira medição real de consumo.
 
-A animação (entrar girando e fazer "joinha") roda **uma vez por sessão** em cada lugar e é
-desligada quando o celular está com "reduzir movimento" ativo. Implementação:
-`src/components/app/Teo.tsx` (`TeoAvatar`, `TeoSays`).
+A entrada (surgir com mola + a animação do humor) roda **uma vez por sessão** em cada lugar
+e é desligada quando o celular está com "reduzir movimento" ativo. Implementação:
+`src/components/app/Teo.tsx` (`TeoAvatar`, `TeoSays`) e `TeoArt.tsx` (desenho).
 
 ## Nas redes
 
@@ -42,14 +42,23 @@ desligada quando o celular está com "reduzir movimento" ativo. Implementação:
 - Sempre com dado verificável ou explicação; nada de "economize X%" sem base.
 - Conteúdo patrocinado sempre identificado.
 
-## Próximo passo de ilustração (recomendado)
+## Arte e animações
 
-A arte atual é uma imagem única, então as animações no app se limitam a movimento do
-avatar inteiro. Para animações mais ricas (piscar, acenar, apontar) e posts variados, vale
-encomendar o Teo em **vetor com camadas separadas** (cabeça, olhos, boca, braço) e um
-conjunto de poses:
+O Teo foi redesenhado em vetor (`docs/marca/svg/teo.svg`, `png/teo-1080.png`) a partir da
+ilustração original, com partes separadas: cabeça, olhos, sobrancelhas, boca e mão. No app
+ele é o componente `TeoArt` e tem três humores:
 
-- acenando (boas-vindas), joinha (marco), pensando (calculando),
-- apontando (dica), alerta leve (dado estranho), comemorando (meta).
+| Humor | Animação | Onde |
+|---|---|---|
+| `cheer` | balança o joinha | boas-vindas, primeiro registro, primeira medição |
+| `tip` | levanta as sobrancelhas e inclina a cabeça | card da TanqueIA na Home |
+| `neutral` | só pisca | uso geral |
 
-Com as camadas, as animações podem ser feitas em SVG/CSS ou Lottie/Rive, leves para o app.
+Todos piscam três vezes e param; nada fica em loop. Com "reduzir movimento" ativo, não há
+animação.
+
+## Próximas poses (sugestão)
+
+Com o vetor em camadas, novas poses podem ser desenhadas no mesmo estilo: acenando,
+pensando (mão no queixo), apontando (dica), alerta leve (dado estranho) e comemorando.
+Referências extras (esboços ou outras imagens do Teo) ajudam a manter a consistência.

@@ -249,7 +249,7 @@ function TanqueIALine({
   return (
     <AppCard className="border-primary/25 bg-accent/40">
       <div className="flex items-center gap-3">
-        <TeoAvatar spot="home-insight" size="sm" />
+        <TeoAvatar spot="home-insight" size="sm" mood="tip" />
         <div className="leading-tight">
           <p className="text-sm font-semibold text-foreground">Teo</p>
           <p className="text-xs text-muted-foreground">sua TanqueIA</p>

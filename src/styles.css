@@ -166,3 +166,73 @@
     transform: none;
   }
 }
+
+/* ---------- Teo (persona da TanqueIA): animações curtas, sem loop infinito ---------- */
+.teo-animate .teo-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: teo-blink 4.2s ease-in-out 1.2s 3;
+}
+.teo-cheer .teo-thumb {
+  transform-box: fill-box;
+  transform-origin: 57% 59%; /* punho */
+  animation: teo-thumb 1s ease-out 0.3s 1;
+}
+.teo-tip .teo-brows {
+  animation: teo-brows 1.4s ease-in-out 0.4s 1;
+}
+.teo-tip .teo-head {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: teo-tilt 1.4s ease-in-out 0.4s 1;
+}
+@keyframes teo-blink {
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+  94% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes teo-thumb {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-14deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+  75% {
+    transform: rotate(-4deg);
+  }
+}
+@keyframes teo-brows {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  30%,
+  70% {
+    transform: translateY(-14px);
+  }
+}
+@keyframes teo-tilt {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  35%,
+  70% {
+    transform: rotate(-3deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .teo-animate * {
+    animation: none !important;
+  }
+}
