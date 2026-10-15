@@ -10,6 +10,7 @@ import {
   AppShell,
   ErrorState,
   InstallCard,
+  ReminderCard,
   ScreenSkeleton,
   VerdictPill,
 } from "@/components/ds";
@@ -19,7 +20,7 @@ import { brl, kmPerLiter, num, relativeDate } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { phraseInsight } from "@/lib/tanque-ia.functions";
 import { historyVerdicts } from "@/services/verdict";
-import { fullTanksMissing } from "@/services/analytics";
+import { fuelingReminder, fullTanksMissing } from "@/services/analytics";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -73,6 +74,7 @@ function HomePage() {
   const firstName = (profile?.full_name ?? "").split(" ")[0];
   const last = stats.last;
   const verdict = last ? historyVerdicts(rows).get(last.id) : undefined;
+  const reminder = fuelingReminder(rows);
   const fuelName = stats.fuelTypeId ? (FUEL_LABEL[stats.fuelTypeId] ?? stats.fuelTypeId) : "";
 
   if (!primaryVehicle) {
@@ -109,6 +111,14 @@ function HomePage() {
           <Fuel className="h-6 w-6" strokeWidth={2.4} />
           Registrar abastecimento
         </ActionLink>
+
+        {reminder && last ? (
+          <ReminderCard
+            lastId={last.id}
+            daysSince={reminder.daysSince}
+            typicalDays={reminder.typicalDays}
+          />
+        ) : null}
 
         {/* Último abastecimento com a conclusão em destaque */}
         {last ? (

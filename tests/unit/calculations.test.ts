@@ -3,7 +3,7 @@
  * para conferir de cabeça. Unidades: km, litros (L), reais (R$).
  */
 import { describe, expect, it } from "vitest";
-import { computeFuelings, overview } from "@/services/analytics";
+import { computeFuelings, fuelingReminder, overview } from "@/services/analytics";
 import { buildInsights } from "@/services/insights";
 import { savingsOpportunity } from "@/services/analytics";
 import { checkPhrase, numbersAreGrounded } from "@/services/tanque-ia-guard";
@@ -254,5 +254,25 @@ describe("veredito de preço ignora duplicados", () => {
     ]);
     // Só 2 referências reais antes do dia 9 (precisa de 3): ainda sem comparação.
     expect(historyVerdicts(rows).get("3")?.headline).toBe("Falta 1 de Gasolina para comparar");
+  });
+});
+
+describe("lembrete de registro (sem notificação)", () => {
+  const at = (day: number) => ({
+    filled_at: new Date(2026, 8, day, 12).toISOString(),
+    issue: null,
+  });
+  const rows = [at(1), at(8), at(15)]; // a cada 7 dias
+
+  it("aparece quando passa do intervalo habitual", () => {
+    expect(fuelingReminder(rows, new Date(2026, 8, 24, 12))).toEqual({
+      daysSince: 9,
+      typicalDays: 7,
+    });
+  });
+  it("não aparece dentro do intervalo, com pouco histórico ou após 60 dias", () => {
+    expect(fuelingReminder(rows, new Date(2026, 8, 20, 12))).toBeNull();
+    expect(fuelingReminder(rows.slice(0, 2), new Date(2026, 8, 30, 12))).toBeNull();
+    expect(fuelingReminder(rows, new Date(2026, 11, 1, 12))).toBeNull();
   });
 });

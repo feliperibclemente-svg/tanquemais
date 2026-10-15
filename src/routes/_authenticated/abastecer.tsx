@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, ChevronDown, Fuel } from "lucide-react";
+import { CheckCircle2, ChevronDown, Fuel, ShieldAlert } from "lucide-react";
 import {
   Action,
   ActionLink,
@@ -131,7 +131,9 @@ function AbastecerPage() {
   const [litersInput, setLitersInput] = useState("");
   const [odometer, setOdometer] = useState("");
   const [stationId, setStationId] = useState<string>("");
-  const [fullTank, setFullTank] = useState(true);
+  /** null = a pessoa ainda não escolheu: vale a última escolha feita para este veículo. */
+  const [fullTankChoice, setFullTankChoice] = useState<boolean | null>(null);
+  const fullTank = fullTankChoice ?? lastForVehicle?.full_tank ?? true;
 
   const unit = FUEL_TYPES.find((f) => f.id === fuelTypeId)?.unit ?? "L";
   const [details, setDetails] = useState(false);
@@ -359,6 +361,7 @@ function AbastecerPage() {
               setTotal("");
               setLitersInput("");
               setOdometer("");
+              setFullTankChoice(null);
               setDate(todayLocal());
             }}
           >
@@ -375,6 +378,11 @@ function AbastecerPage() {
         title="Abastecer"
         subtitle={vehicle.nickname || `${vehicle.brand} ${vehicle.model}`}
       />
+
+      <p className="-mt-2 mb-4 flex items-start gap-2 rounded-2xl bg-muted px-3 py-2 text-xs text-muted-foreground">
+        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        Não use o celular dirigindo. Registre só com o carro parado em local seguro.
+      </p>
 
       <form onSubmit={submit} className="space-y-5">
         {list.length > 1 ? (
@@ -398,12 +406,15 @@ function AbastecerPage() {
           </div>
         ) : null}
 
-        <ChoiceGroup
-          label="Combustível"
-          value={fuelTypeId}
-          onChange={setFuel}
-          options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.short }))}
-        />
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-foreground">Combustível</p>
+          <ChoiceGroup
+            label="Combustível"
+            value={fuelTypeId}
+            onChange={setFuel}
+            options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.short }))}
+          />
+        </div>
 
         <div className="space-y-2">
           <NumericField
@@ -419,7 +430,11 @@ function AbastecerPage() {
             fill
             className="grid grid-cols-4"
             value={QUICK_AMOUNTS.includes(parseDecimal(total)) ? String(parseDecimal(total)) : ""}
-            onChange={(value) => setTotal(formatCents(Number(value)))}
+            onChange={(value) => {
+              setTotal(formatCents(Number(value)));
+              // Valor redondo costuma ser abastecimento parcial; a pessoa pode mudar abaixo.
+              if (fullTankChoice === null) setFullTankChoice(false);
+            }}
             options={QUICK_AMOUNTS.map((v) => ({ value: String(v), label: `R$ ${v}` }))}
           />
         </div>
@@ -463,15 +478,23 @@ function AbastecerPage() {
           }
         />
 
-        <ChoiceGroup
-          label="Completou o tanque?"
-          value={fullTank ? "sim" : "nao"}
-          onChange={(value) => setFullTank(value === "sim")}
-          options={[
-            { value: "sim", label: "Sim" },
-            { value: "nao", label: "Não" },
-          ]}
-        />
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-foreground">Completou o tanque?</p>
+          <ChoiceGroup
+            label="Completou o tanque?"
+            fill
+            value={fullTank ? "sim" : "nao"}
+            onChange={(value) => setFullTankChoice(value === "sim")}
+            options={[
+              { value: "sim", label: "Sim, completei" },
+              { value: "nao", label: "Não, só um valor" },
+            ]}
+          />
+          <p className="text-xs text-muted-foreground">
+            Completo = até a bomba desligar sozinha. É o que permite medir o consumo real; na
+            dúvida, marque Não.
+          </p>
+        </div>
 
         <button
           type="button"

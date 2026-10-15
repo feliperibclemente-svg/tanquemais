@@ -408,3 +408,28 @@ export function consumptionPendingText(missing: 1 | 2): string {
     ? "Falta 1 tanque cheio para ver seu consumo real"
     : "Faltam 2 tanques cheios para ver seu consumo real";
 }
+
+/**
+ * Lembrete dentro do app (sem notificação nem localização): quando o tempo desde o último
+ * abastecimento passa do intervalo habitual da pessoa. Precisa de pelo menos 3 abastecimentos
+ * em dias diferentes para existir um "habitual"; fica quieto depois de 60 dias sem uso.
+ */
+export function fuelingReminder(
+  rows: Pick<FuelingComputed, "filled_at" | "issue">[],
+  now = new Date(),
+): { daysSince: number; typicalDays: number } | null {
+  const DAY = 86_400_000;
+  const days = [
+    ...new Set(
+      rows
+        .filter((r) => r.issue !== "duplicate")
+        .map((r) => Math.floor(new Date(r.filled_at).getTime() / DAY)),
+    ),
+  ].sort((a, b) => a - b);
+  if (days.length < 3) return null;
+  const gaps = days.slice(1).map((d, i) => d - days[i]);
+  const typicalDays = Math.max(1, Math.round(median(gaps)));
+  const daysSince = Math.floor(now.getTime() / DAY) - days[days.length - 1];
+  if (daysSince < Math.max(3, typicalDays + 1) || daysSince > 60) return null;
+  return { daysSince, typicalDays };
+}
