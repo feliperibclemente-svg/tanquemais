@@ -43,7 +43,12 @@ function Privacidade() {
       <section>
         <h2>Dados que coletamos</h2>
         <ul>
-          <li>E-mail e nome da sua conta;</li>
+          <li>E-mail da conta (usado para login; não fica público);</li>
+          <li>Nome e sobrenome;</li>
+          <li>
+            Data de nascimento, para confirmar que você tem 18 anos ou mais e calcular sua faixa
+            etária (não fica pública);
+          </li>
           <li>Veículos cadastrados;</li>
           <li>Abastecimentos (valor, preço, litros, quilometragem, data);</li>
           <li>Foto de perfil, cidade e estado, apenas se você informar (opcionais);</li>

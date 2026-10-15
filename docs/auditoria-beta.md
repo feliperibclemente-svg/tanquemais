@@ -67,8 +67,8 @@ automaticamente.
    Lovable ou desligar a rota `/mcp` durante o beta.
 2. **Dois lockfiles** (`bun.lock` e `package-lock.json`) divergem; manter só o que o
    Lovable usa.
-3. **Tamanho da foto do perfil**: o app reduz para ~256 px, mas o banco aceita qualquer
-   tamanho. Migration sugerida:
+3. **Tamanho da foto do perfil**: incluído na migration
+   `20261015170000_profile_identity_and_age.sql` (aplicar no banco). Equivalente:
    ```sql
    ALTER TABLE public.profiles
      ADD CONSTRAINT profiles_avatar_size_check

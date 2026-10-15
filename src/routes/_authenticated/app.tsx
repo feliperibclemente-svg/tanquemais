@@ -22,6 +22,7 @@ import { track } from "@/lib/analytics";
 import { phraseInsight } from "@/lib/tanque-ia.functions";
 import { historyVerdicts } from "@/services/verdict";
 import { fuelingReminder, fullTanksMissing } from "@/services/analytics";
+import { firstNameOf, needsIdentity } from "@/services/identity";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -72,13 +73,13 @@ function HomePage() {
     );
   }
 
-  const firstName = (profile?.full_name ?? "").split(" ")[0];
+  const firstName = firstNameOf(profile);
   const last = stats.last;
   const verdict = last ? historyVerdicts(rows).get(last.id) : undefined;
   const reminder = fuelingReminder(rows);
   const fuelName = stats.fuelTypeId ? (FUEL_LABEL[stats.fuelTypeId] ?? stats.fuelTypeId) : "";
 
-  if (!primaryVehicle) {
+  if (needsIdentity(profile) || !primaryVehicle) {
     // Primeiro acesso: o cadastro guiado leva direto ao primeiro abastecimento.
     return <Navigate to="/boas-vindas" replace />;
   }

@@ -38,6 +38,14 @@ import { deleteMyAccount } from "@/lib/account.functions";
 import { amIAdmin } from "@/lib/admin.functions";
 import { queuedFuelings } from "@/lib/offline-queue";
 import { photoToAvatarDataUrl } from "@/lib/image";
+import {
+  ageRangeOf,
+  checkBirthDate,
+  formatBirthDate,
+  maskDate,
+  splitFullName,
+  tidyName,
+} from "@/services/identity";
 import { profileSchema } from "@/validators";
 import type { Profile } from "@/types/domain";
 
@@ -227,18 +235,20 @@ function PerfilPage() {
 
       <section className="mt-5 space-y-4">
         <AppCard>
-          <p className="text-sm font-semibold text-foreground">Sobre você (opcional)</p>
+          <p className="text-sm font-semibold text-foreground">Mais sobre você (opcional)</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Opcional. Usado apenas de forma agregada para entender quem usa o beta. Apague quando
             quiser escolhendo 'Não preenchido'.
           </p>
           <div className="mt-3 space-y-3">
-            <SelectField
-              label="Faixa etária"
-              value={data?.age_range ?? ""}
-              onChange={(e) => updateProfile.mutate({ age_range: e.target.value || null })}
-              options={ageRanges}
-            />
+            {data?.birth_date ? null : (
+              <SelectField
+                label="Faixa etária"
+                value={data?.age_range ?? ""}
+                onChange={(e) => updateProfile.mutate({ age_range: e.target.value || null })}
+                options={ageRanges}
+              />
+            )}
             <SelectField
               label="Gênero"
               value={data?.gender ?? ""}
@@ -399,10 +409,14 @@ function Avatar({
 
 const editorSchema = profileSchema.pick({ full_name: true, city: true, state: true });
 
-/** Edição de foto, nome, cidade e estado. A cidade ajuda nas comparações regionais de preço. */
+/** Edição de foto, nome, sobrenome, nascimento, cidade e estado. */
 function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => void }) {
   const update = useUpdateProfile();
-  const [name, setName] = useState(profile.full_name ?? "");
+  const split = splitFullName(profile.full_name);
+  const hasIdentityColumns = "birth_date" in profile;
+  const [first, setFirst] = useState(profile.first_name ?? split.first);
+  const [last, setLast] = useState(profile.last_name ?? split.last);
+  const [birth, setBirth] = useState(formatBirthDate(profile.birth_date));
   const [city, setCity] = useState(profile.city ?? "");
   const [state, setState] = useState(profile.state ?? "");
   const [photo, setPhoto] = useState<string | null>(profile.avatar_url ?? null);
@@ -425,14 +439,40 @@ function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => vo
   async function save(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    const parsed = editorSchema.safeParse({ full_name: name, city, state });
+    const firstName = tidyName(first);
+    const lastName = tidyName(last);
+    if (firstName.length < 2) return setError("Informe seu nome.");
+    if (hasIdentityColumns && lastName.length < 2) return setError("Informe seu sobrenome.");
+    const parsed = editorSchema.safeParse({
+      full_name: `${firstName} ${lastName}`.trim(),
+      city,
+      state,
+    });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Confira os dados.");
       return;
     }
+    let birthPatch: Partial<Profile> = {};
+    if (hasIdentityColumns) {
+      const check = checkBirthDate(birth);
+      if (!check.ok) {
+        return setError(
+          check.reason === "minor"
+            ? "O Tanque+ é para maiores de 18 anos."
+            : "Confira a data de nascimento (dd/mm/aaaa).",
+        );
+      }
+      birthPatch = {
+        first_name: firstName,
+        last_name: lastName,
+        birth_date: check.iso,
+        age_range: ageRangeOf(check.age),
+      };
+    }
     try {
       await update.mutateAsync({
         full_name: parsed.data.full_name,
+        ...birthPatch,
         city: parsed.data.city || null,
         state: parsed.data.state || null,
         avatar_url: photo,
@@ -448,7 +488,7 @@ function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => vo
   return (
     <form onSubmit={save} className="mt-4 space-y-3 border-t border-border pt-4">
       <div className="flex items-center gap-4">
-        <Avatar url={photo} name={name || "T"} size="lg" />
+        <Avatar url={photo} name={first || "T"} size="lg" />
         <div className="flex flex-col items-start gap-1">
           <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-primary">
             <Camera className="h-4 w-4" />
@@ -475,12 +515,33 @@ function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => vo
         </div>
       </div>
 
-      <TextField
-        label="Nome"
-        value={name}
-        autoComplete="name"
-        onChange={(event) => setName(event.target.value)}
-      />
+      <div className="grid grid-cols-2 gap-3">
+        <TextField
+          label="Nome"
+          value={first}
+          autoComplete="given-name"
+          autoCapitalize="words"
+          onChange={(event) => setFirst(event.target.value)}
+        />
+        <TextField
+          label="Sobrenome"
+          value={last}
+          autoComplete="family-name"
+          autoCapitalize="words"
+          onChange={(event) => setLast(event.target.value)}
+        />
+      </div>
+      {hasIdentityColumns ? (
+        <TextField
+          label="Data de nascimento"
+          value={birth}
+          inputMode="numeric"
+          autoComplete="bday"
+          placeholder="dd/mm/aaaa"
+          hint="Não aparece para ninguém."
+          onChange={(event) => setBirth(maskDate(event.target.value))}
+        />
+      ) : null}
       <div className="grid grid-cols-[1fr_6rem] gap-3">
         <TextField
           label="Cidade"

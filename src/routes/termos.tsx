@@ -35,6 +35,13 @@ function Termos() {
         </p>
       </section>
       <section>
+        <h2>Idade mínima</h2>
+        <p>
+          O Tanque+ é destinado a maiores de 18 anos. Ao criar a conta, você declara que tem 18 anos
+          ou mais e que as informações fornecidas são verdadeiras.
+        </p>
+      </section>
+      <section>
         <h2>Sua conta</h2>
         <p>
           Você é responsável pelos dados que registra e por manter seu acesso seguro. Não use o app

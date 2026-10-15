@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Fuel } from "lucide-react";
 import {
@@ -11,10 +13,24 @@ import {
   parseDecimal,
   ScreenSkeleton,
   TeoSays,
+  TextField,
 } from "@/components/ds";
 import { FUEL_TYPES } from "@/constants/app";
 import { canonicalVehicle } from "@/constants/vehicles";
-import { useCreateVehicle, useProfile, useVehicles } from "@/hooks/use-tanque";
+import { useCreateVehicle, useProfile, useUpdateProfile, useVehicles } from "@/hooks/use-tanque";
+import { supabase } from "@/integrations/supabase/client";
+import { deleteMyAccount } from "@/lib/account.functions";
+import {
+  ageRangeOf,
+  checkBirthDate,
+  firstNameOf,
+  formatBirthDate,
+  maskDate,
+  needsIdentity,
+  splitFullName,
+  tidyName,
+} from "@/services/identity";
+import type { Profile } from "@/types/domain";
 import { track } from "@/lib/analytics";
 import { vehicleSchema } from "@/validators";
 import { Logo } from "@/components/app/Logo";
@@ -30,10 +46,159 @@ export const Route = createFileRoute("/_authenticated/boas-vindas")({
 });
 
 /**
- * Primeiro acesso: veículo em uma tela só (marca, modelo, combustível e km) e, em seguida,
- * o convite para o primeiro abastecimento. Apelido, ano e tanque ficam para depois.
+ * Primeiro acesso em duas etapas curtas:
+ * 1. Sobre você — nome, sobrenome e data de nascimento (o Tanque+ é para maiores de 18).
+ * 2. Veículo — marca, modelo, combustível e km; depois, o convite ao primeiro abastecimento.
  */
 function WelcomePage() {
+  const profile = useProfile();
+  const p = profile.data ?? null;
+
+  if (profile.isLoading) {
+    return (
+      <Shell>
+        <ScreenSkeleton cards={2} />
+      </Shell>
+    );
+  }
+  if (p && needsIdentity(p)) return <AboutYouStep profile={p} />;
+  return <VehicleStep />;
+}
+
+/** Etapa 1: quem é você. O primeiro nome é como o app (e o Teo) chamam a pessoa. */
+function AboutYouStep({ profile }: { profile: Profile }) {
+  const update = useUpdateProfile();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const removeAccount = useServerFn(deleteMyAccount);
+  const prefill = splitFullName(profile.full_name);
+
+  const [first, setFirst] = useState(profile.first_name ?? tidyName(prefill.first));
+  const [last, setLast] = useState(profile.last_name ?? tidyName(prefill.last));
+  const [birth, setBirth] = useState(formatBirthDate(profile.birth_date));
+  const [error, setError] = useState<string | null>(null);
+  const [minor, setMinor] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    const firstName = tidyName(first);
+    const lastName = tidyName(last);
+    if (firstName.length < 2) return setError("Informe seu nome.");
+    if (lastName.length < 2) return setError("Informe seu sobrenome.");
+    const check = checkBirthDate(birth);
+    if (!check.ok) {
+      if (check.reason === "minor") {
+        track("onboarding_underage");
+        setMinor(true);
+        return;
+      }
+      return setError(
+        check.reason === "invalid"
+          ? "Confira a data no formato dd/mm/aaaa."
+          : "Confira a data de nascimento.",
+      );
+    }
+    try {
+      await update.mutateAsync({
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`,
+        birth_date: check.iso,
+        age_range: ageRangeOf(check.age),
+      });
+      track("onboarding_identity_saved");
+    } catch {
+      /* o hook já mostra o erro */
+    }
+  }
+
+  async function deleteAndLeave() {
+    setLeaving(true);
+    try {
+      await removeAccount();
+    } catch {
+      /* mesmo sem excluir, encerramos a sessão */
+    }
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/", replace: true });
+  }
+
+  if (minor) {
+    return (
+      <Shell>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          O Tanque+ é para maiores de 18 anos
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          O app foi feito para quem já pode dirigir com CNH. Não salvamos sua data de nascimento.
+          Você pode excluir este cadastro agora; quando completar 18 anos, será bem-vindo de volta.
+        </p>
+        <div className="mt-6 space-y-3">
+          <Action variant="danger" loading={leaving} onClick={deleteAndLeave}>
+            Excluir meu cadastro e sair
+          </Action>
+          <Action variant="ghost" onClick={() => setMinor(false)}>
+            Digitei a data errada
+          </Action>
+        </div>
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell>
+      <TeoSays spot="welcome" size="lg" mood="cheer" title="Oi! Eu sou o Teo.">
+        Vou te ajudar a entender quanto seu carro gasta de verdade. Antes, como posso te chamar?
+      </TeoSays>
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">Sobre você</h1>
+
+      <form onSubmit={submit} className="mt-4 space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <TextField
+            label="Nome"
+            value={first}
+            autoComplete="given-name"
+            autoCapitalize="words"
+            onChange={(event) => setFirst(event.target.value)}
+          />
+          <TextField
+            label="Sobrenome"
+            value={last}
+            autoComplete="family-name"
+            autoCapitalize="words"
+            onChange={(event) => setLast(event.target.value)}
+          />
+        </div>
+        <TextField
+          label="Data de nascimento"
+          value={birth}
+          inputMode="numeric"
+          autoComplete="bday"
+          placeholder="dd/mm/aaaa"
+          hint="Para confirmar que você tem 18 anos ou mais. Não aparece para ninguém."
+          onChange={(event) => setBirth(maskDate(event.target.value))}
+        />
+
+        {error ? (
+          <p role="alert" className="text-sm font-medium text-destructive">
+            {error}
+          </p>
+        ) : null}
+
+        <Action type="submit" loading={update.isPending}>
+          Continuar
+        </Action>
+      </form>
+    </Shell>
+  );
+}
+
+/** Etapa 2: veículo em uma tela só; apelido, ano e tanque ficam para depois. */
+function VehicleStep() {
   const profile = useProfile();
   const vehicles = useVehicles();
   const create = useCreateVehicle();
@@ -44,7 +209,7 @@ function WelcomePage() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  const firstName = (profile.data?.full_name ?? "").split(" ")[0];
+  const firstName = firstNameOf(profile.data ?? null);
   const hasVehicle = (vehicles.data ?? []).length > 0;
 
   useEffect(() => {
@@ -132,13 +297,13 @@ function WelcomePage() {
   return (
     <Shell>
       <TeoSays
-        spot="welcome"
+        spot="welcome-vehicle"
         size="lg"
-        mood="cheer"
-        title={`Oi${firstName ? `, ${firstName}` : ""}! Eu sou o Teo.`}
+        mood="tip"
+        title={`Prazer${firstName ? `, ${firstName}` : ""}!`}
       >
-        Vou te mostrar quanto seu carro gasta de verdade. Para começar, me conta qual é o seu
-        veículo — só o essencial; o resto você completa depois, se quiser.
+        Agora me conta qual é o seu veículo — só o essencial; o resto você completa depois, se
+        quiser.
       </TeoSays>
       <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
         Qual é o seu veículo?
