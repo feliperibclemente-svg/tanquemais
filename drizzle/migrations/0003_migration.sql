@@ -1,0 +1,14 @@
+DROP POLICY IF EXISTS "likes readable" ON public.likes;
+CREATE POLICY "likes readable by owner" ON public.likes FOR SELECT TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "user badges readable" ON public.user_badges;
+CREATE POLICY "user badges readable by owner" ON public.user_badges FOR SELECT TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "reviews readable" ON public.station_reviews;
+CREATE POLICY "reviews readable by owner" ON public.station_reviews FOR SELECT TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "station photos readable" ON public.station_photos;
+CREATE POLICY "station photos readable by owner" ON public.station_photos FOR SELECT TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "fuel types readable" ON public.fuel_types;
+CREATE POLICY "fuel types readable by signed-in users" ON public.fuel_types FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
+DROP POLICY IF EXISTS "badges readable" ON public.badges;
+CREATE POLICY "badges readable by signed-in users" ON public.badges FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
+DROP POLICY IF EXISTS "missions readable" ON public.missions;
+CREATE POLICY "missions readable by signed-in users" ON public.missions FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
