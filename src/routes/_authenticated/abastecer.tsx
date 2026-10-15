@@ -9,6 +9,7 @@ import {
   ChoiceGroup,
   EmptyState,
   formatCents,
+  maskInteger,
   NumericField,
   PageHeader,
   parseDecimal,
@@ -132,7 +133,8 @@ function AbastecerPage() {
   const [total, setTotal] = useState("");
   const [price, setPrice] = useState("");
   const [litersInput, setLitersInput] = useState("");
-  const [odometer, setOdometer] = useState("");
+  /** null = a pessoa não mexeu no campo: vale o km sugerido (se houver). */
+  const [odometerInput, setOdometer] = useState<string | null>(null);
   const [stationId, setStationId] = useState<string>("");
   /** null = a pessoa ainda não escolheu: vale a última escolha feita para este veículo. */
   const [fullTankChoice, setFullTankChoice] = useState<boolean | null>(null);
@@ -151,6 +153,17 @@ function AbastecerPage() {
 
   const previousOdometer = prevByDate ? Number(prevByDate.odometer) || null : null;
   const nextOdometer = nextByDate ? Number(nextByDate.odometer) || null : null;
+  /**
+   * Primeiro abastecimento do veículo: o km informado no cadastro já vem preenchido
+   * (editável). Nos seguintes o campo vem vazio, porque o km muda a cada abastecimento.
+   */
+  const registeredOdometer =
+    fuelings.isSuccess && vehicleHistory.length === 0
+      ? Math.round(Number(vehicle?.current_odometer) || 0)
+      : 0;
+  const odometer =
+    odometerInput ?? (registeredOdometer > 0 ? maskInteger(String(registeredOdometer)) : "");
+  const odometerFromRegistration = odometerInput === null && registeredOdometer > 0;
   const odometerValue = odometer ? parseDecimal(odometer) : 0;
 
   /** Consumo do novo registro calculado com o histórico real (tanque cheio → tanque cheio). */
@@ -389,7 +402,7 @@ function AbastecerPage() {
               setSaved(null);
               setTotal("");
               setLitersInput("");
-              setOdometer("");
+              setOdometer(null);
               setFullTankChoice(null);
               setDate(todayLocal());
             }}
@@ -501,9 +514,11 @@ function AbastecerPage() {
           inputMode="numeric"
           suffix="km"
           hint={
-            previousOdometer
-              ? `Último registro: ${num(previousOdometer, 0)} km`
-              : "Odômetro do painel do carro"
+            odometerFromRegistration
+              ? "Do cadastro do veículo. Se rodou desde então, ajuste para o km do painel."
+              : previousOdometer
+                ? `Último registro: ${num(previousOdometer, 0)} km`
+                : "Odômetro do painel do carro"
           }
         />
 
