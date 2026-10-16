@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Action, TextField } from "@/components/ds";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { availableProviders, signInWithProvider, type OAuthProvider } from "@/lib/oauth";
 import { useAuth } from "@/providers/AuthProvider";
 import { authSchema } from "@/validators";
 import { track } from "@/lib/analytics";
@@ -54,12 +54,14 @@ function AuthPage() {
     if (!loading && user) goTo(destination);
   }, [loading, user, destination]);
 
-  async function signInWith(provider: "google" | "apple") {
+  // Definido após montar para o HTML do servidor e o do navegador coincidirem.
+  const [providers, setProviders] = useState<OAuthProvider[]>(["google"]);
+  useEffect(() => setProviders(availableProviders()), []);
+
+  async function signInWith(provider: OAuthProvider) {
     setBusy(provider);
     setError(null);
-    const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: `${window.location.origin}${destination}`,
-    });
+    const result = await signInWithProvider(provider, `${window.location.origin}${destination}`);
     if ("error" in result && result.error) {
       setBusy(null);
       setError("Não foi possível entrar com esse provedor. Tente novamente.");
@@ -132,15 +134,17 @@ function AuthPage() {
           {busy === "google" ? null : <GoogleMark />}
           Continuar com Google
         </Action>
-        <Action
-          variant="secondary"
-          onClick={() => signInWith("apple")}
-          disabled={busy !== null}
-          loading={busy === "apple"}
-        >
-          {busy === "apple" ? null : <AppleMark />}
-          Continuar com Apple
-        </Action>
+        {providers.includes("apple") ? (
+          <Action
+            variant="secondary"
+            onClick={() => signInWith("apple")}
+            disabled={busy !== null}
+            loading={busy === "apple"}
+          >
+            {busy === "apple" ? null : <AppleMark />}
+            Continuar com Apple
+          </Action>
+        ) : null}
       </div>
 
       <div className="my-6 flex items-center gap-3">
