@@ -34,7 +34,7 @@ import { useHomeData, useProfile, useUpdateProfile } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { track } from "@/lib/analytics";
-import { PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL } from "@/constants/app";
+import { PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL, GENDER_OPTIONS } from "@/constants/app";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { amIAdmin } from "@/lib/admin.functions";
 import { queuedFuelings } from "@/lib/offline-queue";
@@ -75,15 +75,6 @@ const ageRanges = [
   { value: "35-44", label: "35–44" },
   { value: "45-54", label: "45–54" },
   { value: "55+", label: "55+" },
-  { value: "nao_informar", label: "Prefiro não informar" },
-] as const;
-
-const genders = [
-  { value: "", label: "Não preenchido" },
-  { value: "mulher", label: "Mulher" },
-  { value: "homem", label: "Homem" },
-  { value: "nao_binario", label: "Não binário" },
-  { value: "outro", label: "Outro" },
   { value: "nao_informar", label: "Prefiro não informar" },
 ] as const;
 
@@ -235,29 +226,23 @@ function PerfilPage() {
       </div>
 
       <section className="mt-5 space-y-4">
-        <AppCard>
-          <p className="text-sm font-semibold text-foreground">Mais sobre você (opcional)</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Opcional. Usado apenas de forma agregada para entender quem usa o beta. Apague quando
-            quiser escolhendo 'Não preenchido'.
-          </p>
-          <div className="mt-3 space-y-3">
-            {data?.birth_date ? null : (
+        {data?.birth_date ? null : (
+          <AppCard>
+            <p className="text-sm font-semibold text-foreground">Faixa etária (opcional)</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Usada só em números gerais do beta. Com a data de nascimento no perfil, ela é
+              calculada sozinha.
+            </p>
+            <div className="mt-3">
               <SelectField
                 label="Faixa etária"
                 value={data?.age_range ?? ""}
                 onChange={(e) => updateProfile.mutate({ age_range: e.target.value || null })}
                 options={ageRanges}
               />
-            )}
-            <SelectField
-              label="Gênero"
-              value={data?.gender ?? ""}
-              onChange={(e) => updateProfile.mutate({ gender: e.target.value || null })}
-              options={genders}
-            />
-          </div>
-        </AppCard>
+            </div>
+          </AppCard>
+        )}
 
         <AppCard>
           <button
@@ -423,6 +408,7 @@ function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => vo
   const [birth, setBirth] = useState(formatBirthDate(profile.birth_date));
   const [city, setCity] = useState(profile.city ?? "");
   const [state, setState] = useState(profile.state ?? "");
+  const [gender, setGender] = useState(profile.gender ?? "");
   const [photo, setPhoto] = useState<string | null>(profile.avatar_url ?? null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -479,6 +465,7 @@ function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => vo
         ...birthPatch,
         city: parsed.data.city || null,
         state: parsed.data.state || null,
+        gender: gender || null,
         avatar_url: photo,
       });
       track("profile_updated", { photo: !!photo, city: !!parsed.data.city });
@@ -546,6 +533,12 @@ function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => vo
           onChange={(event) => setBirth(maskDate(event.target.value))}
         />
       ) : null}
+      <SelectField
+        label="Gênero (opcional)"
+        value={gender}
+        onChange={(event) => setGender(event.target.value)}
+        options={[{ value: "", label: "Não preenchido" }, ...GENDER_OPTIONS]}
+      />
       <div className="grid grid-cols-[1fr_6rem] gap-3">
         <TextField
           label="Cidade"

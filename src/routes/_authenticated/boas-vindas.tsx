@@ -12,10 +12,11 @@ import {
   NumericField,
   parseDecimal,
   ScreenSkeleton,
+  SelectField,
   TeoSays,
   TextField,
 } from "@/components/ds";
-import { FUEL_TYPES } from "@/constants/app";
+import { FUEL_TYPES, GENDER_OPTIONS } from "@/constants/app";
 import { canonicalVehicle } from "@/constants/vehicles";
 import { useCreateVehicle, useProfile, useUpdateProfile, useVehicles } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,6 +91,7 @@ function AboutYouStep({ profile }: { profile: Profile }) {
   const [first, setFirst] = useState(profile.first_name ?? tidyName(prefill.first));
   const [last, setLast] = useState(profile.last_name ?? tidyName(prefill.last));
   const [birth, setBirth] = useState(formatBirthDate(profile.birth_date));
+  const [gender, setGender] = useState(profile.gender ?? "");
   const [error, setError] = useState<string | null>(null);
   const [minor, setMinor] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -121,8 +123,9 @@ function AboutYouStep({ profile }: { profile: Profile }) {
         full_name: `${firstName} ${lastName}`,
         birth_date: check.iso,
         age_range: ageRangeOf(check.age),
+        gender: gender || null,
       });
-      track("onboarding_identity_saved");
+      track("onboarding_identity_saved", { gender: !!gender });
     } catch {
       /* o hook já mostra o erro */
     }
@@ -166,8 +169,7 @@ function AboutYouStep({ profile }: { profile: Profile }) {
   return (
     <Shell>
       <TeoSays spot="welcome" size="lg" mood="tip" title="Primeiro, seus dados básicos.">
-        É assim que vou te chamar no app. A data de nascimento só confirma que você tem 18 anos ou
-        mais e não aparece para ninguém.
+        É assim que vou te chamar no app. Nada disso aparece para outras pessoas.
       </TeoSays>
       <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">Sobre você</h1>
 
@@ -196,6 +198,13 @@ function AboutYouStep({ profile }: { profile: Profile }) {
           placeholder="dd/mm/aaaa"
           hint="Para confirmar que você tem 18 anos ou mais. Não aparece para ninguém."
           onChange={(event) => setBirth(maskDate(event.target.value))}
+        />
+        <SelectField
+          label="Gênero (opcional)"
+          value={gender}
+          onChange={(event) => setGender(event.target.value)}
+          hint="Só entra em números gerais do beta, sem identificar você."
+          options={[{ value: "", label: "Selecione" }, ...GENDER_OPTIONS]}
         />
 
         {error ? (

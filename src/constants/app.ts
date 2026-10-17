@@ -73,3 +73,12 @@ export const SITE_URL = "https://www.tanquemais.com.br";
 export const GOOGLE_CLIENT_ID =
   (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ??
   "1054484305630-j7ujt3boucnlv18j3nuu10sudpctj0p8.apps.googleusercontent.com";
+
+/** Gênero (opcional). Valores aceitos pelo banco (profiles_gender_check). */
+export const GENDER_OPTIONS = [
+  { value: "mulher", label: "Mulher" },
+  { value: "homem", label: "Homem" },
+  { value: "nao_binario", label: "Não binário" },
+  { value: "outro", label: "Outro" },
+  { value: "nao_informar", label: "Prefiro não informar" },
+] as const;
