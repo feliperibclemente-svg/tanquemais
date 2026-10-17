@@ -26,9 +26,13 @@ do próprio motorista, com honestidade.
 
 Pouco, para continuar especial:
 
-1. **Boas-vindas** — se apresenta e pede o veículo.
-2. **Card da TanqueIA na Home** — a frase do dia vem "dele".
-3. **Marcos** — primeiro registro e primeira medição real de consumo.
+1. **Apresentação em stories** — 5 telas no primeiro acesso (e em Perfil → "Como o app
+   funciona"): o que o app mede, registro rápido, tanque cheio, etanol × gasolina e privacidade.
+   `src/components/app/TeoStories.tsx`. Avança sozinho (7 s), toque à direita/esquerda,
+   segurar pausa; sem avanço automático com "reduzir movimento".
+2. **Boas-vindas** — se apresenta e pede o veículo.
+3. **Card da TanqueIA na Home** — a frase do dia vem "dele".
+4. **Marcos** — primeiro registro e primeira medição real de consumo.
 
 A entrada (surgir com mola + a animação do humor) roda **uma vez por sessão** em cada lugar
 e é desligada quando o celular está com "reduzir movimento" ativo. Implementação:

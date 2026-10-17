@@ -14,6 +14,7 @@ import {
   Pencil,
   Sun,
   Trash2,
+  PlayCircle,
 } from "lucide-react";
 import {
   Action,
@@ -286,6 +287,14 @@ function PerfilPage() {
               className="w-full sm:w-auto"
             >
               <MessageSquareHeart className="h-4 w-4" /> Enviar feedback
+            </ActionLink>
+            <ActionLink
+              to="/como-funciona"
+              variant="secondary"
+              size="md"
+              className="w-full sm:w-auto"
+            >
+              <PlayCircle className="h-4 w-4" /> Como o app funciona
             </ActionLink>
             <ActionLink to="/beta" variant="secondary" size="md" className="w-full sm:w-auto">
               <FlaskConical className="h-4 w-4" /> Sobre o Beta

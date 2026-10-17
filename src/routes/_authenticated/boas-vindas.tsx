@@ -34,6 +34,7 @@ import type { Profile } from "@/types/domain";
 import { track } from "@/lib/analytics";
 import { vehicleSchema } from "@/validators";
 import { Logo } from "@/components/app/Logo";
+import { markTourSeen, TeoStories, tourSeen } from "@/components/app/TeoStories";
 
 export const Route = createFileRoute("/_authenticated/boas-vindas")({
   head: () => ({
@@ -46,19 +47,32 @@ export const Route = createFileRoute("/_authenticated/boas-vindas")({
 });
 
 /**
- * Primeiro acesso em duas etapas curtas:
+ * Primeiro acesso: apresentação em stories (Teo), depois duas etapas curtas:
  * 1. Sobre você — nome, sobrenome e data de nascimento (o Tanque+ é para maiores de 18).
  * 2. Veículo — marca, modelo, combustível e km; depois, o convite ao primeiro abastecimento.
  */
 function WelcomePage() {
   const profile = useProfile();
   const p = profile.data ?? null;
+  const [tourDone, setTourDone] = useState(() => tourSeen());
 
   if (profile.isLoading) {
     return (
       <Shell>
         <ScreenSkeleton cards={2} />
       </Shell>
+    );
+  }
+  // Conta nova: antes do cadastro, o Teo apresenta o app em stories.
+  if (p && needsIdentity(p) && !tourDone) {
+    return (
+      <TeoStories
+        onDone={(reason) => {
+          markTourSeen();
+          track(reason === "completed" ? "tour_completed" : "tour_skipped", { from: "onboarding" });
+          setTourDone(true);
+        }}
+      />
     );
   }
   if (p && needsIdentity(p)) return <AboutYouStep profile={p} />;

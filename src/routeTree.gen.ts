@@ -21,6 +21,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedBetaRouteImport } from './routes/_authenticated/beta'
 import { Route as AuthenticatedBoasVindasRouteImport } from './routes/_authenticated/boas-vindas'
+import { Route as AuthenticatedComoFuncionaRouteImport } from './routes/_authenticated/como-funciona'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -87,6 +88,12 @@ const AuthenticatedBoasVindasRoute = AuthenticatedBoasVindasRouteImport.update({
   path: '/boas-vindas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedComoFuncionaRoute =
+  AuthenticatedComoFuncionaRouteImport.update({
+    id: '/como-funciona',
+    path: '/como-funciona',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRoute
   '/beta': typeof AuthenticatedBetaRoute
   '/boas-vindas': typeof AuthenticatedBoasVindasRoute
+  '/como-funciona': typeof AuthenticatedComoFuncionaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -149,6 +157,7 @@ export interface FileRoutesByTo {
   '/app': typeof AuthenticatedAppRoute
   '/beta': typeof AuthenticatedBetaRoute
   '/boas-vindas': typeof AuthenticatedBoasVindasRoute
+  '/como-funciona': typeof AuthenticatedComoFuncionaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -170,6 +179,7 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/beta': typeof AuthenticatedBetaRoute
   '/_authenticated/boas-vindas': typeof AuthenticatedBoasVindasRoute
+  '/_authenticated/como-funciona': typeof AuthenticatedComoFuncionaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/beta'
     | '/boas-vindas'
+    | '/como-funciona'
     | '/dashboard'
     | '/feedback'
     | '/historico'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/beta'
     | '/boas-vindas'
+    | '/como-funciona'
     | '/dashboard'
     | '/feedback'
     | '/historico'
@@ -230,6 +242,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/_authenticated/beta'
     | '/_authenticated/boas-vindas'
+    | '/_authenticated/como-funciona'
     | '/_authenticated/dashboard'
     | '/_authenticated/feedback'
     | '/_authenticated/historico'
@@ -334,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBoasVindasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/como-funciona': {
+      id: '/_authenticated/como-funciona'
+      path: '/como-funciona'
+      fullPath: '/como-funciona'
+      preLoaderRoute: typeof AuthenticatedComoFuncionaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -385,6 +405,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedBetaRoute: typeof AuthenticatedBetaRoute
   AuthenticatedBoasVindasRoute: typeof AuthenticatedBoasVindasRoute
+  AuthenticatedComoFuncionaRoute: typeof AuthenticatedComoFuncionaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
@@ -399,6 +420,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedBetaRoute: AuthenticatedBetaRoute,
   AuthenticatedBoasVindasRoute: AuthenticatedBoasVindasRoute,
+  AuthenticatedComoFuncionaRoute: AuthenticatedComoFuncionaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
