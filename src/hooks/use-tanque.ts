@@ -12,6 +12,8 @@ import {
 } from "@/repositories";
 import { computeFuelings, overview, savingsOpportunity } from "@/services/analytics";
 import { buildInsights } from "@/services/insights";
+import { chooseReference, normalizeName, toUf, type PriceReferenceRow } from "@/services/anp";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { track } from "@/lib/analytics";
 import { captureException } from "@/lib/telemetry";
@@ -25,7 +27,50 @@ export const queryKeys = {
   stations: (city: string | null) => ["stations", city ?? "all"] as const,
   userStats: (userId: string) => ["user-stats", userId] as const,
   vehicleStats: (vehicleId: string) => ["vehicle-stats", vehicleId] as const,
+  priceReferences: (uf: string, city: string) => ["price-references", uf, city] as const,
 };
+
+/**
+ * Médias semanais da ANP para a cidade e o estado do perfil (últimos 60 dias).
+ * Dado público; sem cidade/UF no perfil não há consulta.
+ */
+export function usePriceReferences(place: { uf: string | null; city: string | null }) {
+  const uf = toUf(place.uf ?? "") ?? "";
+  const city = normalizeName(place.city);
+  return useQuery({
+    ...base,
+    staleTime: 6 * 60 * 60_000,
+    retry: 1,
+    enabled: !!uf,
+    queryKey: queryKeys.priceReferences(uf, city),
+    queryFn: async () => {
+      const since = new Date(Date.now() - 60 * 86_400_000).toISOString().slice(0, 10);
+      const { data, error } = await supabase
+        .from("fuel_price_references")
+        .select(
+          "scope, uf, municipio, municipio_label, fuel_type_id, avg_price, week_start, week_end, stations",
+        )
+        .eq("uf", uf)
+        .in("municipio", city ? ["", city] : [""])
+        .gte("week_start", since)
+        .order("week_start", { ascending: false })
+        .limit(400);
+      if (error) throw error;
+      return (data ?? []) as Pick<
+        PriceReferenceRow,
+        | "scope"
+        | "uf"
+        | "municipio"
+        | "municipio_label"
+        | "fuel_type_id"
+        | "avg_price"
+        | "week_start"
+        | "week_end"
+        | "stations"
+      >[];
+    },
+  });
+}
 
 const base = {
   staleTime: QUERY_STALE_TIME,
@@ -266,13 +311,25 @@ export function useHomeData() {
     ((fuelings.data ?? []) as Fueling[]).filter((f) => !primary || f.vehicle_id === primary.id),
   );
   const stats = overview(rows);
+  const place = { uf: profile.data?.state ?? null, city: profile.data?.city ?? null };
+  const references = usePriceReferences(place);
+  const lastReference =
+    stats.last && references.data
+      ? chooseReference(references.data, place, stats.last.fuel_type_id, stats.last.filled_at)
+      : null;
   const savings = savingsOpportunity(
     rows,
     stations.data ?? [],
     primary?.fuel_type_id ?? null,
     primary?.tank_liters ?? null,
   );
-  const insights = buildInsights(stats, savings);
+  const insights = buildInsights(
+    stats,
+    savings,
+    lastReference && stats.last
+      ? { reference: lastReference, paid: Number(stats.last.price_per_liter) }
+      : null,
+  );
 
   return {
     isLoading: profile.isLoading || vehicles.isLoading || fuelings.isLoading,
@@ -288,6 +345,10 @@ export function useHomeData() {
     stats,
     savings,
     insights,
+    place,
+    hasPlace: !!toUf(place.uf ?? ""),
+    references: references.data ?? [],
+    lastReference,
     stations: stations.data ?? [],
   };
 }

@@ -19,6 +19,7 @@ import { useHomeData } from "@/hooks/use-tanque";
 import { FUEL_LABEL } from "@/constants/app";
 import { ethanolAdvice } from "@/services/insights";
 import { consumptionProgress, consumptionProgressText } from "@/services/analytics";
+import { chooseReference, weekLabel, type ChosenReference } from "@/services/anp";
 
 const DashboardCharts = lazy(() => import("@/components/charts/DashboardCharts"));
 
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  const { isLoading, isError, refetch, stats, rows } = useHomeData();
+  const { isLoading, isError, refetch, stats, rows, references, place } = useHomeData();
 
   if (isLoading) {
     return (
@@ -130,7 +131,12 @@ function DashboardPage() {
           </div>
         </AppCard>
 
-        <EthanolCard lastGasoline={gas} lastEthanol={eth} />
+        <EthanolCard
+          lastGasoline={gas}
+          lastEthanol={eth}
+          anpGasoline={chooseReference(references, place, "gasolina", new Date())}
+          anpEthanol={chooseReference(references, place, "etanol", new Date())}
+        />
 
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Resumo geral</p>
@@ -171,10 +177,22 @@ const toField = (price: number | null) => (price ? formatCents(price, 2) : "");
 function EthanolCard({
   lastGasoline,
   lastEthanol,
+  anpGasoline,
+  anpEthanol,
 }: {
   lastGasoline: number | null;
   lastEthanol: number | null;
+  anpGasoline: ChosenReference | null;
+  anpEthanol: ChosenReference | null;
 }) {
+  // Médias públicas da mesma semana e do mesmo lugar, para quem não sabe o preço do outro combustível.
+  const anp =
+    anpGasoline &&
+    anpEthanol &&
+    anpGasoline.weekStart === anpEthanol.weekStart &&
+    anpGasoline.scope === anpEthanol.scope
+      ? { gasoline: anpGasoline, ethanol: anpEthanol }
+      : null;
   const [gasoline, setGasoline] = useState(toField(lastGasoline));
   const [ethanol, setEthanol] = useState(toField(lastEthanol));
   const gas = parseDecimal(gasoline);
@@ -205,6 +223,24 @@ function EthanolCard({
           cents={2}
         />
       </div>
+      {anp ? (
+        <button
+          type="button"
+          onClick={() => {
+            setGasoline(toField(anp.gasoline.avgPrice));
+            setEthanol(toField(anp.ethanol.avgPrice));
+          }}
+          className="mt-2 min-h-11 text-left text-sm font-semibold text-primary"
+        >
+          Usar as médias da ANP{" "}
+          {anp.gasoline.scope === "municipio"
+            ? `em ${anp.gasoline.place}`
+            : `no estado (${anp.gasoline.place})`}
+          <span className="block text-xs font-normal text-muted-foreground">
+            semana de {weekLabel(anp.gasoline.weekStart, anp.gasoline.weekEnd)}
+          </span>
+        </button>
+      ) : null}
       {advice ? (
         <p className="mt-3 text-sm text-muted-foreground">
           O etanol custa {num(advice.ratio * 100, 0)}% da gasolina.{" "}
@@ -236,6 +272,14 @@ function HowWeCalculate({ duplicates, outliers }: { duplicates: number; outliers
           <dt className="font-medium text-foreground">Preço médio</dt>
           <dd>
             Total pago ÷ litros, só do combustível mais recente. Abastecimentos maiores pesam mais.
+          </dd>
+        </div>
+        <div>
+          <dt className="font-medium text-foreground">Médias da ANP</dt>
+          <dd>
+            Preço médio semanal pesquisado pela ANP em postos da sua cidade (ou do estado, quando a
+            cidade não entra na pesquisa). Dado público, só para referência: cada posto tem o seu
+            preço.
           </dd>
         </div>
         <div>

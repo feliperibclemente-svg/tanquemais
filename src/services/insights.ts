@@ -2,14 +2,50 @@ import { brl, num } from "@/lib/format";
 import { ETHANOL_BREAKEVEN_RATIO } from "@/constants/app";
 import type { Insight } from "@/types/domain";
 import type { Overview, SavingsOpportunity } from "./analytics";
+import { weekLabel, type ChosenReference } from "./anp";
+
+export interface CityPrice {
+  reference: ChosenReference;
+  /** Preço por litro pago no último abastecimento. */
+  paid: number;
+}
+
+/**
+ * Comparação neutra com a média pública da ANP, sempre com fonte e semana.
+ * Não fala em economia nem dá conselho: só mostra os dois números.
+ */
+export function cityPriceInsight({ reference, paid }: CityPrice): Insight {
+  const where =
+    reference.scope === "municipio" ? `de ${reference.place}` : `do estado (${reference.place})`;
+  const diff = paid - reference.avgPrice;
+  const relation =
+    Math.abs(diff) < 0.005
+      ? "o mesmo valor da média"
+      : `${brl(Math.abs(diff))} ${diff > 0 ? "acima" : "abaixo"} da média`;
+  return {
+    id: "city-price",
+    icon: "map-pin",
+    severity: "info",
+    title:
+      reference.scope === "municipio"
+        ? "Seu preço e a média da cidade"
+        : "Seu preço e a média do estado",
+    body: `No último abastecimento você pagou ${brl(paid)} por litro, ${relation} ${where} na semana de ${weekLabel(reference.weekStart, reference.weekEnd)}, que foi ${brl(reference.avgPrice)}, segundo a ANP.`,
+  };
+}
 
 /**
  * Insights determinísticos. Toda a matemática já vem pronta — a IA apenas
  * reescreve o texto do insight principal, nunca inventa números.
  */
-export function buildInsights(o: Overview, savings: SavingsOpportunity): Insight[] {
+export function buildInsights(
+  o: Overview,
+  savings: SavingsOpportunity,
+  cityPrice: CityPrice | null = null,
+): Insight[] {
   const out: Insight[] = [];
 
+  if (o.count < 2 && cityPrice) return [cityPriceInsight(cityPrice)];
   if (o.count < 2) {
     out.push({
       id: "empty",
@@ -47,6 +83,8 @@ export function buildInsights(o: Overview, savings: SavingsOpportunity): Insight
       action: { label: "Abrir histórico", to: "/historico" },
     });
   }
+
+  if (cityPrice) out.push(cityPriceInsight(cityPrice));
 
   const trend = o.consumptionTrend;
   if (trend) {

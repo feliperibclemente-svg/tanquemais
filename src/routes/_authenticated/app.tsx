@@ -28,6 +28,7 @@ import {
   type ConsumptionProgress,
 } from "@/services/analytics";
 import { firstNameOf, needsIdentity } from "@/services/identity";
+import { weekLabel, type ChosenReference } from "@/services/anp";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -59,8 +60,18 @@ function greeting() {
 }
 
 function HomePage() {
-  const { isLoading, isError, refetch, profile, primaryVehicle, stats, insights, rows } =
-    useHomeData();
+  const {
+    isLoading,
+    isError,
+    refetch,
+    profile,
+    primaryVehicle,
+    stats,
+    insights,
+    rows,
+    lastReference,
+    hasPlace,
+  } = useHomeData();
 
   if (isLoading) {
     return (
@@ -130,24 +141,39 @@ function HomePage() {
 
         {/* Último abastecimento com a conclusão em destaque */}
         {last ? (
-          <Link to="/historico" className="block">
-            <AppCard className="space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground">Último abastecimento</p>
-                  <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                    {brl(Number(last.total_cost))}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {relativeDate(last.filled_at)} · {brl(Number(last.price_per_liter))}/L ·{" "}
-                    {num(Number(last.liters), 1)} L
-                  </p>
+          <>
+            <Link to="/historico" className="block">
+              <AppCard className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Último abastecimento
+                    </p>
+                    <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+                      {brl(Number(last.total_cost))}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {relativeDate(last.filled_at)} · {brl(Number(last.price_per_liter))}/L ·{" "}
+                      {num(Number(last.liters), 1)} L
+                    </p>
+                  </div>
+                  <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
                 </div>
-                <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
-              </div>
-              {verdict ? <VerdictPill verdict={verdict} /> : null}
-            </AppCard>
-          </Link>
+                {verdict ? <VerdictPill verdict={verdict} /> : null}
+                {lastReference ? (
+                  <ReferenceLine reference={lastReference} paid={Number(last.price_per_liter)} />
+                ) : null}
+              </AppCard>
+            </Link>
+            {!hasPlace ? (
+              <Link
+                to="/perfil"
+                className="-mt-1 block px-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
+              >
+                Informe sua cidade no Perfil para comparar com a média de preços da ANP.
+              </Link>
+            ) : null}
+          </>
         ) : (
           <AppCard className="text-center">
             <p className="font-semibold text-foreground">Comece pelo primeiro abastecimento</p>
@@ -227,6 +253,24 @@ function Mini({
       </p>
       <p className="text-[11px] leading-tight text-muted-foreground">{hint}</p>
     </div>
+  );
+}
+
+/** Média semanal da ANP para comparar com o último preço pago. Neutra e com fonte. */
+function ReferenceLine({ reference, paid }: { reference: ChosenReference; paid: number }) {
+  const diff = paid - reference.avgPrice;
+  const where =
+    reference.scope === "municipio" ? `em ${reference.place}` : `no estado (${reference.place})`;
+  return (
+    <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground">
+      Média {where}:{" "}
+      <span className="font-semibold text-foreground">{brl(reference.avgPrice)}/L</span>
+      {Math.abs(diff) >= 0.005
+        ? ` · você pagou ${brl(Math.abs(diff))} ${diff > 0 ? "a mais" : "a menos"}`
+        : " · você pagou a média"}
+      <br />
+      Fonte: ANP, semana de {weekLabel(reference.weekStart, reference.weekEnd)}
+    </p>
   );
 }
 

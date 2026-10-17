@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { RefreshCw } from "lucide-react";
 import {
@@ -12,7 +12,8 @@ import {
   ScreenSkeleton,
   StatTile,
 } from "@/components/ds";
-import { getBetaMetrics } from "@/lib/admin.functions";
+import { anpStatus, getBetaMetrics, runAnpImport } from "@/lib/admin.functions";
+import { weekLabel as anpWeekLabel } from "@/services/anp";
 import { fullDate, num } from "@/lib/format";
 import type { BetaMetrics } from "@/services/beta-metrics";
 
@@ -126,6 +127,8 @@ function AdminPage() {
       </div>
 
       <section className="mt-5 space-y-4">
+        <AnpCard />
+
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Funil</p>
           <div className="mt-3 space-y-3">
@@ -260,5 +263,54 @@ function Bar({ value, max, className }: { value: number; max: number; className:
         title={String(value)}
       />
     </div>
+  );
+}
+
+/** Preços de referência da ANP: última semana importada e importação manual. */
+function AnpCard() {
+  const fetchStatus = useServerFn(anpStatus);
+  const runImport = useServerFn(runAnpImport);
+  const status = useQuery({ queryKey: ["anp-status"], queryFn: () => fetchStatus(), retry: false });
+  const importer = useMutation({
+    mutationFn: () => runImport(),
+    onSettled: () => void status.refetch(),
+  });
+  const latest = status.data?.latest;
+  const result = importer.data;
+  return (
+    <AppCard>
+      <p className="text-sm font-semibold text-foreground">Preços de referência (ANP)</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {latest
+          ? `Última semana: ${anpWeekLabel(latest.week_start, latest.week_end)} · ${num(status.data?.rows ?? 0, 0)} médias`
+          : status.isLoading
+            ? "Carregando…"
+            : "Nenhuma semana importada ainda."}{" "}
+        Atualiza sozinho todo dia; a ANP publica às terças.
+      </p>
+      {result ? (
+        <p className="mt-2 text-xs text-foreground">
+          {result.status === "imported"
+            ? `Importado: ${result.municipios} médias de municípios e ${result.estados} de estados.`
+            : result.status === "up_to_date"
+              ? "Já estava atualizado."
+              : result.status === "not_found"
+                ? "A ANP ainda não publicou a semana nova (ou o site não respondeu)."
+                : `Erro: ${result.message}`}
+        </p>
+      ) : null}
+      {importer.isError ? (
+        <p className="mt-2 text-xs text-destructive">{(importer.error as Error).message}</p>
+      ) : null}
+      <Action
+        variant="secondary"
+        size="md"
+        className="mt-3"
+        loading={importer.isPending}
+        onClick={() => importer.mutate()}
+      >
+        Atualizar agora
+      </Action>
+    </AppCard>
   );
 }

@@ -61,7 +61,9 @@ function Privacidade() {
         <h2>Para que usamos</h2>
         <p>
           Para calcular seu consumo e gastos, manter seu histórico, melhorar o app e entender, de
-          forma agregada, quem usa o beta.
+          forma agregada, quem usa o beta. Se você informar cidade e estado, usamos esses dados para
+          comparar seus preços com médias públicas da ANP; a consulta é feita no nosso próprio
+          banco, sem enviar seus dados à ANP ou a terceiros.
         </p>
       </section>
       <section>

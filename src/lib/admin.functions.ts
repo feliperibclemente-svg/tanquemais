@@ -86,3 +86,43 @@ export const amIAdmin = createServerFn({ method: "GET" })
     });
     return { admin: !!data };
   });
+
+/** Situação dos preços de referência da ANP (última semana importada). */
+export const anpStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Acesso restrito");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("fuel_price_references")
+      .select("week_start, week_end")
+      .order("week_start", { ascending: false })
+      .limit(1);
+    const latest = data?.[0] ?? null;
+    let rows = 0;
+    if (latest) {
+      const { count } = await supabaseAdmin
+        .from("fuel_price_references")
+        .select("id", { count: "exact", head: true })
+        .eq("week_start", latest.week_start);
+      rows = count ?? 0;
+    }
+    return { latest, rows };
+  });
+
+/** Importa agora a semana mais recente da ANP (botão no painel admin). */
+export const runAnpImport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Acesso restrito");
+    const { importAnpWeek } = await import("@/lib/anp-import.server");
+    return importAnpWeek();
+  });

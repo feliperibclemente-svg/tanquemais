@@ -49,6 +49,16 @@ function Termos() {
         </p>
       </section>
       <section>
+        <h2>Preços de referência</h2>
+        <p>
+          As médias de preço exibidas no app vêm do Levantamento de Preços de Combustíveis da
+          Agência Nacional do Petróleo, Gás Natural e Biocombustíveis (ANP), dado público divulgado
+          semanalmente. São apenas referência: cada posto pratica o próprio preço, e a média pode
+          não refletir o valor do dia. O Tanque+ não tem vínculo com a ANP nem com postos,
+          distribuidoras ou produtores.
+        </p>
+      </section>
+      <section>
         <h2>Seus dados</h2>
         <p>
           O tratamento dos seus dados segue a nossa{" "}

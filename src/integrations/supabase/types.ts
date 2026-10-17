@@ -310,6 +310,57 @@ export type Database = {
         }
         Relationships: []
       }
+      fuel_price_references: {
+        Row: {
+          avg_price: number
+          fuel_type_id: string
+          id: number
+          imported_at: string
+          max_price: number | null
+          min_price: number | null
+          municipio: string
+          municipio_label: string | null
+          scope: string
+          source: string
+          stations: number | null
+          uf: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          avg_price: number
+          fuel_type_id: string
+          id?: number
+          imported_at?: string
+          max_price?: number | null
+          min_price?: number | null
+          municipio?: string
+          municipio_label?: string | null
+          scope: string
+          source?: string
+          stations?: number | null
+          uf: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          avg_price?: number
+          fuel_type_id?: string
+          id?: number
+          imported_at?: string
+          max_price?: number | null
+          min_price?: number | null
+          municipio?: string
+          municipio_label?: string | null
+          scope?: string
+          source?: string
+          stations?: number | null
+          uf?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       fuel_types: {
         Row: {
           id: string
