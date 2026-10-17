@@ -279,28 +279,23 @@ function PerfilPage() {
             Você está usando uma versão de testes. Algumas funcionalidades ainda vão evoluir — sua
             opinião decide o que vem primeiro.
           </p>
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <div className="mt-3 grid grid-cols-1 gap-2">
             <ActionLink
               to="/feedback"
               search={{ from: path } as never}
               size="md"
-              className="w-full sm:w-auto"
+              className="w-full"
             >
               <MessageSquareHeart className="h-4 w-4" /> Enviar feedback
             </ActionLink>
-            <ActionLink
-              to="/como-funciona"
-              variant="secondary"
-              size="md"
-              className="w-full sm:w-auto"
-            >
+            <ActionLink to="/como-funciona" variant="secondary" size="md" className="w-full">
               <PlayCircle className="h-4 w-4" /> Como o app funciona
             </ActionLink>
-            <ActionLink to="/beta" variant="secondary" size="md" className="w-full sm:w-auto">
+            <ActionLink to="/beta" variant="secondary" size="md" className="w-full">
               <FlaskConical className="h-4 w-4" /> Sobre o Beta
             </ActionLink>
             {admin.data?.admin ? (
-              <ActionLink to="/admin" variant="secondary" size="md" className="w-full sm:w-auto">
+              <ActionLink to="/admin" variant="secondary" size="md" className="w-full">
                 <BarChart3 className="h-4 w-4" /> Painel do beta
               </ActionLink>
             ) : null}
