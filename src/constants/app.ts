@@ -65,3 +65,6 @@ export const SUPPORT_EMAIL = "conectarf6@gmail.com";
 export const CONTROLLER_NAME = "Felipe Ribeiro Clemente";
 export const PRIVACY_URL = "/privacidade";
 export const TERMS_URL = "/termos";
+
+/** Endereço público oficial do app (usado em prévias de link e no sitemap). */
+export const SITE_URL = "https://tanquemais.com.br";
