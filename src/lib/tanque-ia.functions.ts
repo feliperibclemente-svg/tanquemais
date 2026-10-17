@@ -28,7 +28,7 @@ function aiProvider() {
     return {
       url: `${base}/chat/completions`,
       key: own,
-      model: process.env.AI_MODEL ?? "gemini-2.5-flash",
+      model: process.env.AI_MODEL ?? "gemini-flash-latest",
     };
   }
   const lovableKey = process.env.LOVABLE_API_KEY;

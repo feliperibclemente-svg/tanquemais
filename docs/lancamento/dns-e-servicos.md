@@ -45,7 +45,7 @@ Valores alternativos da Vercel que também funcionam: A `76.76.21.21` e CNAME `c
 | `SUPABASE_SERVICE_ROLE_KEY` | chave `sb_secret_…` do Supabase | **secret** |
 | `AI_API_KEY` | chave do Google AI Studio (`AIza…`) — frase do Teo | **secret** |
 
-Opcionais: `AI_MODEL` (padrão `gemini-2.5-flash`), `AI_BASE_URL` (outro provedor compatível).
+Opcionais: `AI_MODEL` (padrão `gemini-flash-latest`, que acompanha o Flash estável mais recente), `AI_BASE_URL` (outro provedor compatível).
 Build: `vercel.json` (bun + `NITRO_PRESET=vercel`). Depois de mudar variável: **Redeploy**.
 
 ## Checklist do domínio novo
