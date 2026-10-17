@@ -77,11 +77,13 @@ function Privacidade() {
           Só com os serviços necessários para o app funcionar, que tratam os dados em nosso nome:
         </p>
         <ul>
-          <li>Lovable Cloud (Supabase): hospedagem do app e do banco de dados;</li>
+          <li>Vercel: hospedagem do app;</li>
+          <li>Supabase: banco de dados e login (servidores nos Estados Unidos);</li>
+          <li>Resend: envio dos e-mails de confirmação de cadastro e de troca de senha;</li>
           <li>Google e Apple: apenas se você escolher entrar com essas contas;</li>
           <li>
-            Google Gemini, por meio do Lovable AI: recebe os números já calculados dos seus
-            abastecimentos (sem e-mail ou nome) para escrever as frases da TanqueIA.
+            Google Gemini: recebe os números já calculados dos seus abastecimentos e a marca e o
+            modelo do veículo (sem e-mail ou nome) para escrever as frases da TanqueIA.
           </li>
         </ul>
       </section>
