@@ -136,9 +136,11 @@ function AbastecerPage() {
   /** null = a pessoa não mexeu no campo: vale o km sugerido (se houver). */
   const [odometerInput, setOdometer] = useState<string | null>(null);
   const [stationId, setStationId] = useState<string>("");
-  /** null = a pessoa ainda não escolheu: vale a última escolha feita para este veículo. */
-  const [fullTankChoice, setFullTankChoice] = useState<boolean | null>(null);
-  const fullTank = fullTankChoice ?? lastForVehicle?.full_tank ?? true;
+  /**
+   * Começa sempre em "Não": marcar tanque cheio sem ter enchido estraga a medição do consumo.
+   * Quem completou escolhe "Sim" de propósito.
+   */
+  const [fullTank, setFullTank] = useState(false);
 
   const unit = FUEL_TYPES.find((f) => f.id === fuelTypeId)?.unit ?? "L";
   const [details, setDetails] = useState(false);
@@ -403,7 +405,7 @@ function AbastecerPage() {
               setTotal("");
               setLitersInput("");
               setOdometer(null);
-              setFullTankChoice(null);
+              setFullTank(false);
               setDate(todayLocal());
             }}
           >
@@ -474,8 +476,6 @@ function AbastecerPage() {
             value={QUICK_AMOUNTS.includes(parseDecimal(total)) ? String(parseDecimal(total)) : ""}
             onChange={(value) => {
               setTotal(formatCents(Number(value)));
-              // Valor redondo costuma ser abastecimento parcial; a pessoa pode mudar abaixo.
-              if (fullTankChoice === null) setFullTankChoice(false);
             }}
             options={QUICK_AMOUNTS.map((v) => ({ value: String(v), label: `R$ ${v}` }))}
           />
@@ -523,21 +523,32 @@ function AbastecerPage() {
         />
 
         <div className="space-y-1.5">
-          <p className="text-sm font-medium text-foreground">Completou o tanque?</p>
+          <p className="text-sm font-medium text-foreground">
+            Encheu o tanque até a bomba desligar?
+          </p>
           <ChoiceGroup
-            label="Completou o tanque?"
+            label="Encheu o tanque até a bomba desligar?"
             fill
             value={fullTank ? "sim" : "nao"}
-            onChange={(value) => setFullTankChoice(value === "sim")}
+            onChange={(value) => setFullTank(value === "sim")}
             options={[
-              { value: "sim", label: "Sim, completei" },
               { value: "nao", label: "Não, só um valor" },
+              { value: "sim", label: "Sim, tanque cheio" },
             ]}
           />
-          <p className="text-xs text-muted-foreground">
-            Completo = até a bomba desligar sozinha. É o que permite medir o consumo real; na
-            dúvida, marque Não.
-          </p>
+          {fullTank ? (
+            <p className="flex items-start gap-2 rounded-2xl bg-accent px-3 py-2.5 text-xs leading-relaxed text-accent-foreground">
+              <Fuel className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                <span className="font-semibold">Tanque cheio marcado.</span> Este registro entra na
+                medição do consumo real. Só confirme se a bomba desligou sozinha.
+              </span>
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Encheu até a bomba desligar sozinha? Marque Sim: é o que permite medir o consumo real.
+            </p>
+          )}
         </div>
 
         <button
