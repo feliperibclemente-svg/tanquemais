@@ -11,7 +11,10 @@ import { track } from "@/lib/analytics";
 import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
 import { BrandMark } from "@/components/app/Logo";
 
-const searchSchema = z.object({ redirect: z.string().optional() });
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+  oauth_error: z.string().optional(),
+});
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
@@ -48,7 +51,9 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState<null | "email" | "google" | "apple">(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    search.oauth_error ? `Não foi possível entrar com Google: ${search.oauth_error}` : null,
+  );
 
   useEffect(() => {
     if (!loading && user) goTo(destination);
