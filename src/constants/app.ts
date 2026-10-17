@@ -67,4 +67,4 @@ export const PRIVACY_URL = "/privacidade";
 export const TERMS_URL = "/termos";
 
 /** Endereço público oficial do app (usado em prévias de link e no sitemap). */
-export const SITE_URL = "https://tanquemais.com.br";
+export const SITE_URL = "https://www.tanquemais.com.br";

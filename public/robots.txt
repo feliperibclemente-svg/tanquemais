@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tanquemais.com.br/sitemap.xml
+Sitemap: https://www.tanquemais.com.br/sitemap.xml
