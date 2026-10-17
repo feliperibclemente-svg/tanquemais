@@ -57,9 +57,9 @@ export async function signIn(email: string, password: string): Promise<string> {
 }
 
 export function userIdFromToken(token: string): string {
-  const payload = JSON.parse(
-    Buffer.from(token.split(".")[1]!, "base64url").toString("utf8"),
-  ) as { sub: string };
+  const payload = JSON.parse(Buffer.from(token.split(".")[1]!, "base64url").toString("utf8")) as {
+    sub: string;
+  };
   return payload.sub;
 }
 

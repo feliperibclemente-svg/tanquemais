@@ -69,18 +69,19 @@ describeAuth("usuário autenticado", () => {
   });
 
   it("continua sem enxergar quem reportou preços", async () => {
-    expect(isPermissionDenied(await restSelect("station_prices", "reported_by", { token: tokenA }))).toBe(
-      true,
-    );
-    expect(isPermissionDenied(await restSelect("price_history", "reported_by", { token: tokenA }))).toBe(
-      true,
-    );
+    expect(
+      isPermissionDenied(await restSelect("station_prices", "reported_by", { token: tokenA })),
+    ).toBe(true);
+    expect(
+      isPermissionDenied(await restSelect("price_history", "reported_by", { token: tokenA })),
+    ).toBe(true);
   });
 
   it("lê preços e postos normalmente", async () => {
     expect((await restSelect("stations", "id,name", { token: tokenA })).status).toBe(200);
     expect(
-      (await restSelect("station_prices", "station_id,fuel_type_id,price", { token: tokenA })).status,
+      (await restSelect("station_prices", "station_id,fuel_type_id,price", { token: tokenA }))
+        .status,
     ).toBe(200);
   });
 });

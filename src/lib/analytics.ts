@@ -102,6 +102,8 @@ export type AnalyticsEvent =
   | "auth_sign_in"
   | "auth_sign_up"
   | "auth_sign_out"
+  | "auth_password_reset_requested"
+  | "auth_password_reset_done"
   | "funnel_signup_completed"
   | "funnel_vehicle_added"
   | "funnel_first_fueling"

@@ -10,6 +10,7 @@ import { authSchema } from "@/validators";
 import { track } from "@/lib/analytics";
 import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
 import { BrandMark } from "@/components/app/Logo";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -77,6 +78,26 @@ function AuthPage() {
     goTo(destination);
   }
 
+  async function forgotPassword() {
+    setError(null);
+    const parsed = authSchema.shape.email.safeParse(email);
+    if (!parsed.success) {
+      setError("Digite seu e-mail acima e toque de novo em “Esqueci minha senha”.");
+      return;
+    }
+    setBusy("email");
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(parsed.data, {
+      redirectTo: `${window.location.origin}/nova-senha`,
+    });
+    setBusy(null);
+    if (resetError) {
+      setError(authErrorMessage(resetError.message));
+      return;
+    }
+    track("auth_password_reset_requested");
+    toast.success("Se houver conta com esse e-mail, enviamos um link para criar uma nova senha.");
+  }
+
   async function submitEmail(event: React.FormEvent) {
     event.preventDefault();
     const parsed = authSchema.safeParse({ email, password });
@@ -99,11 +120,7 @@ function AuthPage() {
     setBusy(null);
 
     if (response.error) {
-      setError(
-        response.error.message.includes("Invalid login")
-          ? "E-mail ou senha incorretos."
-          : response.error.message,
-      );
+      setError(authErrorMessage(response.error.message));
       return;
     }
 
@@ -201,6 +218,17 @@ function AuthPage() {
         <Action type="submit" disabled={busy !== null} loading={busy === "email"}>
           {mode === "signin" ? "Entrar" : "Criar conta"}
         </Action>
+
+        {mode === "signin" ? (
+          <button
+            type="button"
+            onClick={forgotPassword}
+            disabled={busy !== null}
+            className="min-h-11 w-full text-sm font-semibold text-primary"
+          >
+            Esqueci minha senha
+          </button>
+        ) : null}
       </form>
 
       <button

@@ -62,6 +62,7 @@ Build: `vercel.json` (bun + `NITRO_PRESET=vercel`). Depois de mudar variável: *
 - [ ] Supabase → Authentication → Emails → SMTP Settings (Resend):
   - Host `smtp.resend.com`, porta `465`, usuário `resend`, senha = API key do Resend (`re_…`, só no painel)
   - Remetente `nao-responda@tanquemais.com.br`, nome `Tanque+`
+- [ ] Supabase → Authentication → Emails → Templates: e-mails em português (`supabase/templates/README.md`)
 - [ ] Supabase → Authentication → Rate Limits: aumentar o limite de e-mails por hora (ex.: 100)
 - [ ] Teste: criar conta com e-mail novo, receber confirmação, entrar com Google em `www.tanquemais.com.br`
 
