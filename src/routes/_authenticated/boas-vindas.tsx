@@ -165,8 +165,9 @@ function AboutYouStep({ profile }: { profile: Profile }) {
 
   return (
     <Shell>
-      <TeoSays spot="welcome" size="lg" mood="cheer" title="Oi! Eu sou o Teo.">
-        Vou te ajudar a entender quanto seu carro gasta de verdade. Antes, como posso te chamar?
+      <TeoSays spot="welcome" size="lg" mood="tip" title="Primeiro, seus dados básicos.">
+        É assim que vou te chamar no app. A data de nascimento só confirma que você tem 18 anos ou
+        mais e não aparece para ninguém.
       </TeoSays>
       <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">Sobre você</h1>
 

@@ -1,5 +1,5 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Action, TextField } from "@/components/ds";
@@ -11,6 +11,7 @@ import { track } from "@/lib/analytics";
 import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
 import { BrandMark } from "@/components/app/Logo";
 import { authErrorMessage } from "@/lib/auth-errors";
+import { createNonce, googleClientId, loadGoogleIdentity } from "@/lib/google-identity";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -75,6 +76,24 @@ function AuthPage() {
     }
     track("auth_sign_in", { method: provider });
     if ("redirected" in result && result.redirected) return;
+    goTo(destination);
+  }
+
+  /** Login com Google feito na própria página (o Google mostra o endereço do Tanque+). */
+  async function signInWithGoogleToken(token: string, nonce: string) {
+    setBusy("google");
+    setError(null);
+    const { error: tokenError } = await supabase.auth.signInWithIdToken({
+      provider: "google",
+      token,
+      nonce,
+    });
+    setBusy(null);
+    if (tokenError) {
+      setError(authErrorMessage(tokenError.message));
+      return;
+    }
+    track("auth_sign_in", { method: "google" });
     goTo(destination);
   }
 
@@ -147,15 +166,21 @@ function AuthPage() {
       </div>
 
       <div className="space-y-3">
-        <Action
-          variant="secondary"
-          onClick={() => signInWith("google")}
-          disabled={busy !== null}
-          loading={busy === "google"}
-        >
-          {busy === "google" ? null : <GoogleMark />}
-          Continuar com Google
-        </Action>
+        <GoogleSignIn
+          busy={busy === "google"}
+          onCredential={signInWithGoogleToken}
+          fallback={
+            <Action
+              variant="secondary"
+              onClick={() => signInWith("google")}
+              disabled={busy !== null}
+              loading={busy === "google"}
+            >
+              {busy === "google" ? null : <GoogleMark />}
+              Continuar com Google
+            </Action>
+          }
+        />
         {providers.includes("apple") ? (
           <Action
             variant="secondary"
@@ -249,6 +274,73 @@ function AuthPage() {
           </>
         )}
       </button>
+    </div>
+  );
+}
+
+/**
+ * Botão oficial do Google, desenhado pelo próprio Google dentro da página. Enquanto o script
+ * carrega, ou se ele falhar, aparece o botão do app, que usa o login por redirecionamento.
+ */
+function GoogleSignIn({
+  busy,
+  onCredential,
+  fallback,
+}: {
+  busy: boolean;
+  onCredential: (token: string, nonce: string) => void;
+  fallback: ReactNode;
+}) {
+  const wrapper = useRef<HTMLDivElement>(null);
+  const slot = useRef<HTMLDivElement>(null);
+  const callback = useRef(onCredential);
+  callback.current = onCredential;
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const gis = await loadGoogleIdentity();
+      if (!gis || cancelled || !slot.current) return;
+      const nonce = await createNonce();
+      gis.initialize({
+        client_id: googleClientId,
+        nonce: nonce.hashed,
+        ux_mode: "popup",
+        itp_support: true,
+        use_fedcm_for_button: true,
+        callback: (response) => {
+          if (response.credential) callback.current(response.credential, nonce.raw);
+        },
+      });
+      const width = Math.min(400, Math.max(200, wrapper.current?.offsetWidth ?? 320));
+      gis.renderButton(slot.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        shape: "pill",
+        text: "continue_with",
+        logo_alignment: "center",
+        locale: "pt-BR",
+        width,
+      });
+      if (!cancelled) setReady(true);
+    })().catch(() => {
+      /* sem o script do Google: fica o botão do app */
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <div ref={wrapper} aria-busy={busy}>
+      <div
+        ref={slot}
+        className={ready ? "flex min-h-11 justify-center" : "hidden"}
+        style={busy ? { opacity: 0.5, pointerEvents: "none" } : undefined}
+      />
+      {ready ? null : fallback}
     </div>
   );
 }

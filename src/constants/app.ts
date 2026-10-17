@@ -68,3 +68,8 @@ export const TERMS_URL = "/termos";
 
 /** Endereço público oficial do app (usado em prévias de link e no sitemap). */
 export const SITE_URL = "https://www.tanquemais.com.br";
+
+/** ID público do login com Google (Google Cloud → Clients). Não é segredo. */
+export const GOOGLE_CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ??
+  "1054484305630-j7ujt3boucnlv18j3nuu10sudpctj0p8.apps.googleusercontent.com";
