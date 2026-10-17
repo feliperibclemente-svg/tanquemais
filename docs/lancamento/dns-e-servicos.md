@@ -43,6 +43,7 @@ Valores alternativos da Vercel que também funcionam: A `76.76.21.21` e CNAME `c
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_NXMIz3efv1VmZJ8VD6ycpw_Y2u9AGgQ` | config (não secret) |
 | `VITE_SUPABASE_PROJECT_ID` | `wmycarnjzzsgihktqbje` | config (não secret) |
 | `SUPABASE_SERVICE_ROLE_KEY` | chave `sb_secret_…` do Supabase | **secret** |
+| `CRON_SECRET` | texto aleatório longo (protege a importação diária da ANP) | **secret** |
 | `AI_API_KEY` | chave do Google AI Studio (`AIza…`) — frase do Teo | **secret** |
 
 Opcionais: `AI_MODEL` (padrão `gemini-flash-latest`, que acompanha o Flash estável mais recente), `AI_BASE_URL` (outro provedor compatível).
@@ -72,3 +73,10 @@ Build: `vercel.json` (bun + `NITRO_PRESET=vercel`). Depois de mudar variável: *
 - [ ] Google: excluir o client sobrando `1054484305630-p72m0lk3fr3ejtpquh505balpkhqk83v`
 - [x] Supabase: senha do banco trocada
 - [ ] Lovable: despublicar `tanquemais.lovable.app` (banco antigo) quando o domínio novo estiver no ar
+
+## Preços de referência (ANP)
+
+- Tabela `fuel_price_references` (migration `20261017200000_fuel_price_references.sql`).
+- Importação diária às 10h17 (Vercel Cron → `/api/cron/anp`, exige `CRON_SECRET`); a ANP publica às terças.
+- Painel admin → "Preços de referência (ANP)" → **Atualizar agora** para importar na hora e ver o resultado.
+- Só aparece para quem tem **cidade e UF** no perfil (cidade fora da pesquisa usa a média do estado).
