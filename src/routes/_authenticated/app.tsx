@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronRight, Fuel } from "lucide-react";
+import { ArrowRight, ChevronRight, Fuel, Gauge } from "lucide-react";
 import {
   ActionLink,
   AppCard,
@@ -21,7 +21,12 @@ import { brl, kmPerLiter, num, relativeDate } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { phraseInsight } from "@/lib/tanque-ia.functions";
 import { historyVerdicts } from "@/services/verdict";
-import { fuelingReminder, fullTanksMissing } from "@/services/analytics";
+import {
+  consumptionProgress,
+  consumptionProgressText,
+  fuelingReminder,
+  type ConsumptionProgress,
+} from "@/services/analytics";
 import { firstNameOf, needsIdentity } from "@/services/identity";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -30,12 +35,12 @@ export const Route = createFileRoute("/_authenticated/app")({
       { title: "Início — Tanque+" },
       {
         name: "description",
-        content: "Registre seu abastecimento em segundos e descubra na hora se você economizou.",
+        content: "Registre seus abastecimentos em segundos e acompanhe gastos e consumo reais.",
       },
       { property: "og:title", content: "Início — Tanque+" },
       {
         property: "og:description",
-        content: "Um toque para registrar o abastecimento e saber se o preço foi bom.",
+        content: "Um toque para registrar o abastecimento e acompanhar quanto o carro gasta.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -78,6 +83,7 @@ function HomePage() {
   const verdict = last ? historyVerdicts(rows).get(last.id) : undefined;
   const reminder = fuelingReminder(rows);
   const fuelName = stats.fuelTypeId ? (FUEL_LABEL[stats.fuelTypeId] ?? stats.fuelTypeId) : "";
+  const consumption = consumptionProgress(rows, stats.avgKmPerLiter);
 
   if (needsIdentity(profile) || !primaryVehicle) {
     // Primeiro acesso: o cadastro guiado leva direto ao primeiro abastecimento.
@@ -90,7 +96,7 @@ function HomePage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
-        className="space-y-5"
+        className="space-y-4"
       >
         <header>
           <p className="text-sm text-muted-foreground">
@@ -108,7 +114,7 @@ function HomePage() {
         <ActionLink
           to="/abastecer"
           size="lg"
-          className="h-20 rounded-3xl text-lg shadow-[0_18px_40px_-18px_var(--primary)]"
+          className="h-16 rounded-3xl text-lg shadow-[0_18px_40px_-18px_var(--primary)]"
         >
           <Fuel className="h-6 w-6" strokeWidth={2.4} />
           Registrar abastecimento
@@ -146,35 +152,43 @@ function HomePage() {
           <AppCard className="text-center">
             <p className="font-semibold text-foreground">Comece pelo primeiro abastecimento</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Leva poucos segundos e já dizemos se o preço foi bom.
+              Leva uns 20 segundos. Com ele, você já vê o gasto do mês e quanto paga por litro.
             </p>
           </AppCard>
         )}
 
-        {/* Três números que geram decisão */}
-        <div className="grid grid-cols-3 gap-3">
-          <Mini
-            label="Gasto no mês"
-            value={stats.monthSpend > 0 ? brl(stats.monthSpend) : "—"}
-            hint={`desde o dia 1º de ${monthName()}`}
-          />
-          <Mini
-            label="Preço médio"
-            value={stats.avgPricePerLiter ? `${brl(stats.avgPricePerLiter)}` : "—"}
-            hint={`por litro pago · ${fuelName}`}
-          />
-          <Mini
-            label="Consumo"
-            value={kmPerLiter(stats.avgKmPerLiter)}
-            hint={
-              stats.avgKmPerLiter
-                ? `medido · ${fuelName}`
-                : fullTanksMissing(rows) === 1
-                  ? "falta 1 tanque cheio"
-                  : "faltam 2 tanques cheios"
-            }
-          />
-        </div>
+        {/* Números do veículo principal. Sem registros, nada a mostrar ainda. */}
+        {stats.count > 0 ? (
+          <>
+            <div
+              className={`grid grid-cols-2 gap-3 ${consumption.state === "ready" ? "min-[380px]:grid-cols-3" : ""}`}
+            >
+              <Mini
+                label="Gasto no mês"
+                value={brl(stats.monthSpend)}
+                hint={
+                  stats.monthSpend > 0
+                    ? `desde o dia 1º de ${monthName()}`
+                    : `nenhum abastecimento em ${monthName()}`
+                }
+              />
+              <Mini
+                label="Preço médio"
+                value={stats.avgPricePerLiter ? brl(stats.avgPricePerLiter) : "—"}
+                hint={`por litro · ${fuelName}`}
+              />
+              {consumption.state === "ready" ? (
+                <Mini
+                  className="col-span-2 min-[380px]:col-span-1"
+                  label="Consumo"
+                  value={kmPerLiter(stats.avgKmPerLiter)}
+                  hint={`medido · ${fuelName}`}
+                />
+              ) : null}
+            </div>
+            {consumption.state !== "ready" ? <ConsumptionPending progress={consumption} /> : null}
+          </>
+        ) : null}
 
         {/* TanqueIA em uma frase — detalhes ficam no painel */}
         <TanqueIALine
@@ -193,17 +207,19 @@ function Mini({
   value,
   hint,
   tone = "default",
+  className = "",
 }: {
   label: string;
   value: string;
   hint: string;
   tone?: "default" | "good";
+  className?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-3">
+    <div className={`rounded-2xl border border-border bg-card p-3 ${className}`}>
       <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
       <p
-        className={`mt-1 truncate text-base font-semibold tracking-tight ${
+        className={`mt-1 whitespace-nowrap text-[clamp(0.85rem,3.8vw,1rem)] font-semibold tracking-tight ${
           tone === "good" ? "text-primary" : "text-foreground"
         }`}
       >
@@ -211,6 +227,42 @@ function Mini({
       </p>
       <p className="text-[11px] leading-tight text-muted-foreground">{hint}</p>
     </div>
+  );
+}
+
+/** Consumo ainda sem medida: explica o motivo, o que fazer e mostra o progresso. */
+function ConsumptionPending({
+  progress,
+}: {
+  progress: Exclude<ConsumptionProgress, { state: "ready" }>;
+}) {
+  const done = progress.state === "pending" ? progress.fullTanks : 1;
+  return (
+    <AppCard className="flex items-start gap-3 p-4">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
+        <Gauge className="h-5 w-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-foreground">Consumo ainda não calculado</p>
+        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+          {consumptionProgressText(progress)}
+        </p>
+        {progress.state === "pending" ? (
+          <div
+            className="mt-2 flex gap-1.5"
+            role="img"
+            aria-label={`${done} de 2 tanques cheios registrados`}
+          >
+            {[0, 1].map((i) => (
+              <span
+                key={i}
+                className={`h-1.5 flex-1 rounded-full ${i < done ? "bg-primary" : "bg-muted"}`}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </AppCard>
   );
 }
 
@@ -245,7 +297,7 @@ function TanqueIALine({
   const text =
     ai.data?.text ??
     main?.body ??
-    "Registre mais abastecimentos para receber recomendações personalizadas.";
+    "Com dois tanques cheios, eu calculo o consumo real do seu carro.";
 
   return (
     <AppCard className="border-primary/25 bg-accent/40">

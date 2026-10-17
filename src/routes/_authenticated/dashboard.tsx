@@ -18,7 +18,7 @@ import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useHomeData } from "@/hooks/use-tanque";
 import { FUEL_LABEL } from "@/constants/app";
 import { ethanolAdvice } from "@/services/insights";
-import { consumptionPendingText, fullTanksMissing } from "@/services/analytics";
+import { consumptionProgress, consumptionProgressText } from "@/services/analytics";
 
 const DashboardCharts = lazy(() => import("@/components/charts/DashboardCharts"));
 
@@ -108,7 +108,7 @@ function DashboardPage() {
           hint={
             stats.avgKmPerLiter
               ? `${fuelName}, entre tanques cheios`
-              : consumptionPendingText(fullTanksMissing(rows))
+              : consumptionProgressText(consumptionProgress(rows, stats.avgKmPerLiter), "short")
           }
         />
         <StatTile

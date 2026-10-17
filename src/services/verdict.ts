@@ -120,7 +120,7 @@ export function priceVerdict(
     const fuel = current.fuelTypeId ? (FUEL_LABEL[current.fuelTypeId] ?? current.fuelTypeId) : "";
     return {
       tone: "neutral",
-      headline: `${missing === 1 ? "Falta" : "Faltam"} ${missing} de ${fuel} para comparar`,
+      headline: `${missing === 1 ? "Falta 1 registro" : `Faltam ${missing} registros`} para comparar o preço`,
       detail: `Com ${MIN_REFERENCES} abastecimentos de ${fuel} deste veículo nos últimos 90 dias dizemos se o preço foi bom.`,
       reference: null,
       referencePrice: null,

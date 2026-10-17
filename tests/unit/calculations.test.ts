@@ -253,7 +253,7 @@ describe("veredito de preço ignora duplicados", () => {
       f("3", 9, 10960, 40, 5),
     ]);
     // Só 2 referências reais antes do dia 9 (precisa de 3): ainda sem comparação.
-    expect(historyVerdicts(rows).get("3")?.headline).toBe("Falta 1 de Gasolina para comparar");
+    expect(historyVerdicts(rows).get("3")?.headline).toBe("Falta 1 registro para comparar o preço");
   });
 });
 

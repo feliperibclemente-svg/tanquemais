@@ -403,6 +403,52 @@ export function fullTanksMissing(rows: Pick<Fueling, "full_tank" | "odometer">[]
   return rows.some((r) => r.full_tank && Number(r.odometer) > 0) ? 1 : 2;
 }
 
+/**
+ * Situação do indicador de consumo, para explicar o que falta sem prometer o que o cálculo
+ * não entrega. O consumo (km/L) sai de um trecho entre dois tanques cheios com km válido;
+ * parciais no meio entram nos litros do trecho.
+ * - ready: já existe consumo medido;
+ * - pending: faltam 1 ou 2 tanques cheios (contando só registros não duplicados com km);
+ * - waiting: já há 2+ tanques cheios, mas nenhum trecho válido para o combustível atual
+ *   (troca de combustível, km inconsistente ou consumo fora do normal).
+ */
+export type ConsumptionProgress =
+  | { state: "ready" }
+  | { state: "pending"; fullTanks: 0 | 1; missing: 1 | 2 }
+  | { state: "waiting" };
+
+export function consumptionProgress(
+  rows: Pick<FuelingComputed, "full_tank" | "odometer" | "issue">[],
+  avgKmPerLiter: number | null,
+): ConsumptionProgress {
+  if (avgKmPerLiter) return { state: "ready" };
+  const fullTanks = rows.filter(
+    (r) => r.issue !== "duplicate" && r.full_tank && Number(r.odometer) > 0,
+  ).length;
+  if (fullTanks === 0) return { state: "pending", fullTanks: 0, missing: 2 };
+  if (fullTanks === 1) return { state: "pending", fullTanks: 1, missing: 1 };
+  return { state: "waiting" };
+}
+
+/** Frase curta para estados sem consumo (Home e Painel). */
+export function consumptionProgressText(
+  progress: ConsumptionProgress,
+  size: "short" | "long" = "long",
+): string {
+  if (size === "short") {
+    if (progress.state === "pending")
+      return progress.missing === 2 ? "Faltam 2 tanques cheios" : "Falta 1 tanque cheio";
+    return progress.state === "waiting" ? "Complete o tanque no próximo registro" : "";
+  }
+  if (progress.state === "pending")
+    return progress.missing === 2
+      ? "Complete o tanque em 2 abastecimentos para eu calcular quantos km por litro seu carro faz. Pode abastecer parcial entre eles."
+      : "Complete o tanque no próximo abastecimento para eu calcular quantos km por litro seu carro faz.";
+  if (progress.state === "waiting")
+    return "Complete o tanque no próximo abastecimento para eu medir um novo trecho. Se algum km estiver errado, ajuste no Histórico.";
+  return "";
+}
+
 export function consumptionPendingText(missing: 1 | 2): string {
   return missing === 1
     ? "Falta 1 tanque cheio para ver seu consumo real"

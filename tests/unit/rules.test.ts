@@ -48,7 +48,7 @@ describe("priceVerdict", () => {
       vehicleId: "v",
       at: at("2026-09-15"),
     });
-    expect(v.headline).toBe("Falta 1 de Gasolina para comparar");
+    expect(v.headline).toBe("Falta 1 registro para comparar o preço");
   });
   it("com 3 referências compara", () => {
     const v = priceVerdict(
