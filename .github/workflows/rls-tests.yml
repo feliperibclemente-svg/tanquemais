@@ -18,6 +18,8 @@ concurrency:
   group: rls-${{ github.ref }}
   cancel-in-progress: true
 
+# Endereço e chave pública do Supabase (os mesmos do .env; não são segredo).
+# Secrets/variables do repositório, se existirem, têm prioridade.
 permissions:
   contents: read
   pull-requests: write
@@ -51,8 +53,8 @@ jobs:
       - name: Rodar smoke (com 1 retry para casos intermitentes)
         env:
           CI: "true"
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL || 'https://wmycarnjzzsgihktqbje.supabase.co' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_NXMIz3efv1VmZJ8VD6ycpw_Y2u9AGgQ' }}
         run: |
           set +e
           RLS_REPORT_NAME=smoke-attempt1 bunx vitest run tests/rls/smoke.test.ts
@@ -107,8 +109,8 @@ jobs:
       - name: Rodar testes (${{ matrix.suite.name }}) com 1 retry
         env:
           CI: "true"
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL || 'https://wmycarnjzzsgihktqbje.supabase.co' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_NXMIz3efv1VmZJ8VD6ycpw_Y2u9AGgQ' }}
           TANQUE_TEST_EMAIL_A: ${{ secrets.TANQUE_TEST_EMAIL_A }}
           TANQUE_TEST_PASSWORD_A: ${{ secrets.TANQUE_TEST_PASSWORD_A }}
           TANQUE_TEST_EMAIL_B: ${{ secrets.TANQUE_TEST_EMAIL_B }}
