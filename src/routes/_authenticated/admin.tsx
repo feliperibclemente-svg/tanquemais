@@ -12,7 +12,7 @@ import {
   ScreenSkeleton,
   StatTile,
 } from "@/components/ds";
-import { anpStatus, getBetaMetrics, runAnpImport } from "@/lib/admin.functions";
+import { anpStatus, getBetaMetrics, recentErrors, runAnpImport } from "@/lib/admin.functions";
 import { weekLabel as anpWeekLabel } from "@/services/anp";
 import { fullDate, num } from "@/lib/format";
 import type { BetaMetrics } from "@/services/beta-metrics";
@@ -127,6 +127,8 @@ function AdminPage() {
       </div>
 
       <section className="mt-5 space-y-4">
+        <ErrorsCard />
+
         <AnpCard />
 
         <AppCard>
@@ -311,6 +313,42 @@ function AnpCard() {
       >
         Atualizar agora
       </Action>
+    </AppCard>
+  );
+}
+
+/** Erros do app nos últimos 7 dias (sem nome nem e-mail de quem viu o erro). */
+function ErrorsCard() {
+  const fetchErrors = useServerFn(recentErrors);
+  const errors = useQuery({ queryKey: ["app-errors"], queryFn: () => fetchErrors(), retry: false });
+  const data = errors.data;
+  return (
+    <AppCard>
+      <p className="text-sm font-semibold text-foreground">Erros do app (7 dias)</p>
+      {errors.isLoading ? (
+        <p className="mt-1 text-xs text-muted-foreground">Carregando…</p>
+      ) : errors.isError ? (
+        <p className="mt-1 text-xs text-destructive">{(errors.error as Error).message}</p>
+      ) : !data?.total ? (
+        <p className="mt-1 text-xs text-muted-foreground">Nenhum erro registrado. 🎉</p>
+      ) : (
+        <>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {data.total} registro{data.total === 1 ? "" : "s"}. Os mais frequentes:
+          </p>
+          <ul className="mt-3 space-y-3">
+            {data.groups.map((g) => (
+              <li key={g.message} className="text-xs">
+                <p className="break-words font-medium text-foreground">{g.message}</p>
+                <p className="text-muted-foreground">
+                  {g.count}× · {g.users} pessoa{g.users === 1 ? "" : "s"} · {g.routes.join(", ")} ·
+                  último {fullDate(g.lastSeen)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </AppCard>
   );
 }

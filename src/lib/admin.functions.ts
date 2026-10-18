@@ -126,3 +126,53 @@ export const runAnpImport = createServerFn({ method: "POST" })
     const { importAnpWeek } = await import("@/lib/anp-import.server");
     return importAnpWeek();
   });
+
+/** Erros do app nos últimos 7 dias, agrupados pela mensagem (painel admin). */
+export const recentErrors = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Acesso restrito");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from("app_errors")
+      .select("message, route, user_id, user_agent, created_at")
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    if (error) throw new Error(error.message);
+    const groups = new Map<
+      string,
+      { message: string; count: number; users: Set<string>; routes: Set<string>; lastSeen: string }
+    >();
+    for (const e of data ?? []) {
+      const g = groups.get(e.message) ?? {
+        message: e.message,
+        count: 0,
+        users: new Set<string>(),
+        routes: new Set<string>(),
+        lastSeen: e.created_at,
+      };
+      g.count += 1;
+      if (e.user_id) g.users.add(e.user_id);
+      if (e.route) g.routes.add(e.route);
+      groups.set(e.message, g);
+    }
+    return {
+      total: data?.length ?? 0,
+      groups: [...groups.values()]
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10)
+        .map((g) => ({
+          message: g.message,
+          count: g.count,
+          users: g.users.size,
+          routes: [...g.routes].slice(0, 3),
+          lastSeen: g.lastSeen,
+        })),
+    };
+  });

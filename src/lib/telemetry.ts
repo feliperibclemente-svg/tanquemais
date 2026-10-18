@@ -4,7 +4,7 @@
  *
  * Tudo roda apenas no browser e nunca lança — telemetria jamais pode derrubar
  * a aplicação. Em desenvolvimento os eventos aparecem no console; em produção
- * são enviados ao coletor do Lovable quando disponível.
+ * os erros vão para a tabela app_errors (sem nome nem e-mail), vista no painel admin.
  */
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
@@ -104,13 +104,39 @@ export function captureException(error: unknown, context: Record<string, unknown
     stack: described.stack,
   });
 
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || isDev()) return;
+  void reportError(described, String(context.mechanism ?? context.scope ?? "manual"));
+}
+
+/** Tira do texto o que poderia identificar alguém ou dar acesso (e-mails, tokens). */
+export function scrub(text: string | undefined, max: number): string | null {
+  if (!text) return null;
+  return text
+    .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, "[email]")
+    .replace(/(access_token|refresh_token|token|code|apikey|key)=([^&\s"']+)/gi, "$1=[oculto]")
+    .replace(/eyJ[\w-]+\.[\w-]+\.[\w-]+/g, "[jwt]")
+    .slice(0, max);
+}
+
+const MAX_REPORTS_PER_SESSION = 10;
+const reported = new Set<string>();
+
+/** Grava o erro em app_errors: no máximo 10 por sessão, sem repetir o mesmo erro na mesma tela. */
+async function reportError(described: ReturnType<typeof describe>, mechanism: string) {
   try {
-    window.__lovableEvents?.captureException?.(
-      error,
-      { ...context, route: route(), sessionId, userId, breadcrumbs: recentLogs().slice(-10) },
-      { mechanism: "manual", handled: true, severity: "error" },
-    );
+    const message = scrub(described.message || "Erro desconhecido", 500) ?? "Erro desconhecido";
+    const key = `${message}|${route()}`;
+    if (reported.has(key) || reported.size >= MAX_REPORTS_PER_SESSION) return;
+    reported.add(key);
+    const { supabase } = await import("@/integrations/supabase/client");
+    await supabase.from("app_errors").insert({
+      name: scrub(described.name, 100),
+      message,
+      stack: scrub(described.stack, 4000),
+      route: route().slice(0, 200),
+      mechanism: mechanism.slice(0, 50),
+      user_agent: navigator.userAgent.slice(0, 300),
+    });
   } catch {
     /* telemetria nunca quebra o app */
   }

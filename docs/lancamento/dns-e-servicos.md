@@ -77,6 +77,6 @@ Build: `vercel.json` (bun + `NITRO_PRESET=vercel`). Depois de mudar variável: *
 ## Preços de referência (ANP)
 
 - Tabela `fuel_price_references` (migration `20261017200000_fuel_price_references.sql`).
-- Importação diária às 10h17 (Vercel Cron → `/api/cron/anp`, exige `CRON_SECRET`); a ANP publica às terças.
+- Importação diária às 10h17 (Vercel Cron → `/api/cron/diario`, exige `CRON_SECRET`); a ANP publica às terças.
 - Painel admin → "Preços de referência (ANP)" → **Atualizar agora** para importar na hora e ver o resultado.
 - Só aparece para quem tem **cidade e UF** no perfil (cidade fora da pesquisa usa a média do estado).

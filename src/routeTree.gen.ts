@@ -28,7 +28,7 @@ import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedPostosRouteImport } from './routes/_authenticated/postos'
 import { Route as AuthenticatedVeiculoRouteImport } from './routes/_authenticated/veiculo'
-import { Route as ApiCronAnpRouteImport } from './routes/api/cron/anp'
+import { Route as ApiCronDiarioRouteImport } from './routes/api/cron/diario'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -125,9 +125,9 @@ const AuthenticatedVeiculoRoute = AuthenticatedVeiculoRouteImport.update({
   path: '/veiculo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiCronAnpRoute = ApiCronAnpRouteImport.update({
-  id: '/api/cron/anp',
-  path: '/api/cron/anp',
+const ApiCronDiarioRoute = ApiCronDiarioRouteImport.update({
+  id: '/api/cron/diario',
+  path: '/api/cron/diario',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -150,7 +150,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/postos': typeof AuthenticatedPostosRoute
   '/veiculo': typeof AuthenticatedVeiculoRoute
-  '/api/cron/anp': typeof ApiCronAnpRoute
+  '/api/cron/diario': typeof ApiCronDiarioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -171,7 +171,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/postos': typeof AuthenticatedPostosRoute
   '/veiculo': typeof AuthenticatedVeiculoRoute
-  '/api/cron/anp': typeof ApiCronAnpRoute
+  '/api/cron/diario': typeof ApiCronDiarioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -194,7 +194,7 @@ export interface FileRoutesById {
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/postos': typeof AuthenticatedPostosRoute
   '/_authenticated/veiculo': typeof AuthenticatedVeiculoRoute
-  '/api/cron/anp': typeof ApiCronAnpRoute
+  '/api/cron/diario': typeof ApiCronDiarioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -217,7 +217,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/postos'
     | '/veiculo'
-    | '/api/cron/anp'
+    | '/api/cron/diario'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -238,7 +238,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/postos'
     | '/veiculo'
-    | '/api/cron/anp'
+    | '/api/cron/diario'
   id:
     | '__root__'
     | '/'
@@ -260,7 +260,7 @@ export interface FileRouteTypes {
     | '/_authenticated/perfil'
     | '/_authenticated/postos'
     | '/_authenticated/veiculo'
-    | '/api/cron/anp'
+    | '/api/cron/diario'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -271,7 +271,7 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosRoute: typeof TermosRoute
-  ApiCronAnpRoute: typeof ApiCronAnpRoute
+  ApiCronDiarioRoute: typeof ApiCronDiarioRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -409,11 +409,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVeiculoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/cron/anp': {
-      id: '/api/cron/anp'
-      path: '/api/cron/anp'
-      fullPath: '/api/cron/anp'
-      preLoaderRoute: typeof ApiCronAnpRouteImport
+    '/api/cron/diario': {
+      id: '/api/cron/diario'
+      path: '/api/cron/diario'
+      fullPath: '/api/cron/diario'
+      preLoaderRoute: typeof ApiCronDiarioRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -460,7 +460,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosRoute: TermosRoute,
-  ApiCronAnpRoute: ApiCronAnpRoute,
+  ApiCronDiarioRoute: ApiCronDiarioRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
