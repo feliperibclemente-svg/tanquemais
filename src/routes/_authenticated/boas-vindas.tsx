@@ -21,6 +21,7 @@ import { canonicalVehicle, vehicleWords, fuelsFor } from "@/constants/vehicles";
 import { useCreateVehicle, useProfile, useUpdateProfile, useVehicles } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { sendWelcomeEmail } from "@/lib/welcome-email.functions";
 import {
   ageRangeOf,
   checkBirthDate,
@@ -226,6 +227,7 @@ function VehicleStep() {
   const profile = useProfile();
   const vehicles = useVehicles();
   const create = useCreateVehicle();
+  const welcome = useServerFn(sendWelcomeEmail);
 
   const [vehicle, setVehicle] = useState({ brand: "", model: "" });
   const [fuel, setFuel] = useState("gasolina");
@@ -268,6 +270,10 @@ function VehicleStep() {
       });
       track("onboarding_vehicle_saved", { fuel_type: fuel });
       setDone(true);
+      // E-mail de boas-vindas: uma vez por pessoa (o servidor garante); não trava a tela.
+      void welcome()
+        .then((r) => r.sent && track("welcome_email_sent"))
+        .catch(() => undefined);
     } catch {
       /* o hook já mostra o erro */
     }

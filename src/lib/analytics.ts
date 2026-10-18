@@ -112,6 +112,7 @@ export type AnalyticsEvent =
   | "funnel_activated"
   | "onboarding_started"
   | "onboarding_vehicle_saved"
+  | "welcome_email_sent"
   | "onboarding_identity_saved"
   | "onboarding_underage"
   | "retention_day_return"

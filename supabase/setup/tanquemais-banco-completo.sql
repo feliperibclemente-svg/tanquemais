@@ -1283,3 +1283,19 @@ GRANT INSERT ON public.app_errors TO anon, authenticated;
 GRANT USAGE ON SEQUENCE public.app_errors_id_seq TO anon, authenticated;
 GRANT ALL ON public.app_errors TO service_role;
 GRANT USAGE, SELECT ON SEQUENCE public.app_errors_id_seq TO service_role;
+
+-- ---------------------------------------------------------------------
+-- supabase/migrations/20261018160000_welcome_emails.sql
+-- ---------------------------------------------------------------------
+-- Controle do e-mail de boas-vindas: uma linha por pessoa, gravada antes do envio,
+-- para o e-mail nunca sair duas vezes. Só o servidor lê e escreve.
+
+CREATE TABLE IF NOT EXISTS public.welcome_emails (
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  sent_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.welcome_emails ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON public.welcome_emails FROM anon, authenticated;
+GRANT ALL ON public.welcome_emails TO service_role;

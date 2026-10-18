@@ -43,7 +43,10 @@ function Privacidade() {
       <section>
         <h2>Dados que coletamos</h2>
         <ul>
-          <li>E-mail da conta (usado para login; não fica público);</li>
+          <li>
+            E-mail da conta (usado para login e para um único e-mail de boas-vindas com dicas de
+            uso; não fica público e não recebe propaganda);
+          </li>
           <li>Nome e sobrenome;</li>
           <li>
             Data de nascimento, para confirmar que você tem 18 anos ou mais e calcular sua faixa
@@ -85,7 +88,9 @@ function Privacidade() {
         <ul>
           <li>Vercel: hospedagem do app;</li>
           <li>Supabase: banco de dados e login (servidores nos Estados Unidos);</li>
-          <li>Resend: envio dos e-mails de confirmação de cadastro e de troca de senha;</li>
+          <li>
+            Resend: envio dos e-mails de confirmação de cadastro, troca de senha e boas-vindas;
+          </li>
           <li>Google e Apple: apenas se você escolher entrar com essas contas;</li>
           <li>
             Google Gemini: recebe os números já calculados dos seus abastecimentos e a marca e o
