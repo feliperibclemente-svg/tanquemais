@@ -51,28 +51,28 @@ Build: `vercel.json` (bun + `NITRO_PRESET=vercel`). Depois de mudar variável: *
 
 ## Checklist do domínio novo
 
-- [ ] registro.br: zona DNS com as 6 entradas acima (liberou após a "transição" de ~2h)
-- [ ] Vercel → Domains: `tanquemais.com.br` e `www.tanquemais.com.br` em **Valid Configuration**
-- [ ] Resend → Domains: `tanquemais.com.br` **Verified**
-- [ ] Supabase → Authentication → URL Configuration:
+- [x] registro.br: zona DNS com as 6 entradas acima (liberou após a "transição" de ~2h)
+- [x] Vercel → Domains: `tanquemais.com.br` e `www.tanquemais.com.br` em **Valid Configuration**
+- [x] Resend → Domains: `tanquemais.com.br` **Verified**
+- [x] Supabase → Authentication → URL Configuration:
   - Site URL: `https://www.tanquemais.com.br`
   - Redirect URLs: `https://www.tanquemais.com.br/**` (manter também `https://tanquemais-4haf.vercel.app/**`)
-- [ ] Google Cloud → client → Authorized JavaScript origins: adicionar `https://www.tanquemais.com.br`
+- [x] Google Cloud → client → Authorized JavaScript origins: adicionar `https://www.tanquemais.com.br`
   (o redirect URI continua `https://wmycarnjzzsgihktqbje.supabase.co/auth/v1/callback`)
 - [ ] Google Cloud → OAuth consent screen → Branding: links de privacidade/termos e domínio autorizado `tanquemais.com.br`
-- [ ] Supabase → Authentication → Emails → SMTP Settings (Resend):
+- [x] Supabase → Authentication → Emails → SMTP Settings (Resend) — erro "535 Authentication credentials invalid" nos logs de Auth = chave errada/apagada:
   - Host `smtp.resend.com`, porta `465`, usuário `resend`, senha = API key do Resend (`re_…`, só no painel)
   - Remetente `nao-responda@tanquemais.com.br`, nome `Tanque+`
-- [ ] Supabase → Authentication → Emails → Templates: e-mails em português (`supabase/templates/README.md`)
+- [x] Supabase → Authentication → Emails → Templates: e-mails em português (`supabase/templates/README.md`)
 - [ ] Supabase → Authentication → Rate Limits: aumentar o limite de e-mails por hora (ex.: 100)
-- [ ] Teste: criar conta com e-mail novo, receber confirmação, entrar com Google em `www.tanquemais.com.br`
+- [x] Teste: criar conta com e-mail novo, receber confirmação, entrar com Google em `www.tanquemais.com.br`
 
 ## Pendências de segurança
 
-- [ ] Google: gerar novo client secret (Add secret), colar no Supabase e desativar os que apareceram no chat
-- [ ] Google: excluir o client sobrando `1054484305630-p72m0lk3fr3ejtpquh505balpkhqk83v`
+- [x] Google: gerar novo client secret (Add secret), colar no Supabase e desativar os que apareceram no chat
+- [x] Google: excluir o client sobrando `1054484305630-p72m0lk3fr3ejtpquh505balpkhqk83v`
 - [x] Supabase: senha do banco trocada
-- [ ] Lovable: despublicar `tanquemais.lovable.app` (banco antigo) quando o domínio novo estiver no ar
+- [x] Lovable: despublicar `tanquemais.lovable.app` (banco antigo) quando o domínio novo estiver no ar
 
 ## Preços de referência (ANP)
 
