@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +15,8 @@ import {
   Sun,
   Trash2,
   PlayCircle,
+  Car,
+  ChevronRight,
 } from "lucide-react";
 import {
   Action,
@@ -217,6 +219,16 @@ function PerfilPage() {
         </div>
         {editing && data ? <ProfileEditor profile={data} onDone={() => setEditing(false)} /> : null}
       </AppCard>
+
+      <Link
+        to="/veiculo"
+        className="mt-4 flex min-h-14 items-center justify-between rounded-3xl border border-border bg-card px-4 text-sm font-semibold text-foreground"
+      >
+        <span className="flex items-center gap-2">
+          <Car className="h-5 w-5 text-primary" /> Meus veículos
+        </span>
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      </Link>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <StatTile label="Total gasto" value={brl(stats.totalSpend)} />

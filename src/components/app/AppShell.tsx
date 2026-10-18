@@ -1,25 +1,29 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BarChart3, Car, FlaskConical, Fuel, History, Home, User } from "lucide-react";
+import { BarChart3, FlaskConical, Fuel, History, Home, User } from "lucide-react";
 import type { ReactNode } from "react";
 
+/**
+ * Início à esquerda (padrão de mercado) e a ação principal, Abastecer, no centro.
+ * Veículo fica no topo do Início e no Perfil.
+ */
 const tabs = [
-  { to: "/app", label: "Início", icon: Home },
-  { to: "/historico", label: "Histórico", icon: History },
-  { to: "/dashboard", label: "Painel", icon: BarChart3 },
-  { to: "/veiculo", label: "Veículo", icon: Car },
-  { to: "/perfil", label: "Perfil", icon: User },
+  { to: "/app", label: "Início", icon: Home, primary: false },
+  { to: "/historico", label: "Histórico", icon: History, primary: false },
+  { to: "/abastecer", label: "Abastecer", icon: Fuel, primary: true },
+  { to: "/dashboard", label: "Painel", icon: BarChart3, primary: false },
+  { to: "/perfil", label: "Perfil", icon: User, primary: false },
 ] as const;
 
 /**
- * Layout único de todas as telas autenticadas: largura, respiros, navegação
- * inferior e botão flutuante de abastecimento.
+ * Layout único de todas as telas autenticadas: largura, respiros e navegação inferior.
+ * `fab` ficou sem efeito: o Abastecer agora é o item central da barra.
  */
-export function AppShell({ children, fab = true }: { children: ReactNode; fab?: boolean }) {
+export function AppShell({ children }: { children: ReactNode; fab?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-background">
-      <main className="flex-1 px-5 pb-32 pt-6">
+      <main className="flex-1 px-5 pb-28 pt-6">
         <Link
           to="/beta"
           className="mb-4 inline-flex min-h-8 items-center gap-1.5 text-[11px] font-medium text-muted-foreground"
@@ -30,17 +34,6 @@ export function AppShell({ children, fab = true }: { children: ReactNode; fab?: 
         {children}
       </main>
 
-      {fab ? (
-        <Link
-          to="/abastecer"
-          aria-label="Registrar abastecimento"
-          className="fixed bottom-24 left-1/2 z-50 flex h-14 min-h-11 -translate-x-1/2 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-[0_12px_30px_-10px_var(--primary)] transition-transform active:scale-95"
-        >
-          <Fuel className="h-5 w-5" strokeWidth={2.4} />
-          Abastecer
-        </Link>
-      ) : null}
-
       <nav
         aria-label="Navegação principal"
         className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 border-t border-border bg-card/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur"
@@ -49,6 +42,22 @@ export function AppShell({ children, fab = true }: { children: ReactNode; fab?: 
           {tabs.map((tab) => {
             const active = pathname === tab.to || pathname.startsWith(`${tab.to}/`);
             const Icon = tab.icon;
+            if (tab.primary) {
+              return (
+                <li key={tab.to} className="flex flex-1 justify-center">
+                  <Link
+                    to={tab.to}
+                    aria-current={active ? "page" : undefined}
+                    className="flex min-h-11 flex-col items-center gap-1 px-1 pb-2.5 text-[11px] font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  >
+                    <span className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_10px_24px_-10px_var(--primary)] ring-4 ring-background transition-transform active:scale-95">
+                      <Fuel className="h-6 w-6" strokeWidth={2.4} />
+                    </span>
+                    {tab.label}
+                  </Link>
+                </li>
+              );
+            }
             return (
               <li key={tab.to} className="flex-1">
                 <Link

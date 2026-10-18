@@ -115,11 +115,16 @@ function HomePage() {
             {greeting()}
             {firstName ? `, ${firstName}` : ""}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-            {primaryVehicle
-              ? primaryVehicle.nickname || `${primaryVehicle.brand} ${primaryVehicle.model}`
-              : "Tanque+"}
-          </h1>
+          <Link
+            to="/veiculo"
+            className="mt-1 inline-flex min-h-11 items-center gap-1 text-foreground"
+            aria-label="Ver e editar veículos"
+          >
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {primaryVehicle.nickname || `${primaryVehicle.brand} ${primaryVehicle.model}`}
+            </h1>
+            <ChevronRight className="mt-1 h-5 w-5 text-muted-foreground" />
+          </Link>
         </header>
 
         {/* Ação principal — o elemento de maior destaque da tela */}
