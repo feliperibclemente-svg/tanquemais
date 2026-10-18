@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { CircleAlert, CircleCheck, ClipboardCheck, Share2, Wrench } from "lucide-react";
 import {
@@ -16,7 +16,9 @@ import {
   parseDecimal,
 } from "@/components/ds";
 import { TeoSays } from "@/components/app/Teo";
-import { useHomeData, useSaveCheckup } from "@/hooks/use-tanque";
+import { useFuelings, useSaveCheckup, useVehicles } from "@/hooks/use-tanque";
+import { computeFuelings, type FuelingComputed } from "@/services/analytics";
+import type { Fueling, Vehicle } from "@/types/domain";
 import { vehicleKind, vehicleName, vehicleWords } from "@/constants/vehicles";
 import {
   CHECKUP_DISCLAIMER,
@@ -51,7 +53,78 @@ const OTHER = "outro";
 const UNKNOWN = "nao_sei";
 
 function CheckupPage() {
-  const { isLoading, primaryVehicle, rows } = useHomeData();
+  const vehicles = useVehicles();
+  const fuelings = useFuelings();
+  const list = vehicles.data ?? [];
+  const [vehicleId, setVehicleId] = useState<string | null>(null);
+  const vehicle = list.find((v) => v.id === vehicleId) ?? list.find((v) => v.is_primary) ?? list[0];
+
+  const rows = useMemo(
+    () =>
+      vehicle
+        ? computeFuelings(
+            ((fuelings.data ?? []) as Fueling[]).filter((f) => f.vehicle_id === vehicle.id),
+            list,
+          )
+        : [],
+    [fuelings.data, list, vehicle],
+  );
+
+  if (vehicles.isLoading || fuelings.isLoading) {
+    return (
+      <AppShell>
+        <ScreenSkeleton cards={3} />
+      </AppShell>
+    );
+  }
+
+  if (!vehicle) {
+    return (
+      <AppShell>
+        <PageHeader title="Check-up" />
+        <EmptyState
+          emoji="🔧"
+          title="Cadastre seu veículo primeiro"
+          description="O check-up usa o tipo de veículo e o km do painel."
+          action={
+            <ActionLink to="/veiculo" size="md" className="mt-1">
+              Cadastrar veículo
+            </ActionLink>
+          }
+        />
+      </AppShell>
+    );
+  }
+
+  // Mais de um veículo: escolha no topo (só nas perguntas). Trocar recomeça o check-up.
+  const selector =
+    list.length > 1 ? (
+      <div className="mt-5 space-y-1.5">
+        <p className="text-sm font-medium text-foreground">Qual veículo?</p>
+        <ChoiceGroup
+          label="Veículo"
+          value={vehicle.id}
+          onChange={setVehicleId}
+          options={list.map((v) => ({
+            value: v.id,
+            label: `${v.is_primary ? "★ " : ""}${vehicleName(v)}`,
+          }))}
+        />
+      </div>
+    ) : null;
+
+  return <CheckupFlow key={vehicle.id} vehicle={vehicle} rows={rows} selector={selector} />;
+}
+
+function CheckupFlow({
+  vehicle: primaryVehicle,
+  rows,
+  selector,
+}: {
+  vehicle: Vehicle;
+  rows: FuelingComputed[];
+  selector: ReactNode;
+}) {
   const save = useSaveCheckup();
 
   const kind = vehicleKind(primaryVehicle?.brand);
@@ -112,32 +185,6 @@ function CheckupPage() {
     [questions, answers, rows, lastOilKm, intervalKm, currentKm],
   );
 
-  if (isLoading) {
-    return (
-      <AppShell>
-        <ScreenSkeleton cards={3} />
-      </AppShell>
-    );
-  }
-
-  if (!primaryVehicle) {
-    return (
-      <AppShell>
-        <PageHeader title="Check-up" />
-        <EmptyState
-          emoji="🔧"
-          title="Cadastre seu veículo primeiro"
-          description="O check-up usa o tipo de veículo e o km do painel."
-          action={
-            <ActionLink to="/veiculo" size="md" className="mt-1">
-              Cadastrar veículo
-            </ActionLink>
-          }
-        />
-      </AppShell>
-    );
-  }
-
   const name = vehicleName(primaryVehicle);
 
   async function finish() {
@@ -146,7 +193,7 @@ function CheckupPage() {
     const oilChanged = (lastOilKm ?? 0) !== savedKm || (intervalKm ?? 0) !== savedInterval;
     try {
       await save.mutateAsync({
-        vehicleId: primaryVehicle!.id,
+        vehicleId: primaryVehicle.id,
         answers,
         findings: result.findings.map((f) => f.id),
         odometer: currentKm,
@@ -184,7 +231,9 @@ function CheckupPage() {
     <AppShell>
       <PageHeader title="Check-up do veículo" subtitle={name} />
 
-      <TeoSays spot="checkup-intro" mood="tip">
+      {selector}
+
+      <TeoSays spot="checkup-intro" mood="tip" className={selector ? "mt-5" : undefined}>
         Me conta o que você tem percebido {words.kind === "moto" ? "na" : "no"} {words.noun}. Leva
         uns 2 minutos. No fim, mostro o que vale conferir e monto um resumo para levar à oficina.
       </TeoSays>
