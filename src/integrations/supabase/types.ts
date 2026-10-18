@@ -1134,6 +1134,36 @@ export type Database = {
           },
         ];
       };
+      vehicle_checkups: {
+        Row: {
+          answers: Json;
+          created_at: string;
+          findings: string[];
+          id: string;
+          odometer: number | null;
+          user_id: string;
+          vehicle_id: string;
+        };
+        Insert: {
+          answers?: Json;
+          created_at?: string;
+          findings?: string[];
+          id?: string;
+          odometer?: number | null;
+          user_id?: string;
+          vehicle_id: string;
+        };
+        Update: {
+          answers?: Json;
+          created_at?: string;
+          findings?: string[];
+          id?: string;
+          odometer?: number | null;
+          user_id?: string;
+          vehicle_id?: string;
+        };
+        Relationships: [];
+      };
       welcome_emails: {
         Row: {
           sent_at: string;
@@ -1162,6 +1192,8 @@ export type Database = {
           is_primary: boolean;
           model: string;
           nickname: string | null;
+          oil_change_interval_km: number | null;
+          oil_change_km: number | null;
           photo_url: string | null;
           plate: string | null;
           tank_liters: number | null;
@@ -1181,6 +1213,8 @@ export type Database = {
           is_primary?: boolean;
           model: string;
           nickname?: string | null;
+          oil_change_interval_km?: number | null;
+          oil_change_km?: number | null;
           photo_url?: string | null;
           plate?: string | null;
           tank_liters?: number | null;
@@ -1200,6 +1234,8 @@ export type Database = {
           is_primary?: boolean;
           model?: string;
           nickname?: string | null;
+          oil_change_interval_km?: number | null;
+          oil_change_km?: number | null;
           photo_url?: string | null;
           plate?: string | null;
           tank_liters?: number | null;

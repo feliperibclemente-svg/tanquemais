@@ -22,6 +22,7 @@ const USER_TABLES: Array<[string, string]> = [
   ["feedback", "user_id"],
   ["fuelings", "user_id"],
   ["vehicle_statistics", "user_id"],
+  ["vehicle_checkups", "user_id"],
   ["vehicles", "user_id"],
   ["user_statistics", "user_id"],
   ["user_roles", "user_id"],

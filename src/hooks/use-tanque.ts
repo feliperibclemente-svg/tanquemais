@@ -28,6 +28,7 @@ export const queryKeys = {
   userStats: (userId: string) => ["user-stats", userId] as const,
   vehicleStats: (vehicleId: string) => ["vehicle-stats", vehicleId] as const,
   priceReferences: (uf: string, city: string) => ["price-references", uf, city] as const,
+  checkups: (userId: string) => ["checkups", userId] as const,
 };
 
 /**
@@ -102,6 +103,69 @@ export function useVehicles() {
     queryKey: queryKeys.vehicles(userId),
     enabled: !!userId,
     queryFn: () => vehiclesRepository.list(userId),
+  });
+}
+
+export interface CheckupRecord {
+  id: string;
+  vehicle_id: string;
+  findings: string[];
+  created_at: string;
+}
+
+/** Últimos check-ups da pessoa (mais recente primeiro). */
+export function useCheckups() {
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+  return useQuery({
+    ...base,
+    queryKey: queryKeys.checkups(userId),
+    enabled: !!userId,
+    queryFn: async (): Promise<CheckupRecord[]> => {
+      const { data, error } = await supabase
+        .from("vehicle_checkups")
+        .select("id, vehicle_id, findings, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+/** Grava o check-up e, se informada, a troca de óleo do veículo. Sem aviso na tela. */
+export function useSaveCheckup() {
+  const { user } = useAuth();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (o: {
+      vehicleId: string;
+      answers: Record<string, string>;
+      findings: string[];
+      odometer: number | null;
+      oil: { km: number | null; intervalKm: number | null } | null;
+    }) => {
+      if (o.oil) {
+        const { error } = await supabase
+          .from("vehicles")
+          .update({ oil_change_km: o.oil.km, oil_change_interval_km: o.oil.intervalKm })
+          .eq("id", o.vehicleId);
+        if (error) throw error;
+      }
+      const { error } = await supabase.from("vehicle_checkups").insert({
+        vehicle_id: o.vehicleId,
+        answers: o.answers,
+        findings: o.findings,
+        odometer: o.odometer,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, o) => {
+      client.invalidateQueries({ queryKey: queryKeys.checkups(user?.id ?? "") });
+      if (o.oil) client.invalidateQueries({ queryKey: queryKeys.vehicles(user?.id ?? "") });
+      track("checkup_completed", { findings: o.findings.length });
+    },
+    onError: (error: Error) => captureException(error, { scope: "checkup.save" }),
   });
 }
 

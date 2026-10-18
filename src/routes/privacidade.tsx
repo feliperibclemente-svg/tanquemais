@@ -54,6 +54,10 @@ function Privacidade() {
           </li>
           <li>Veículos cadastrados;</li>
           <li>Abastecimentos (valor, preço, litros, quilometragem, data);</li>
+          <li>
+            Respostas do check-up do veículo e km da troca de óleo, se você fizer o check-up (para
+            mostrar o resultado e lembrar da próxima troca);
+          </li>
           <li>Foto de perfil, cidade e estado, apenas se você informar (opcionais);</li>
           <li>Faixa etária e gênero, apenas se você informar (opcionais);</li>
           <li>Mensagens de feedback que você enviar;</li>

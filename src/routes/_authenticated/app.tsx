@@ -9,6 +9,7 @@ import {
   ActionLink,
   AppCard,
   AppShell,
+  CheckupNudge,
   ErrorState,
   InstallCard,
   ReminderCard,
@@ -227,6 +228,11 @@ function HomePage() {
           insights={insights}
           brand={primaryVehicle.brand}
           dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
+        />
+
+        <CheckupNudge
+          vehicle={primaryVehicle}
+          odometers={rows.map((r) => Number(r.odometer) || 0)}
         />
 
         <InstallCard />

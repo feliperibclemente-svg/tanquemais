@@ -4,6 +4,7 @@ import {
   ActionLink,
   AppCard,
   AppShell,
+  CheckupCard,
   EmptyState,
   ErrorState,
   formatCents,
@@ -76,7 +77,13 @@ function DashboardPage() {
             </ActionLink>
           }
         />
-        <div className="mt-5">
+        <div className="mt-5 space-y-4">
+          {primaryVehicle ? (
+            <CheckupCard
+              vehicle={primaryVehicle}
+              odometers={rows.map((r) => Number(r.odometer) || 0)}
+            />
+          ) : null}
           <DrivingTips brand={primaryVehicle?.brand ?? null} />
         </div>
       </AppShell>
@@ -158,6 +165,12 @@ function DashboardPage() {
           </dl>
         </AppCard>
 
+        {primaryVehicle ? (
+          <CheckupCard
+            vehicle={primaryVehicle}
+            odometers={rows.map((r) => Number(r.odometer) || 0)}
+          />
+        ) : null}
         <HowWeCalculate duplicates={stats.duplicates} outliers={stats.outliers} />
         <DrivingTips brand={primaryVehicle?.brand ?? null} />
       </section>

@@ -59,6 +59,16 @@ function Termos() {
         </p>
       </section>
       <section>
+        <h2>Check-up do veículo</h2>
+        <p>
+          O check-up reúne sinais que você informa e dados dos seus registros para sugerir o que
+          vale pedir para conferir. É uma orientação geral: não é diagnóstico, não substitui a
+          avaliação de um mecânico e não indica oficinas nem preços. Em caso de sinal de risco
+          (freio, temperatura, cheiro de combustível, pneu danificado), não rode e procure ajuda
+          profissional.
+        </p>
+      </section>
+      <section>
         <h2>Seus dados</h2>
         <p>
           O tratamento dos seus dados segue a nossa{" "}
