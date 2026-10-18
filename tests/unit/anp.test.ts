@@ -115,6 +115,8 @@ describe("escolha da referência", () => {
       place: "Campinas",
       avgPrice: 6.15,
       weekStart: "2026-10-04",
+      fuelName: "gasolina comum",
+      unit: "L",
     });
     expect(
       chooseReference(refs, { uf: "SP", city: "Campinas" }, "gasolina", "2026-10-01T12:00:00"),
@@ -153,6 +155,9 @@ describe("escolha da referência", () => {
 describe("insight da média da ANP", () => {
   const reference = {
     scope: "municipio" as const,
+    fuelTypeId: "gasolina",
+    fuelName: "gasolina comum",
+    unit: "L",
     place: "Campinas",
     avgPrice: 6.15,
     weekStart: "2026-10-04",
@@ -163,7 +168,10 @@ describe("insight da média da ANP", () => {
     const i = cityPriceInsight({ reference, paid: 6.29 });
     expect(i.body).toContain("segundo a ANP");
     expect(i.body).toContain("04/10 a 10/10");
-    expect(i.body).toContain("acima da média de Campinas");
+    expect(i.body).toMatch(/a gasolina comum saiu a R\$\s6,29 o litro/);
+    expect(i.body).toContain("A média em Campinas");
+    expect(i.body).toMatch(/R\$\s0,14 acima da média/);
+    expect(i.title).toBe("Gasolina comum: seu preço e a média da cidade");
     expect(i.body).not.toMatch(/econom/i);
   });
   it("já aparece no primeiro abastecimento", () => {

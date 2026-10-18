@@ -2,7 +2,7 @@ import { brl, num } from "@/lib/format";
 import { ETHANOL_BREAKEVEN_RATIO } from "@/constants/app";
 import type { Insight } from "@/types/domain";
 import type { Overview, SavingsOpportunity } from "./analytics";
-import { weekLabel, type ChosenReference } from "./anp";
+import { referenceFuelName, weekLabel, type ChosenReference } from "./anp";
 
 export interface CityPrice {
   reference: ChosenReference;
@@ -16,22 +16,24 @@ export interface CityPrice {
  */
 export function cityPriceInsight({ reference, paid }: CityPrice): Insight {
   const where =
-    reference.scope === "municipio" ? `de ${reference.place}` : `do estado (${reference.place})`;
+    reference.scope === "municipio" ? `em ${reference.place}` : `no estado (${reference.place})`;
+  const unit = reference.unit === "L" ? "o litro" : `o ${reference.unit}`;
   const diff = paid - reference.avgPrice;
   const relation =
     Math.abs(diff) < 0.005
-      ? "o mesmo valor da média"
+      ? "o mesmo valor"
       : `${brl(Math.abs(diff))} ${diff > 0 ? "acima" : "abaixo"} da média`;
   return {
     id: "city-price",
     icon: "map-pin",
     severity: "info",
-    title:
-      reference.scope === "municipio"
-        ? "Seu preço e a média da cidade"
-        : "Seu preço e a média do estado",
-    body: `No último abastecimento você pagou ${brl(paid)} por litro, ${relation} ${where} na semana de ${weekLabel(reference.weekStart, reference.weekEnd)}, que foi ${brl(reference.avgPrice)}, segundo a ANP.`,
+    title: `${capitalize(reference.fuelName)}: seu preço e a média ${reference.scope === "municipio" ? "da cidade" : "do estado"}`,
+    body: `No último abastecimento, ${referenceFuelName(reference.fuelTypeId).article} ${reference.fuelName} saiu a ${brl(paid)} ${unit}. A média ${where} na semana de ${weekLabel(reference.weekStart, reference.weekEnd)} foi ${brl(reference.avgPrice)}, segundo a ANP: ${relation}.`,
   };
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 /**

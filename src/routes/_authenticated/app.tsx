@@ -263,8 +263,10 @@ function ReferenceLine({ reference, paid }: { reference: ChosenReference; paid: 
     reference.scope === "municipio" ? `em ${reference.place}` : `no estado (${reference.place})`;
   return (
     <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground">
-      Média {where}:{" "}
-      <span className="font-semibold text-foreground">{brl(reference.avgPrice)}/L</span>
+      Média da {reference.fuelName} {where}:{" "}
+      <span className="font-semibold text-foreground">
+        {brl(reference.avgPrice)}/{reference.unit}
+      </span>
       {Math.abs(diff) >= 0.005
         ? ` · você pagou ${brl(Math.abs(diff))} ${diff > 0 ? "a mais" : "a menos"}`
         : " · você pagou a média"}

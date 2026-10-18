@@ -174,8 +174,34 @@ export function weekFromFileName(name: string): { start: string; end: string } |
   return m ? { start: m[1], end: m[2] } : null;
 }
 
+/** Nome do combustível como a ANP pesquisa, para deixar claro o que está sendo comparado. */
+export function referenceFuelName(fuelTypeId: string): {
+  name: string;
+  unit: string;
+  article: "a" | "o";
+} {
+  switch (fuelTypeId) {
+    case "gasolina":
+      return { name: "gasolina comum", unit: "L", article: "a" };
+    case "gasolina_aditivada":
+      return { name: "gasolina aditivada", unit: "L", article: "a" };
+    case "etanol":
+      return { name: "etanol", unit: "L", article: "o" };
+    case "diesel":
+      return { name: "diesel S10", unit: "L", article: "o" };
+    case "gnv":
+      return { name: "GNV", unit: "m³", article: "o" };
+    default:
+      return { name: fuelTypeId, unit: "L", article: "o" };
+  }
+}
+
 export interface ChosenReference {
   scope: ReferenceScope;
+  /** Combustível da média (o mesmo do abastecimento comparado). */
+  fuelTypeId: string;
+  fuelName: string;
+  unit: string;
   place: string; // "Campinas" ou "SP"
   avgPrice: number;
   weekStart: string;
@@ -242,6 +268,9 @@ export function chooseReference(
     avgPrice: Number(chosen.avg_price),
     weekStart: chosen.week_start,
     weekEnd: chosen.week_end,
+    fuelTypeId: chosen.fuel_type_id,
+    fuelName: referenceFuelName(chosen.fuel_type_id).name,
+    unit: referenceFuelName(chosen.fuel_type_id).unit,
     stations: chosen.stations ?? null,
   };
 }
