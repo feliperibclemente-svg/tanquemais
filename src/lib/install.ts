@@ -50,6 +50,15 @@ export function isIos() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
+/**
+ * Navegador embutido de outro app (Instagram, Facebook, TikTok, WebView do Android).
+ * Ali não dá para instalar e o login pode não ficar salvo: melhor abrir no navegador.
+ */
+export function isInAppBrowser() {
+  if (typeof navigator === "undefined") return false;
+  return /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Line\/|; wv\)/i.test(navigator.userAgent);
+}
+
 export function canPromptInstall() {
   return deferred !== null;
 }

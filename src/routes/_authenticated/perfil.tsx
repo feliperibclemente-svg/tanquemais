@@ -38,6 +38,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { track } from "@/lib/analytics";
 import { PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL, GENDER_OPTIONS } from "@/constants/app";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { InstallCard } from "@/components/app/InstallCard";
 import { amIAdmin } from "@/lib/admin.functions";
 import { queuedFuelings } from "@/lib/offline-queue";
 import { photoToAvatarDataUrl } from "@/lib/image";
@@ -269,6 +270,8 @@ function PerfilPage() {
             <span className="text-primary">Alternar</span>
           </button>
         </AppCard>
+
+        <InstallCard persistent />
 
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Versão beta</p>
