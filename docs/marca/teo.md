@@ -38,6 +38,14 @@ A entrada (surgir com mola + a animação do humor) roda **uma vez por sessão**
 e é desligada quando o celular está com "reduzir movimento" ativo. Implementação:
 `src/components/app/Teo.tsx` (`TeoAvatar`, `TeoSays`) e `TeoArt.tsx` (desenho).
 
+## Curiosidades e dicas (sem dados da pessoa)
+
+Enquanto não há números para comentar, o card do Teo alterna por dia uma **curiosidade da
+marca** do veículo e uma **dica de uso** (calibragem, direção, peso, manutenção). Todas as dicas
+ficam no Painel, em "Dicas para gastar menos combustível". O conteúdo é escrito e revisado por
+nós em `src/content/teo-tips.ts` (nunca gerado por IA): só fatos verificáveis, sem promessa de
+economia em valores e sem comparar marcas. Motos recebem só as dicas que valem para moto.
+
 ## Nas redes
 
 - Formatos que combinam: "Teo explica" (um conceito por post: km/L, custo por km, regra dos

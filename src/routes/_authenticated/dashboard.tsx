@@ -20,6 +20,7 @@ import { FUEL_LABEL } from "@/constants/app";
 import { ethanolAdvice } from "@/services/insights";
 import { consumptionProgress, consumptionProgressText } from "@/services/analytics";
 import { chooseReference, weekLabel, type ChosenReference } from "@/services/anp";
+import { tipsFor } from "@/content/teo-tips";
 
 const DashboardCharts = lazy(() => import("@/components/charts/DashboardCharts"));
 
@@ -41,7 +42,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  const { isLoading, isError, refetch, stats, rows, references, place } = useHomeData();
+  const { isLoading, isError, refetch, stats, rows, references, place, primaryVehicle } =
+    useHomeData();
 
   if (isLoading) {
     return (
@@ -74,6 +76,9 @@ function DashboardPage() {
             </ActionLink>
           }
         />
+        <div className="mt-5">
+          <DrivingTips brand={primaryVehicle?.brand ?? null} />
+        </div>
       </AppShell>
     );
   }
@@ -154,6 +159,7 @@ function DashboardPage() {
         </AppCard>
 
         <HowWeCalculate duplicates={stats.duplicates} outliers={stats.outliers} />
+        <DrivingTips brand={primaryVehicle?.brand ?? null} />
       </section>
     </AppShell>
   );
@@ -307,6 +313,22 @@ function HowWeCalculate({ duplicates, outliers }: { duplicates: number; outliers
           </dd>
         </div>
       </dl>
+    </details>
+  );
+}
+
+/** Dicas de uso que tendem a reduzir o consumo (conteúdo revisado, não gerado por IA). */
+function DrivingTips({ brand }: { brand: string | null }) {
+  return (
+    <details className="rounded-3xl border border-border bg-card p-4 text-sm">
+      <summary className="min-h-11 cursor-pointer list-none py-2 font-semibold text-foreground">
+        Dicas para gastar menos combustível
+      </summary>
+      <ul className="mt-2 list-disc space-y-2 pl-5 text-muted-foreground">
+        {tipsFor(brand).map((tip) => (
+          <li key={tip}>{tip}</li>
+        ))}
+      </ul>
     </details>
   );
 }

@@ -29,6 +29,7 @@ import {
 } from "@/services/analytics";
 import { firstNameOf, needsIdentity } from "@/services/identity";
 import { weekLabel, type ChosenReference } from "@/services/anp";
+import { teoNoteOfTheDay } from "@/content/teo-tips";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -219,6 +220,7 @@ function HomePage() {
         {/* TanqueIA em uma frase — detalhes ficam no painel */}
         <TanqueIALine
           insights={insights}
+          brand={primaryVehicle.brand}
           dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
         />
 
@@ -314,9 +316,11 @@ function ConsumptionPending({
 
 function TanqueIALine({
   insights,
+  brand,
   dataKey,
 }: {
   insights: ReturnType<typeof useHomeData>["insights"];
+  brand: string;
   /** Muda quando os registros mudam, para a frase ser refeita. */
   dataKey: string;
 }) {
@@ -324,6 +328,8 @@ function TanqueIALine({
   /** Sem dados suficientes a IA não é acionada: ela interpreta números, não os inventa. */
   const hasData = !!main && main.id !== "empty";
   const phrase = useServerFn(phraseInsight);
+  /** Sem números para comentar, o Teo traz uma curiosidade da marca ou uma dica do dia. */
+  const note = hasData ? null : teoNoteOfTheDay(brand);
 
   const ai = useQuery({
     queryKey: ["tanque-ia", dataKey],
@@ -354,9 +360,19 @@ function TanqueIALine({
           <p className="text-xs text-muted-foreground">sua TanqueIA</p>
         </div>
       </div>
-      <p className="mt-3 text-sm leading-relaxed text-foreground">
-        {ai.isFetching ? "Analisando seus números…" : text}
-      </p>
+      {note ? (
+        <>
+          <p className="mt-3 text-xs font-semibold text-primary">{note.title}</p>
+          <p className="mt-1 text-sm leading-relaxed text-foreground">{note.text}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Com dois tanques cheios registrados, eu passo a comentar os seus números.
+          </p>
+        </>
+      ) : (
+        <p className="mt-3 text-sm leading-relaxed text-foreground">
+          {ai.isFetching ? "Analisando seus números…" : text}
+        </p>
+      )}
       {hasData && !ai.isFetching ? (
         <p className="mt-2 text-xs text-muted-foreground">
           Calculado com os seus registros{main ? ` · ${main.title}` : ""}.
