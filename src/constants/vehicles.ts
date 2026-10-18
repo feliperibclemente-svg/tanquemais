@@ -144,12 +144,92 @@ export const VEHICLE_CATALOG: readonly BrandCatalog[] = [
   {
     brand: "Honda Motos",
     kind: "moto",
-    models: ["Biz", "CB 300F Twister", "CG 160", "NXR 160 Bros", "PCX 160", "Pop 110i", "XRE 300"],
+    models: [
+      "ADV 160",
+      "Biz 110i",
+      "Biz 125",
+      "CB 300F Twister",
+      "CB 500",
+      "CG 160 Fan",
+      "CG 160 Start",
+      "CG 160 Titan",
+      "Elite 125",
+      "NC 750X",
+      "NXR 160 Bros",
+      "PCX 160",
+      "Pop 110i",
+      "Sahara 300",
+      "XRE 190",
+      "XRE 300",
+    ],
   },
   {
     brand: "Yamaha",
     kind: "moto",
-    models: ["Crosser 150", "Factor 150", "Fazer FZ15", "Lander 250", "MT-03", "NMax 160"],
+    models: [
+      "Crosser 150",
+      "Factor 150",
+      "Fazer FZ15",
+      "Fazer FZ25",
+      "Fluo 125",
+      "Lander 250",
+      "MT-03",
+      "MT-07",
+      "Neo 125",
+      "NMax 160",
+      "XMax 250",
+      "XTZ 150",
+    ],
+  },
+  {
+    brand: "Mottu",
+    kind: "moto",
+    models: ["Mottu Sport 110i", "Mottu-e"],
+  },
+  {
+    brand: "Shineray",
+    kind: "moto",
+    models: ["Jet 125", "Phoenix 50", "SHI 175", "Worker 125"],
+  },
+  {
+    brand: "Haojue",
+    kind: "moto",
+    models: ["DK 150", "DR 160", "NK 150", "Master Ride 150"],
+  },
+  {
+    brand: "Suzuki Motos",
+    kind: "moto",
+    models: ["Burgman 125", "GSX-S750", "Intruder 125", "V-Strom 650", "Yes 125"],
+  },
+  {
+    brand: "Kawasaki",
+    kind: "moto",
+    models: ["Ninja 400", "Versys 650", "Z400", "Z650", "Z900"],
+  },
+  {
+    brand: "Royal Enfield",
+    kind: "moto",
+    models: ["Classic 350", "Himalayan 450", "Hunter 350", "Interceptor 650", "Meteor 350"],
+  },
+  {
+    brand: "BMW Motorrad",
+    kind: "moto",
+    models: ["F 900 GS", "G 310 GS", "G 310 R", "R 1300 GS", "S 1000 RR"],
+  },
+  {
+    brand: "Triumph",
+    kind: "moto",
+    models: ["Speed 400", "Street Triple", "Tiger 900", "Trident 660"],
+  },
+  {
+    brand: "Dafra",
+    kind: "moto",
+    models: ["Apache 200", "Citycom 300", "Cruisym 150", "NH 190"],
+  },
+  {
+    brand: "Harley-Davidson",
+    kind: "moto",
+    models: ["Fat Boy", "Nightster", "Pan America", "Sportster S"],
   },
 ];
 
@@ -177,4 +257,63 @@ export function canonicalVehicle(brand: string, model: string) {
   const b = matchFrom(BRANDS, brand);
   const m = b ? matchFrom(modelsOf(b), model) : null;
   return { brand: b ?? brand.trim(), model: m ?? model.trim() };
+}
+
+export type VehicleKind = "carro" | "moto";
+
+/** Carro ou moto pela marca do catálogo; marca digitada livremente → null (não sabemos). */
+export function vehicleKind(brand: string | null | undefined): VehicleKind | null {
+  if (!brand) return null;
+  const b = matchFrom(BRANDS, brand);
+  return b ? (VEHICLE_CATALOG.find((x) => x.brand === b)?.kind ?? null) : null;
+}
+
+/** Palavras para o texto se adaptar ao veículo: "seu carro", "sua moto" ou "seu veículo". */
+export function vehicleWords(brand: string | null | undefined) {
+  const kind = vehicleKind(brand);
+  if (kind === "moto")
+    return {
+      kind,
+      noun: "moto",
+      your: "sua moto",
+      Your: "Sua moto",
+      the: "a moto",
+      ofThe: "da moto",
+      parked: "parada",
+      driving: "pilotando",
+    };
+  return {
+    kind,
+    noun: kind === "carro" ? "carro" : "veículo",
+    your: kind === "carro" ? "seu carro" : "seu veículo",
+    Your: kind === "carro" ? "Seu carro" : "Seu veículo",
+    the: kind === "carro" ? "o carro" : "o veículo",
+    ofThe: kind === "carro" ? "do carro" : "do veículo",
+    parked: "parado",
+    driving: "dirigindo",
+  };
+}
+
+/** Nome da marca para exibir: "Honda Motos" → "Honda" (o tipo já está claro pelo contexto). */
+export function brandLabel(brand: string | null | undefined): string {
+  return (brand ?? "").replace(/ Motos$/, "");
+}
+
+/** Apelido ou "Marca Modelo" para exibir. */
+export function vehicleName(v: {
+  nickname?: string | null;
+  brand: string | null;
+  model: string | null;
+}): string {
+  return v.nickname || `${brandLabel(v.brand)} ${v.model ?? ""}`.trim();
+}
+
+/** Combustíveis que fazem sentido para o veículo: moto não tem diesel nem GNV. */
+export function fuelsFor<T extends { id: string }>(
+  brand: string | null | undefined,
+  fuels: readonly T[],
+): T[] {
+  return vehicleKind(brand) === "moto"
+    ? fuels.filter((f) => f.id !== "diesel" && f.id !== "gnv")
+    : [...fuels];
 }

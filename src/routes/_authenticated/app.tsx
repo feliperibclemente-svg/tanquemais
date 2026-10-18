@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { vehicleName } from "@/constants/vehicles";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
@@ -42,7 +43,8 @@ export const Route = createFileRoute("/_authenticated/app")({
       { property: "og:title", content: "Início — Tanque+" },
       {
         property: "og:description",
-        content: "Um toque para registrar o abastecimento e acompanhar quanto o carro gasta.",
+        content:
+          "Um toque para registrar o abastecimento e acompanhar quanto o carro ou a moto gasta.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -120,9 +122,7 @@ function HomePage() {
             className="mt-1 inline-flex min-h-11 items-center gap-1 text-foreground"
             aria-label="Ver e editar veículos"
           >
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {primaryVehicle.nickname || `${primaryVehicle.brand} ${primaryVehicle.model}`}
-            </h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{vehicleName(primaryVehicle)}</h1>
             <ChevronRight className="mt-1 h-5 w-5 text-muted-foreground" />
           </Link>
         </header>
@@ -352,9 +352,7 @@ function TanqueIALine({
   }, [ai.data?.text]);
 
   const text =
-    ai.data?.text ??
-    main?.body ??
-    "Com dois tanques cheios, eu calculo o consumo real do seu carro.";
+    ai.data?.text ?? main?.body ?? "Com dois tanques cheios, eu calculo seu consumo real.";
 
   return (
     <AppCard className="border-primary/25 bg-accent/40">

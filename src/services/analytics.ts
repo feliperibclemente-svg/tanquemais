@@ -1,4 +1,5 @@
 import type { Fueling } from "@/types/domain";
+import { vehicleKind } from "@/constants/vehicles";
 import type { StationWithPrice } from "@/repositories";
 import { monthKey } from "@/lib/format";
 
@@ -33,9 +34,16 @@ export interface FuelingComputed extends Fueling {
 /**
  * Faixa plausível de consumo (km/L). Fora disso o dado veio de odômetro digitado
  * errado e é descartado para não contaminar médias mostradas ao usuário.
+ * Motos econômicas (Biz, Pop, CG) passam de 40 km/L; por isso o teto depende do veículo.
+ * Marca fora do catálogo (pode ser moto) usa o teto maior.
  */
 export const MIN_KML = 3;
 export const MAX_KML = 40;
+export const MAX_KML_MOTO = 80;
+
+export function maxKmlFor(brand: string | null | undefined): number {
+  return vehicleKind(brand) === "carro" ? MAX_KML : MAX_KML_MOTO;
+}
 /** Com pelo menos esta quantidade de trechos, dá para saber o que é "habitual". */
 export const OUTLIER_MIN_INTERVALS = 4;
 /** Trecho atípico: consumo 50% acima ou abaixo da mediana do veículo no mesmo combustível. */
@@ -61,7 +69,11 @@ const median = (values: number[]) => {
  * Custo por km do trecho = valor pago nesses mesmos abastecimentos ÷ km do trecho.
  * Retorna mais recente primeiro.
  */
-export function computeFuelings(fuelings: Fueling[]): FuelingComputed[] {
+export function computeFuelings(
+  fuelings: Fueling[],
+  vehicles: readonly { id: string; brand: string | null }[] = [],
+): FuelingComputed[] {
+  const brandOf = new Map(vehicles.map((v) => [v.id, v.brand]));
   const asc = [...fuelings].sort(byDateThenOdometer);
   const state = new Map<
     string,
@@ -126,7 +138,8 @@ export function computeFuelings(fuelings: Fueling[]): FuelingComputed[] {
     s.liters = 0;
     s.cost = 0;
 
-    if (kml < MIN_KML || kml > MAX_KML) return empty;
+    const maxKml = brandOf.has(f.vehicle_id) ? maxKmlFor(brandOf.get(f.vehicle_id)) : MAX_KML;
+    if (kml < MIN_KML || kml > maxKml) return empty;
     return {
       ...empty,
       distance,
@@ -442,8 +455,8 @@ export function consumptionProgressText(
   }
   if (progress.state === "pending")
     return progress.missing === 2
-      ? "Complete o tanque em 2 abastecimentos para eu calcular quantos km por litro seu carro faz. Pode abastecer parcial entre eles."
-      : "Complete o tanque no próximo abastecimento para eu calcular quantos km por litro seu carro faz.";
+      ? "Complete o tanque em 2 abastecimentos para eu calcular quantos km por litro você faz de verdade. Pode abastecer parcial entre eles."
+      : "Complete o tanque no próximo abastecimento para eu calcular quantos km por litro você faz de verdade.";
   if (progress.state === "waiting")
     return "Complete o tanque no próximo abastecimento para eu medir um novo trecho. Se algum km estiver errado, ajuste no Histórico.";
   return "";

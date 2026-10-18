@@ -60,7 +60,7 @@ function Panel({ children }: { children: ReactNode }) {
 
 const STORIES: Story[] = [
   {
-    title: "Quanto seu carro gasta de verdade",
+    title: "Quanto seu veículo gasta de verdade",
     mood: "cheer",
     teo: "Eu sou o Teo. Pego os abastecimentos que você registra e transformo em números claros: consumo, custo por km e gasto do mês.",
     visual: (
@@ -78,13 +78,13 @@ const STORIES: Story[] = [
   {
     title: "Registre em uns 20 segundos",
     mood: "tip",
-    teo: "No posto, com o carro parado: quanto pagou, o preço do litro e o km do painel. Os valores mais comuns ficam a um toque.",
+    teo: "No posto, com o veículo parado: quanto pagou, o preço do litro e o km do painel. Os valores mais comuns ficam a um toque.",
     visual: (
       <Panel>
         <p className="text-xs font-medium uppercase tracking-wide text-white/60">Valor pago</p>
         <div className="mt-2 flex flex-wrap gap-2">
-          {[50, 100, 200].map((v) => (
-            <Chip key={v} className={v === 100 ? "border-[#1E9A66] bg-[#1E9A66]" : undefined}>
+          {[30, 50, 70, 100].map((v) => (
+            <Chip key={v} className={v === 50 ? "border-[#1E9A66] bg-[#1E9A66]" : undefined}>
               R$ {v}
             </Chip>
           ))}
@@ -99,7 +99,7 @@ const STORIES: Story[] = [
   {
     title: "Tanque cheio é o que dá a medida",
     mood: "tip",
-    teo: "Quando você completa o tanque duas vezes seguidas, eu calculo quantos km por litro o carro fez de verdade, e não o número do manual.",
+    teo: "Quando você completa o tanque duas vezes seguidas, eu calculo quantos km por litro o veículo fez de verdade, e não o número do manual.",
     visual: (
       <Panel>
         <div className="flex items-center justify-between gap-2 text-white">

@@ -61,8 +61,8 @@ function Landing() {
           em cada tanque.
         </h1>
         <p className="mt-4 text-base text-muted-foreground">
-          O assistente inteligente que mostra quanto seu carro consome, quanto você gasta e onde dá
-          para economizar.
+          O assistente inteligente que mostra quanto seu carro ou sua moto consome, quanto você
+          gasta e onde dá para economizar.
         </p>
 
         <ul className="mt-8 space-y-3">

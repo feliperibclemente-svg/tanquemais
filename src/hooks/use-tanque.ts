@@ -309,6 +309,7 @@ export function useHomeData() {
   // Home, Painel e Perfil mostram só o veículo principal.
   const rows = computeFuelings(
     ((fuelings.data ?? []) as Fueling[]).filter((f) => !primary || f.vehicle_id === primary.id),
+    vehicles.data ?? [],
   );
   const stats = overview(rows);
   const place = { uf: profile.data?.state ?? null, city: profile.data?.city ?? null };

@@ -16,7 +16,7 @@ import {
   TextField,
 } from "@/components/ds";
 import { FUEL_LABEL, FUEL_TYPES } from "@/constants/app";
-import { canonicalVehicle } from "@/constants/vehicles";
+import { canonicalVehicle, vehicleName, brandLabel, fuelsFor } from "@/constants/vehicles";
 import { int } from "@/lib/format";
 import {
   useCreateVehicle,
@@ -118,7 +118,7 @@ function VeiculoPage() {
           <form onSubmit={submit} className="space-y-3">
             <TextField
               label="Apelido"
-              hint="Opcional — ex: Carro do trabalho"
+              hint="Opcional — ex: Carro do trabalho ou Moto das entregas"
               value={values.nickname}
               onChange={(e) => setValues({ ...values, nickname: e.target.value })}
             />
@@ -145,7 +145,10 @@ function VeiculoPage() {
               label="Combustível padrão"
               value={values.fuel_type_id}
               onChange={(e) => setValues({ ...values, fuel_type_id: e.target.value })}
-              options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.label }))}
+              options={fuelsFor(values.brand, FUEL_TYPES).map((f) => ({
+                value: f.id,
+                label: f.label,
+              }))}
             />
             <TextField
               label="Quilometragem atual"
@@ -179,11 +182,9 @@ function VeiculoPage() {
               <AppCard>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-foreground">
-                      {v.nickname || `${v.brand} ${v.model}`}
-                    </p>
+                    <p className="truncate font-semibold text-foreground">{vehicleName(v)}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {v.brand} {v.model}
+                      {brandLabel(v.brand)} {v.model}
                       {v.year ? ` · ${v.year}` : ""}
                       {v.fuel_type_id ? ` · ${FUEL_LABEL[v.fuel_type_id] ?? v.fuel_type_id}` : ""}
                     </p>
@@ -290,7 +291,7 @@ function EditVehicle({ vehicle, onDone }: { vehicle: Vehicle; onDone: () => void
     <form onSubmit={submit} className="mt-4 space-y-3 border-t border-border pt-4">
       <TextField
         label="Apelido"
-        hint="Opcional — ex: Carro do trabalho"
+        hint="Opcional — ex: Carro do trabalho ou Moto das entregas"
         value={values.nickname}
         onChange={(e) => setValues({ ...values, nickname: e.target.value })}
       />
@@ -317,7 +318,7 @@ function EditVehicle({ vehicle, onDone }: { vehicle: Vehicle; onDone: () => void
         label="Combustível padrão"
         value={values.fuel_type_id}
         onChange={(e) => setValues({ ...values, fuel_type_id: e.target.value })}
-        options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.label }))}
+        options={fuelsFor(values.brand, FUEL_TYPES).map((f) => ({ value: f.id, label: f.label }))}
       />
       <TextField
         label="Quilometragem atual"

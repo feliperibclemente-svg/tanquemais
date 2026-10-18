@@ -106,7 +106,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image", content: `${SITE_URL}/og-image.png` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
-      { property: "og:image:alt", content: "Tanque+ — mais clareza sobre os custos do seu carro" },
+      {
+        property: "og:image:alt",
+        content: "Tanque+ — mais clareza sobre os custos do seu carro ou da sua moto",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
     ],

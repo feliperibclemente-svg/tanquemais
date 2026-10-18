@@ -36,6 +36,7 @@ import {
   fullTanksMissing,
   validateOdometer,
 } from "@/services/analytics";
+import { vehicleWords, vehicleName, fuelsFor } from "@/constants/vehicles";
 import { deriveAmounts, priceVerdict } from "@/services/verdict";
 import type { PriceVerdict } from "@/services/verdict";
 import { fuelingSchema } from "@/validators";
@@ -63,7 +64,7 @@ export const Route = createFileRoute("/_authenticated/abastecer")({
 });
 
 /** Valores redondos mais comuns na bomba. */
-const QUICK_AMOUNTS = [10, 20, 30, 40, 50, 100, 200, 300];
+const QUICK_AMOUNTS = [30, 50, 70, 100];
 
 interface Saved {
   liters: number;
@@ -101,12 +102,13 @@ function AbastecerPage() {
 
   const list = vehicles.data ?? [];
   const history = useMemo(
-    () => computeFuelings((fuelings.data ?? []) as Fueling[]),
-    [fuelings.data],
+    () => computeFuelings((fuelings.data ?? []) as Fueling[], list),
+    [fuelings.data, list],
   );
 
   const [vehicleId, setVehicleId] = useState<string | null>(null);
   const vehicle = list.find((v) => v.id === vehicleId) ?? list.find((v) => v.is_primary) ?? list[0];
+  const words = vehicleWords(vehicle?.brand);
 
   const [date, setDate] = useState(todayLocal());
   const filledAt = filledAtFor(date);
@@ -183,7 +185,7 @@ function AbastecerPage() {
       odometer: odometerValue,
       full_tank: fullTank,
     } as Fueling;
-    const rows = computeFuelings([...(vehicleHistory as Fueling[]), draft]);
+    const rows = computeFuelings([...(vehicleHistory as Fueling[]), draft], list);
     const row = rows.find((r) => r.id === "__preview__");
     if (row?.computed_km_per_liter) {
       return {
@@ -352,8 +354,8 @@ function AbastecerPage() {
             <TeoSays spot="milestone-first-fueling" mood="cheer" title="Primeiro registro feito!">
               Daqui pra frente eu acompanho tudo.{" "}
               {saved.tanksMissing === 1
-                ? "No próximo tanque cheio, já te mostro quantos km/L seu carro faz de verdade."
-                : "Com dois tanques cheios seguidos, te mostro quantos km/L seu carro faz de verdade."}
+                ? `No próximo tanque cheio, já te mostro quantos km/L ${words.your} faz de verdade.`
+                : `Com dois tanques cheios seguidos, te mostro quantos km/L ${words.your} faz de verdade.`}
             </TeoSays>
           ) : saved.milestone === "first-consumption" && saved.kmPerLiter ? (
             <TeoSays
@@ -361,7 +363,7 @@ function AbastecerPage() {
               mood="cheer"
               title="Sua primeira medição real!"
             >
-              Entre os dois tanques cheios, seu carro fez {kmPerLiter(saved.kmPerLiter)}. A cada
+              Entre os dois tanques cheios, {words.your} fez {kmPerLiter(saved.kmPerLiter)}. A cada
               tanque completo, essa média fica mais precisa.
             </TeoSays>
           ) : null}
@@ -371,7 +373,7 @@ function AbastecerPage() {
           {saved.milestone ? null : saved.kmPerLiter ? (
             <AppCard className="p-4">
               <p className="text-sm text-muted-foreground">
-                Seu carro fez{" "}
+                {words.Your} fez{" "}
                 <span className="font-semibold text-foreground">
                   {kmPerLiter(saved.kmPerLiter)}
                 </span>{" "}
@@ -418,14 +420,12 @@ function AbastecerPage() {
 
   return (
     <AppShell fab={false}>
-      <PageHeader
-        title="Abastecer"
-        subtitle={vehicle.nickname || `${vehicle.brand} ${vehicle.model}`}
-      />
+      <PageHeader title="Abastecer" subtitle={vehicleName(vehicle)} />
 
       <p className="-mt-2 mb-4 flex items-start gap-2 rounded-2xl bg-muted px-3 py-2 text-xs text-muted-foreground">
         <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-        Não use o celular dirigindo. Registre só com o carro parado em local seguro.
+        Não use o celular {words.driving}. Registre só com {words.the} {words.parked} em local
+        seguro.
       </p>
 
       <form onSubmit={submit} className="space-y-5">
@@ -438,7 +438,7 @@ function AbastecerPage() {
               onChange={setVehicleId}
               options={list.map((v) => ({
                 value: v.id,
-                label: `${v.is_primary ? "★ " : ""}${v.nickname || `${v.brand} ${v.model}`}`,
+                label: `${v.is_primary ? "★ " : ""}${vehicleName(v)}`,
               }))}
             />
             <PrimaryStar
@@ -456,7 +456,10 @@ function AbastecerPage() {
             label="Combustível"
             value={fuelTypeId}
             onChange={setFuel}
-            options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.short }))}
+            options={fuelsFor(vehicle.brand, FUEL_TYPES).map((f) => ({
+              value: f.id,
+              label: f.short,
+            }))}
           />
         </div>
 
@@ -518,7 +521,7 @@ function AbastecerPage() {
               ? "Do cadastro do veículo. Se rodou desde então, ajuste para o km do painel."
               : previousOdometer
                 ? `Último registro: ${num(previousOdometer, 0)} km`
-                : "Odômetro do painel do carro"
+                : `Odômetro do painel ${words.ofThe}`
           }
         />
 
@@ -595,7 +598,7 @@ function AbastecerPage() {
 
         {previewKml ? (
           <p className="text-sm text-muted-foreground">
-            Seu carro fez {kmPerLiter(previewKml.kmPerLiter)} nesse trecho.
+            {words.Your} fez {kmPerLiter(previewKml.kmPerLiter)} nesse trecho.
           </p>
         ) : null}
         {error ? (

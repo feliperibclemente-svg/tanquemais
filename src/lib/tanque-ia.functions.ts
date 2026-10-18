@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { brandLabel, vehicleWords } from "@/constants/vehicles";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { computeFuelings, overview, savingsOpportunity } from "@/services/analytics";
 import { buildInsights } from "@/services/insights";
@@ -74,6 +75,7 @@ export const phraseInsight = createServerFn({ method: "POST" })
 
     const rows = computeFuelings(
       ((fuelings ?? []) as Fueling[]).filter((f) => f.vehicle_id === vehicle.id),
+      vehicles ?? [],
     );
     const stats = overview(rows);
 
@@ -106,14 +108,14 @@ export const phraseInsight = createServerFn({ method: "POST" })
     const facts = insights.slice(0, 3).map((i) => `${i.title}: ${i.body}`);
     const prompt = [
       "Você é o Teo, assistente (TanqueIA) de custos de combustível do app brasileiro Tanque+.",
-      "Fale em primeira pessoa, de forma próxima e simples, como um amigo que entende de carro.",
+      "Fale em primeira pessoa, de forma próxima e simples, como um amigo que entende de carro e de moto.",
       "Escreva UM parágrafo curto (máximo 2 frases, até 220 caracteres) em português do Brasil.",
       "REGRA ABSOLUTA: use apenas os números listados abaixo, exatamente como estão escritos.",
       "Valores gastos são GASTOS: nunca os chame de economia, desconto ou ganho.",
       "Não faça previsões, promessas ou recomendações de compra. Descreva só o que os dados mostram.",
       "Se citar a média de preços, diga que a fonte é a ANP. Sem opinião sobre governo, Petrobras ou postos.",
       "Tom: direto, prático e encorajador. Sem emojis. Sem saudação.",
-      `Veículo: ${vehicle.brand} ${vehicle.model}`,
+      `Veículo: ${brandLabel(vehicle.brand)} ${vehicle.model} (${vehicleWords(vehicle.brand).noun})`,
       "Dados:",
       ...facts.map((f) => `- ${f}`),
     ].join("\n");

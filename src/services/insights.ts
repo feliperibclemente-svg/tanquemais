@@ -56,7 +56,7 @@ export function buildInsights(
       title: "Vamos começar",
       body:
         o.count === 0
-          ? "Com dois tanques cheios, eu calculo o consumo real do seu carro. Com alguns registros, aviso quando o litro sair mais caro do que você costuma pagar."
+          ? "Com dois tanques cheios, eu calculo seu consumo real. Com alguns registros, aviso quando o litro sair mais caro do que você costuma pagar."
           : "Seu primeiro registro já está aqui. Com mais alguns, aviso quando o litro sair mais caro do que você costuma pagar e acompanho seus gastos mês a mês.",
       action: { label: "Registrar abastecimento", to: "/abastecer" },
     });

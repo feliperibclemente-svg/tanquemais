@@ -17,7 +17,7 @@ import {
   TextField,
 } from "@/components/ds";
 import { FUEL_TYPES, GENDER_OPTIONS } from "@/constants/app";
-import { canonicalVehicle } from "@/constants/vehicles";
+import { canonicalVehicle, vehicleWords, fuelsFor } from "@/constants/vehicles";
 import { useCreateVehicle, useProfile, useUpdateProfile, useVehicles } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
 import { deleteMyAccount } from "@/lib/account.functions";
@@ -301,8 +301,8 @@ function VehicleStep() {
           <p className="text-muted-foreground">
             Sempre que puder,{" "}
             <span className="font-semibold text-foreground">complete o tanque</span> e informe o km
-            do painel. Com dois tanques cheios seguidos, mostramos quantos km/L seu carro faz de
-            verdade.
+            do painel. Com dois tanques cheios seguidos, mostramos quantos km/L{" "}
+            {vehicleWords(vehicle.brand).your} faz de verdade.
           </p>
         </AppCard>
 
@@ -342,7 +342,10 @@ function VehicleStep() {
             label="Combustível"
             value={fuel}
             onChange={setFuel}
-            options={FUEL_TYPES.map((f) => ({ value: f.id, label: f.short }))}
+            options={fuelsFor(vehicle.brand, FUEL_TYPES).map((f) => ({
+              value: f.id,
+              label: f.short,
+            }))}
           />
         </div>
 
@@ -352,7 +355,7 @@ function VehicleStep() {
           onChange={setOdometer}
           inputMode="numeric"
           suffix="km"
-          hint="O número do odômetro, no painel do carro"
+          hint={`O número do odômetro, no painel ${vehicleWords(vehicle.brand).ofThe}`}
         />
 
         {error ? (

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { vehicleName as displayVehicleName } from "@/constants/vehicles";
 import { useMemo, useState } from "react";
 import { AlertTriangle, Download, Pencil, Trash2 } from "lucide-react";
 import {
@@ -64,12 +65,12 @@ function HistoricoPage() {
   const [vehicleFilter, setVehicleFilter] = useState<string>("all");
   const vehicleName = (id: string) => {
     const v = vehicleList.find((x) => x.id === id);
-    return v ? v.nickname || `${v.brand} ${v.model}` : "";
+    return v ? displayVehicleName(v) : "";
   };
 
   const allRows = useMemo(
-    () => computeFuelings((fuelings.data ?? []) as Fueling[]),
-    [fuelings.data],
+    () => computeFuelings((fuelings.data ?? []) as Fueling[], vehicleList),
+    [fuelings.data, vehicleList],
   );
   const verdicts = useMemo(() => historyVerdicts(allRows), [allRows]);
   const [period, setPeriod] = useState<PeriodId>("all");
@@ -147,7 +148,7 @@ function HistoricoPage() {
                 { value: "all", label: "Todos" },
                 ...vehicleList.map((v) => ({
                   value: v.id,
-                  label: v.nickname || `${v.brand} ${v.model}`,
+                  label: displayVehicleName(v),
                 })),
               ]}
             />

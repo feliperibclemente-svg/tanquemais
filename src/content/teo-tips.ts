@@ -1,4 +1,4 @@
-import { VEHICLE_CATALOG } from "@/constants/vehicles";
+import { brandLabel, vehicleKind } from "@/constants/vehicles";
 
 /**
  * Conteúdo editorial do Teo para quando ainda não há números da pessoa para comentar.
@@ -95,6 +95,28 @@ export const BRAND_FACTS: Record<string, readonly string[]> = {
     "A Chery é uma montadora chinesa fundada em 1997.",
     "A Caoa Chery fabrica carros no Brasil, em Anápolis (GO).",
   ],
+  "Suzuki Motos": [
+    "A Suzuki começou em 1909, no Japão, fabricando teares. As motos vieram depois, nos anos 1950.",
+  ],
+  Kawasaki: [
+    "A Kawasaki não faz só motos: o mesmo grupo fabrica trens-bala, navios e peças de avião.",
+  ],
+  "Royal Enfield": [
+    "A Royal Enfield nasceu na Inglaterra e hoje é indiana. O modelo Bullet é fabricado desde 1932.",
+  ],
+  "BMW Motorrad": ["A primeira moto da BMW, a R 32, foi lançada em 1923."],
+  Triumph: ["A Triumph é inglesa, de Coventry, e fez sua primeira moto em 1902."],
+  "Harley-Davidson": [
+    "A Harley-Davidson foi fundada em 1903, em Milwaukee, nos Estados Unidos, por William Harley e os irmãos Davidson.",
+  ],
+  Dafra: ["A Dafra é uma marca brasileira de motos, com fábrica em Manaus (AM)."],
+  Haojue: [
+    "A Haojue é uma fabricante chinesa de motos. As vendidas no Brasil são montadas em Manaus (AM).",
+  ],
+  Shineray: ["A Shineray é uma marca chinesa com fábrica no Brasil, em Pernambuco."],
+  Mottu: [
+    "A Mottu é uma empresa brasileira que aluga motos para quem trabalha com entregas e tem o próprio modelo, a Mottu Sport.",
+  ],
   RAM: [
     "A RAM nasceu como a linha de picapes da Dodge e virou uma marca separada em 2010.",
     "A RAM Rampage é fabricada no Brasil, em Goiana (PE).",
@@ -105,7 +127,7 @@ type TipFor = "carro" | "moto" | "todos";
 
 export const DRIVING_TIPS: readonly { text: string; for: TipFor }[] = [
   {
-    for: "todos",
+    for: "carro",
     text: "Calibre os pneus a cada 15 dias, com eles frios, na pressão do manual ou da etiqueta do veículo. Pneu murcho aumenta o consumo e o desgaste.",
   },
   {
@@ -121,8 +143,8 @@ export const DRIVING_TIPS: readonly { text: string; for: TipFor }[] = [
     text: "Peso extra também gasta. Vale tirar do porta-malas o que não precisa estar ali.",
   },
   {
-    for: "carro",
-    text: "No carro manual, troque de marcha sem esticar demais o giro. Motor em rotação alta gasta mais.",
+    for: "todos",
+    text: "Com câmbio manual, troque de marcha sem esticar demais o giro. Motor em rotação alta gasta mais.",
   },
   {
     for: "todos",
@@ -137,8 +159,16 @@ export const DRIVING_TIPS: readonly { text: string; for: TipFor }[] = [
     text: "Juntar vários compromissos num trajeto só costuma gastar menos do que várias saídas curtas com o motor frio.",
   },
   {
-    for: "carro",
-    text: "Etanol costuma compensar quando custa até cerca de 70% da gasolina. No Painel, eu faço essa conta com os preços do dia.",
+    for: "todos",
+    text: "Se o seu motor é flex, o etanol costuma compensar quando custa até cerca de 70% da gasolina. No Painel, eu faço essa conta com os preços do dia.",
+  },
+  {
+    for: "moto",
+    text: "Não precisa deixar a moto esquentando parada por muito tempo: alguns segundos bastam. Depois, saia rodando devagar até o motor aquecer.",
+  },
+  {
+    for: "moto",
+    text: "Calibre os pneus da moto a cada 15 dias, frios, na pressão do manual (ela muda com garupa ou carga). Pneu murcho gasta mais e tira estabilidade.",
   },
   {
     for: "moto",
@@ -147,7 +177,7 @@ export const DRIVING_TIPS: readonly { text: string; for: TipFor }[] = [
 ];
 
 function kindOf(brand: string | null | undefined): "carro" | "moto" {
-  return VEHICLE_CATALOG.find((b) => b.brand === brand)?.kind ?? "carro";
+  return vehicleKind(brand) ?? "carro";
 }
 
 export function tipsFor(brand: string | null | undefined): string[] {
@@ -176,7 +206,7 @@ export function teoNoteOfTheDay(brand: string | null | undefined, date = new Dat
   if (facts.length && index % 2 === 0) {
     return {
       kind: "curiosidade",
-      title: `Curiosidade sobre a ${brand}`,
+      title: `Curiosidade sobre a ${brandLabel(brand)}`,
       text: facts[Math.floor(index / 2) % facts.length],
     };
   }

@@ -10,11 +10,12 @@ describe("conteúdo do Teo", () => {
       expect(text, text).not.toMatch(/econom|garant|melhor marca|pior/i);
     }
   });
-  it("moto não recebe dica de carro (porta-malas, câmbio, etanol)", () => {
+  it("moto não recebe dica só de carro; carro não recebe dica só de moto", () => {
     const moto = tipsFor("Yamaha").join(" ");
-    expect(moto).not.toMatch(/porta-malas|carro manual|70%/);
+    expect(moto).not.toMatch(/porta-malas/);
     expect(moto).toMatch(/Corrente/);
-    expect(tipsFor("Fiat").join(" ")).not.toMatch(/Corrente/);
+    expect(moto).toMatch(/flex/); // motos flex também comparam etanol x gasolina
+    expect(tipsFor("Fiat").join(" ")).not.toMatch(/Corrente|\bmoto\b/i);
   });
   it("alterna curiosidade e dica por dia e é estável no mesmo dia", () => {
     const d1 = teoNoteOfTheDay("Fiat", new Date(2026, 9, 18, 9));
