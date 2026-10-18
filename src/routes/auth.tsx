@@ -11,6 +11,7 @@ import { track } from "@/lib/analytics";
 import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
 import { BrandMark } from "@/components/app/Logo";
 import { authErrorMessage } from "@/lib/auth-errors";
+import { isReturning } from "@/lib/returning";
 import { createNonce, googleClientId, loadGoogleIdentity } from "@/lib/google-identity";
 
 const searchSchema = z.object({
@@ -50,6 +51,9 @@ function AuthPage() {
   const destination = safePath(search.redirect);
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  // Definido após montar (o servidor não sabe se este aparelho já entrou antes).
+  const [returning, setReturning] = useState(false);
+  useEffect(() => setReturning(isReturning()), []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState<null | "email" | "google" | "apple">(null);
@@ -158,7 +162,11 @@ function AuthPage() {
       <div className="mb-8 text-center">
         <BrandMark className="mx-auto h-14" />
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
-          {mode === "signin" ? "Bem-vindo de volta" : "Criar sua conta"}
+          {mode === "signup"
+            ? "Criar sua conta"
+            : returning
+              ? "Que bom te ver de novo"
+              : "Entre ou crie sua conta"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Seus abastecimentos, consumo e economia em um só lugar.
