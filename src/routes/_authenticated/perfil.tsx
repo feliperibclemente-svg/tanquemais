@@ -305,9 +305,8 @@ function PerfilPage() {
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Em breve</p>
           <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-            <li>Controle de manutenção e troca de óleo</li>
             <li>IPVA, seguro e lembretes de documentos</li>
-            <li>Comunidade e ranking de economia</li>
+            <li>Lembretes no celular para registrar o abastecimento</li>
           </ul>
         </AppCard>
 

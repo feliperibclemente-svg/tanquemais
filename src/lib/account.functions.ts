@@ -3,6 +3,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /** Tabelas com dados do usuário e a coluna que aponta para ele (ordem respeita FKs). */
 const USER_TABLES: Array<[string, string]> = [
+  ["community_reports", "reporter_id"],
+  ["community_posts", "user_id"],
   ["events", "user_id"],
   ["welcome_emails", "user_id"],
   ["app_errors", "user_id"],

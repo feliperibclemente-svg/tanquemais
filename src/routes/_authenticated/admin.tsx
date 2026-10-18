@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { RefreshCw } from "lucide-react";
 import {
@@ -13,6 +13,8 @@ import {
   StatTile,
 } from "@/components/ds";
 import { anpStatus, getBetaMetrics, recentErrors, runAnpImport } from "@/lib/admin.functions";
+import { listModeration, moderatePost } from "@/lib/community.functions";
+import { REASON_LABEL, TOPIC_LABEL } from "@/content/community";
 import { weekLabel as anpWeekLabel } from "@/services/anp";
 import { fullDate, num } from "@/lib/format";
 import type { BetaMetrics } from "@/services/beta-metrics";
@@ -127,6 +129,8 @@ function AdminPage() {
       </div>
 
       <section className="mt-5 space-y-4">
+        <ModerationCard />
+
         <ErrorsCard />
 
         <AnpCard />
@@ -346,6 +350,77 @@ function ErrorsCard() {
                 </p>
               </li>
             ))}
+          </ul>
+        </>
+      )}
+    </AppCard>
+  );
+}
+
+/** Comunidade: dicas aguardando aprovação e as que saíram do mural por denúncia. */
+function ModerationCard() {
+  const client = useQueryClient();
+  const fetchQueue = useServerFn(listModeration);
+  const moderate = useServerFn(moderatePost);
+  const queue = useQuery({ queryKey: ["moderation"], queryFn: () => fetchQueue(), retry: false });
+  const act = useMutation({
+    mutationFn: (input: { id: string; action: "aprovar" | "excluir" }) => moderate({ data: input }),
+    onSuccess: () => void client.invalidateQueries({ queryKey: ["moderation"] }),
+  });
+  const items = queue.data?.items ?? [];
+
+  return (
+    <AppCard>
+      <p className="text-sm font-semibold text-foreground">Comunidade: revisão</p>
+      {queue.isLoading ? (
+        <p className="mt-1 text-xs text-muted-foreground">Carregando…</p>
+      ) : queue.isError ? (
+        <p className="mt-1 text-xs text-destructive">{(queue.error as Error).message}</p>
+      ) : (
+        <>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {items.length
+              ? `${items.length} para revisar · ${queue.data?.approved ?? 0} publicadas no mural.`
+              : `Nada para revisar. ${queue.data?.approved ?? 0} publicadas no mural.`}
+          </p>
+          <ul className="mt-3 space-y-3">
+            {items.map((item) => {
+              const reports = Object.entries(item.reports);
+              return (
+                <li key={item.id} className="rounded-2xl border border-border p-3">
+                  <p className="text-xs text-muted-foreground">
+                    {TOPIC_LABEL[item.topic] ?? item.topic} · {fullDate(item.created_at)} ·{" "}
+                    {item.status === "pendente" ? "nova" : "denunciada"}
+                  </p>
+                  <p className="mt-1 whitespace-pre-line break-words text-sm text-foreground">
+                    {item.content}
+                  </p>
+                  {reports.length ? (
+                    <p className="mt-1 text-xs font-medium text-destructive">
+                      Denúncias:{" "}
+                      {reports.map(([r, n]) => `${REASON_LABEL[r] ?? r} (${n})`).join(", ")}
+                    </p>
+                  ) : null}
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <Action
+                      size="md"
+                      variant="danger"
+                      disabled={act.isPending}
+                      onClick={() => act.mutate({ id: item.id, action: "excluir" })}
+                    >
+                      Excluir
+                    </Action>
+                    <Action
+                      size="md"
+                      disabled={act.isPending}
+                      onClick={() => act.mutate({ id: item.id, action: "aprovar" })}
+                    >
+                      Aprovar
+                    </Action>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </>
       )}

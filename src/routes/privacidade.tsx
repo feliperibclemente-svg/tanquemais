@@ -55,6 +55,11 @@ function Privacidade() {
           <li>Veículos cadastrados;</li>
           <li>Abastecimentos (valor, preço, litros, quilometragem, data);</li>
           <li>
+            Dicas que você enviar à comunidade (tema e texto) e denúncias que fizer (motivo). As
+            dicas aparecem para outros usuários sem nome nem qualquer dado seu; ninguém vê quem
+            publicou ou quem denunciou;
+          </li>
+          <li>
             Respostas do check-up do veículo e km da troca de óleo, se você fizer o check-up (para
             mostrar o resultado e lembrar da próxima troca);
           </li>
@@ -99,6 +104,11 @@ function Privacidade() {
           <li>
             Google Gemini: recebe os números já calculados dos seus abastecimentos e a marca e o
             modelo do veículo (sem e-mail ou nome) para escrever as frases da TanqueIA.
+          </li>
+          <li>
+            Google Gemini também recebe o texto das dicas enviadas à comunidade (sem nome, e-mail ou
+            qualquer dado da conta), só para barrar automaticamente conteúdo ofensivo antes da
+            revisão humana;
           </li>
         </ul>
       </section>

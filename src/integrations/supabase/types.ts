@@ -1134,6 +1134,60 @@ export type Database = {
           },
         ];
       };
+      community_posts: {
+        Row: {
+          content: string;
+          created_at: string;
+          id: string;
+          reviewed_at: string | null;
+          status: string;
+          topic: string;
+          user_id: string;
+        };
+        Insert: {
+          content: string;
+          created_at?: string;
+          id?: string;
+          reviewed_at?: string | null;
+          status?: string;
+          topic: string;
+          user_id: string;
+        };
+        Update: {
+          content?: string;
+          created_at?: string;
+          id?: string;
+          reviewed_at?: string | null;
+          status?: string;
+          topic?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      community_reports: {
+        Row: {
+          created_at: string;
+          id: string;
+          post_id: string;
+          reason: string;
+          reporter_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          post_id: string;
+          reason: string;
+          reporter_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          post_id?: string;
+          reason?: string;
+          reporter_id?: string;
+        };
+        Relationships: [];
+      };
       vehicle_checkups: {
         Row: {
           answers: Json;
@@ -1258,6 +1312,20 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      community_delete: { Args: { _post_id: string }; Returns: undefined };
+      community_feed: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          content: string;
+          created_at: string;
+          id: string;
+          mine: boolean;
+          status: string;
+          topic: string;
+        }[];
+      };
+      community_publish: { Args: { _content: string; _topic: string }; Returns: string };
+      community_report: { Args: { _post_id: string; _reason: string }; Returns: undefined };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];

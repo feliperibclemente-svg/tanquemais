@@ -69,6 +69,29 @@ function Termos() {
         </p>
       </section>
       <section>
+        <h2>Comunidade</h2>
+        <p>
+          A comunidade é um mural de dicas sobre consumo, economia, preços e manutenção, visível só
+          para quem tem conta. As publicações aparecem sem nome. Antes de aparecer, toda dica passa
+          por uma checagem automática e por uma revisão da equipe do Tanque+.
+        </p>
+        <p>Não são aceitos:</p>
+        <ul>
+          <li>palavrões, ofensas, ameaças, violência ou discriminação;</li>
+          <li>conteúdo sexual ou político;</li>
+          <li>propaganda, vendas, contatos ou links;</li>
+          <li>dados pessoais, seus ou de outras pessoas (nome, telefone, placa, endereço);</li>
+          <li>acusações contra postos, marcas ou empresas citados pelo nome;</li>
+          <li>orientações que possam causar acidente, dano ou fraude.</li>
+        </ul>
+        <p>
+          Quem publica é responsável pelo que escreve. O Tanque+ pode recusar ou remover qualquer
+          publicação, a qualquer momento, sem aviso. Qualquer pessoa pode denunciar uma dica: ela
+          sai do mural até nova revisão. Você pode apagar as suas quando quiser, e elas são apagadas
+          junto com a sua conta.
+        </p>
+      </section>
+      <section>
         <h2>Seus dados</h2>
         <p>
           O tratamento dos seus dados segue a nossa{" "}

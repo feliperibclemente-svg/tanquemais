@@ -23,6 +23,7 @@ import { Route as AuthenticatedBetaRouteImport } from './routes/_authenticated/b
 import { Route as AuthenticatedBoasVindasRouteImport } from './routes/_authenticated/boas-vindas'
 import { Route as AuthenticatedCheckupRouteImport } from './routes/_authenticated/checkup'
 import { Route as AuthenticatedComoFuncionaRouteImport } from './routes/_authenticated/como-funciona'
+import { Route as AuthenticatedComunidadeRouteImport } from './routes/_authenticated/comunidade'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -101,6 +102,11 @@ const AuthenticatedComoFuncionaRoute =
     path: '/como-funciona',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedComunidadeRoute = AuthenticatedComunidadeRouteImport.update({
+  id: '/comunidade',
+  path: '/comunidade',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/boas-vindas': typeof AuthenticatedBoasVindasRoute
   '/checkup': typeof AuthenticatedCheckupRoute
   '/como-funciona': typeof AuthenticatedComoFuncionaRoute
+  '/comunidade': typeof AuthenticatedComunidadeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/boas-vindas': typeof AuthenticatedBoasVindasRoute
   '/checkup': typeof AuthenticatedCheckupRoute
   '/como-funciona': typeof AuthenticatedComoFuncionaRoute
+  '/comunidade': typeof AuthenticatedComunidadeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
   '/historico': typeof AuthenticatedHistoricoRoute
@@ -197,6 +205,7 @@ export interface FileRoutesById {
   '/_authenticated/boas-vindas': typeof AuthenticatedBoasVindasRoute
   '/_authenticated/checkup': typeof AuthenticatedCheckupRoute
   '/_authenticated/como-funciona': typeof AuthenticatedComoFuncionaRoute
+  '/_authenticated/comunidade': typeof AuthenticatedComunidadeRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/boas-vindas'
     | '/checkup'
     | '/como-funciona'
+    | '/comunidade'
     | '/dashboard'
     | '/feedback'
     | '/historico'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/boas-vindas'
     | '/checkup'
     | '/como-funciona'
+    | '/comunidade'
     | '/dashboard'
     | '/feedback'
     | '/historico'
@@ -266,6 +277,7 @@ export interface FileRouteTypes {
     | '/_authenticated/boas-vindas'
     | '/_authenticated/checkup'
     | '/_authenticated/como-funciona'
+    | '/_authenticated/comunidade'
     | '/_authenticated/dashboard'
     | '/_authenticated/feedback'
     | '/_authenticated/historico'
@@ -386,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedComoFuncionaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/comunidade': {
+      id: '/_authenticated/comunidade'
+      path: '/comunidade'
+      fullPath: '/comunidade'
+      preLoaderRoute: typeof AuthenticatedComunidadeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -446,6 +465,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBoasVindasRoute: typeof AuthenticatedBoasVindasRoute
   AuthenticatedCheckupRoute: typeof AuthenticatedCheckupRoute
   AuthenticatedComoFuncionaRoute: typeof AuthenticatedComoFuncionaRoute
+  AuthenticatedComunidadeRoute: typeof AuthenticatedComunidadeRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
@@ -462,6 +482,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBoasVindasRoute: AuthenticatedBoasVindasRoute,
   AuthenticatedCheckupRoute: AuthenticatedCheckupRoute,
   AuthenticatedComoFuncionaRoute: AuthenticatedComoFuncionaRoute,
+  AuthenticatedComunidadeRoute: AuthenticatedComunidadeRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
