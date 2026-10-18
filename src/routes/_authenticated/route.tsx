@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { currentSession } from "@/lib/session";
 import { useFunnelTracking } from "@/hooks/use-funnel";
+import { BootSplash } from "@/components/app/BootSplash";
 
 function oauthErrorFromUrl(): string | undefined {
   if (typeof window === "undefined") return undefined;
@@ -32,4 +33,7 @@ export const Route = createFileRoute("/_authenticated")({
     return { user: session.user };
   },
   component: AuthenticatedLayout,
+  // Sem SSR, o servidor entrega esta tela de abertura em vez de uma página em branco.
+  pendingComponent: BootSplash,
+  pendingMs: 0,
 });

@@ -236,3 +236,13 @@
     animation: none !important;
   }
 }
+
+/* Barra de carregamento da tela de abertura (BootSplash). */
+@keyframes boot {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}

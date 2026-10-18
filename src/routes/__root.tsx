@@ -85,6 +85,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   );
 }
 
+const FONT_CSS =
+  "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap";
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -117,16 +120,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      // Fonte sem bloquear a primeira pintura: carrega em paralelo e entra quando chegar
+      // (até lá, a fonte do sistema). Em internet lenta, isso tira segundos de tela branca.
       {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        rel: "preload",
+        as: "style",
+        href: FONT_CSS,
       },
+
       { rel: "icon", href: "/favicon.ico", sizes: "any" },
       { rel: "icon", href: "/favicon-32.png", type: "image/png", sizes: "32x32" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
+      {
+        children: `try{var l=document.createElement('link');l.rel='stylesheet';l.href='${FONT_CSS}';document.head.appendChild(l)}catch(e){}`,
+      },
       {
         children:
           "try{if(localStorage.getItem('tanque:theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}",
