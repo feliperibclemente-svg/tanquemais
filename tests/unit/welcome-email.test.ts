@@ -16,7 +16,8 @@ describe("e-mail de boas-vindas", () => {
   });
   it("nome não injeta HTML nem quebra o assunto", () => {
     const e = welcomeEmail('<img src=x onerror="alert(1)">');
-    expect(e.html).not.toContain("<img");
+    expect(e.html).not.toContain("<img src=x");
+    expect(e.html).toContain("Oi, &lt;img!");
     expect(welcomeEmail("Ana\r\nBcc: x@y.com").subject).toBe("Boas-vindas ao Tanque+, Ana!");
   });
 });

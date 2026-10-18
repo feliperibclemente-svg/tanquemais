@@ -56,7 +56,7 @@ export function welcomeEmail(firstName: string | null | undefined) {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f5;padding:32px 16px;">
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:16px;padding:32px 28px;">
-        <tr><td style="font-size:22px;font-weight:bold;color:#178559;padding-bottom:24px;">Tanque+</td></tr>
+        <tr><td style="padding-bottom:24px;"><img src="https://www.tanquemais.com.br/email/logo.png" width="160" height="43" alt="Tanque+" style="display:block;border:0;width:160px;height:auto;font-size:22px;font-weight:bold;color:#178559;"></td></tr>
         <tr><td style="font-size:20px;font-weight:bold;padding-bottom:12px;">${hello}</td></tr>
         <tr><td style="font-size:15px;line-height:1.6;color:#3d4458;padding-bottom:20px;">Aqui é o Teo, do Tanque+. Que bom ter você no beta. Para eu te mostrar seus números de verdade, três hábitos fazem toda a diferença:</td></tr>${steps}
         <tr><td style="padding:8px 0 24px;">
