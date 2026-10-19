@@ -100,7 +100,7 @@ function Privacidade() {
           <li>
             Resend: envio dos e-mails de confirmação de cadastro, troca de senha e boas-vindas;
           </li>
-          <li>Google e Apple: apenas se você escolher entrar com essas contas;</li>
+          <li>Google: apenas se você escolher entrar com a conta Google;</li>
           <li>
             Google Gemini: recebe os números já calculados dos seus abastecimentos e a marca e o
             modelo do veículo (sem e-mail ou nome) para escrever as frases da TanqueIA.

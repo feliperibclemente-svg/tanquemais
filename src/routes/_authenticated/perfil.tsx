@@ -118,11 +118,13 @@ function PerfilPage() {
     if (!user) return;
     setBusy("export");
     try {
-      const [p, v, f, fb] = await Promise.all([
+      const [p, v, f, fb, ck, cm] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
         supabase.from("vehicles").select("*").eq("user_id", user.id),
         supabase.from("fuelings").select("*").eq("user_id", user.id).order("filled_at"),
         supabase.from("feedback").select("*").eq("user_id", user.id),
+        supabase.from("vehicle_checkups").select("*").order("created_at"),
+        supabase.rpc("community_feed"),
       ]);
       const error = p.error ?? v.error ?? f.error ?? fb.error;
       if (error) throw error;
@@ -136,6 +138,13 @@ function PerfilPage() {
               vehicles: v.data,
               fuelings: f.data,
               feedback: fb.data,
+              // Tabelas mais novas: se ainda não existirem no banco, saem vazias.
+              vehicle_checkups: ck.error ? [] : ck.data,
+              community_posts: cm.error
+                ? []
+                : (cm.data ?? [])
+                    .filter((post) => post.mine)
+                    .map(({ mine: _mine, ...post }) => post),
             },
             null,
             2,
