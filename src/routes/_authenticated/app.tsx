@@ -18,6 +18,7 @@ import {
   VerdictPill,
 } from "@/components/ds";
 import { useHomeData } from "@/hooks/use-tanque";
+import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { FUEL_LABEL } from "@/constants/app";
 import { brl, kmPerLiter, num, relativeDate } from "@/lib/format";
 import { track } from "@/lib/analytics";
@@ -109,137 +110,141 @@ function HomePage() {
 
   return (
     <AppShell fab={false}>
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="space-y-4"
-      >
-        <header>
-          <p className="text-sm text-muted-foreground">
-            {greeting()}
-            {firstName ? `, ${firstName}` : ""}
-          </p>
-          <Link
-            to="/veiculo"
-            className="mt-1 inline-flex min-h-11 items-center gap-1 text-foreground"
-            aria-label="Ver e editar veículos"
-          >
-            <h1 className="text-2xl font-semibold tracking-tight">{vehicleName(primaryVehicle)}</h1>
-            <ChevronRight className="mt-1 h-5 w-5 text-muted-foreground" />
-          </Link>
-        </header>
-
-        {/* Ação principal — o elemento de maior destaque da tela */}
-        <ActionLink
-          to="/abastecer"
-          size="lg"
-          className="h-16 rounded-3xl text-lg shadow-[0_18px_40px_-18px_var(--primary)]"
+      <PullToRefresh>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-4"
         >
-          <Fuel className="h-6 w-6" strokeWidth={2.4} />
-          Registrar abastecimento
-        </ActionLink>
-
-        {/* Atalhos: tudo o que o app faz, a um toque (como iFood e Uber) */}
-        <Shortcuts />
-
-        {/* Cartão do momento: um assunto por vez, o mais relevante agora */}
-        <MomentCard
-          vehicle={primaryVehicle}
-          odometers={rows.map((r) => Number(r.odometer) || 0)}
-          reminder={reminder}
-          lastFuelingId={last?.id ?? null}
-          fuelTypeId={last?.fuel_type_id ?? null}
-          references={references}
-          place={place}
-        />
-
-        {/* Último abastecimento com a conclusão em destaque */}
-        {last ? (
-          <>
-            <Link to="/historico" className="block">
-              <AppCard className="space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Último abastecimento
-                    </p>
-                    <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                      {brl(Number(last.total_cost))}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {relativeDate(last.filled_at)} · {brl(Number(last.price_per_liter))}/L ·{" "}
-                      {num(Number(last.liters), 1)} L
-                    </p>
-                  </div>
-                  <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
-                </div>
-                {verdict ? <VerdictPill verdict={verdict} /> : null}
-                {lastReference ? (
-                  <ReferenceLine reference={lastReference} paid={Number(last.price_per_liter)} />
-                ) : null}
-              </AppCard>
-            </Link>
-            {!hasPlace ? (
-              <Link
-                to="/perfil"
-                className="-mt-1 block px-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
-              >
-                Informe sua cidade no Perfil para comparar com a média de preços da ANP.
-              </Link>
-            ) : null}
-          </>
-        ) : (
-          <AppCard className="text-center">
-            <p className="font-semibold text-foreground">Comece pelo primeiro abastecimento</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Leva uns 20 segundos. Com ele, você já vê o gasto do mês e quanto paga por litro.
+          <header>
+            <p className="text-sm text-muted-foreground">
+              {greeting()}
+              {firstName ? `, ${firstName}` : ""}
             </p>
-          </AppCard>
-        )}
-
-        {/* Números do veículo principal. Sem registros, nada a mostrar ainda. */}
-        {stats.count > 0 ? (
-          <>
-            <div
-              className={`grid grid-cols-2 gap-3 ${consumption.state === "ready" ? "min-[380px]:grid-cols-3" : ""}`}
+            <Link
+              to="/veiculo"
+              className="mt-1 inline-flex min-h-11 items-center gap-1 text-foreground"
+              aria-label="Ver e editar veículos"
             >
-              <Mini
-                label="Gasto no mês"
-                value={brl(stats.monthSpend)}
-                hint={
-                  stats.monthSpend > 0
-                    ? `desde o dia 1º de ${monthName()}`
-                    : `nenhum abastecimento em ${monthName()}`
-                }
-              />
-              <Mini
-                label="Preço médio"
-                value={stats.avgPricePerLiter ? brl(stats.avgPricePerLiter) : "—"}
-                hint={`por litro · ${fuelName}`}
-              />
-              {consumption.state === "ready" ? (
-                <Mini
-                  className="col-span-2 min-[380px]:col-span-1"
-                  label="Consumo"
-                  value={kmPerLiter(stats.avgKmPerLiter)}
-                  hint={`medido · ${fuelName}`}
-                />
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {vehicleName(primaryVehicle)}
+              </h1>
+              <ChevronRight className="mt-1 h-5 w-5 text-muted-foreground" />
+            </Link>
+          </header>
+
+          {/* Ação principal — o elemento de maior destaque da tela */}
+          <ActionLink
+            to="/abastecer"
+            size="lg"
+            className="h-16 rounded-3xl text-lg shadow-[0_18px_40px_-18px_var(--primary)]"
+          >
+            <Fuel className="h-6 w-6" strokeWidth={2.4} />
+            Registrar abastecimento
+          </ActionLink>
+
+          {/* Atalhos: tudo o que o app faz, a um toque (como iFood e Uber) */}
+          <Shortcuts />
+
+          {/* Cartão do momento: um assunto por vez, o mais relevante agora */}
+          <MomentCard
+            vehicle={primaryVehicle}
+            odometers={rows.map((r) => Number(r.odometer) || 0)}
+            reminder={reminder}
+            lastFuelingId={last?.id ?? null}
+            fuelTypeId={last?.fuel_type_id ?? null}
+            references={references}
+            place={place}
+          />
+
+          {/* Último abastecimento com a conclusão em destaque */}
+          {last ? (
+            <>
+              <Link to="/historico" className="block">
+                <AppCard className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Último abastecimento
+                      </p>
+                      <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+                        {brl(Number(last.total_cost))}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {relativeDate(last.filled_at)} · {brl(Number(last.price_per_liter))}/L ·{" "}
+                        {num(Number(last.liters), 1)} L
+                      </p>
+                    </div>
+                    <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
+                  </div>
+                  {verdict ? <VerdictPill verdict={verdict} /> : null}
+                  {lastReference ? (
+                    <ReferenceLine reference={lastReference} paid={Number(last.price_per_liter)} />
+                  ) : null}
+                </AppCard>
+              </Link>
+              {!hasPlace ? (
+                <Link
+                  to="/perfil"
+                  className="-mt-1 block px-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
+                >
+                  Informe sua cidade no Perfil para comparar com a média de preços da ANP.
+                </Link>
               ) : null}
-            </div>
-            {consumption.state !== "ready" ? <ConsumptionPending progress={consumption} /> : null}
-          </>
-        ) : null}
+            </>
+          ) : (
+            <AppCard className="text-center">
+              <p className="font-semibold text-foreground">Comece pelo primeiro abastecimento</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Leva uns 20 segundos. Com ele, você já vê o gasto do mês e quanto paga por litro.
+              </p>
+            </AppCard>
+          )}
 
-        {/* TanqueIA em uma frase — detalhes ficam no painel */}
-        <TanqueIALine
-          insights={insights}
-          brand={primaryVehicle.brand}
-          dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
-        />
+          {/* Números do veículo principal. Sem registros, nada a mostrar ainda. */}
+          {stats.count > 0 ? (
+            <>
+              <div
+                className={`grid grid-cols-2 gap-3 ${consumption.state === "ready" ? "min-[380px]:grid-cols-3" : ""}`}
+              >
+                <Mini
+                  label="Gasto no mês"
+                  value={brl(stats.monthSpend)}
+                  hint={
+                    stats.monthSpend > 0
+                      ? `desde o dia 1º de ${monthName()}`
+                      : `nenhum abastecimento em ${monthName()}`
+                  }
+                />
+                <Mini
+                  label="Preço médio"
+                  value={stats.avgPricePerLiter ? brl(stats.avgPricePerLiter) : "—"}
+                  hint={`por litro · ${fuelName}`}
+                />
+                {consumption.state === "ready" ? (
+                  <Mini
+                    className="col-span-2 min-[380px]:col-span-1"
+                    label="Consumo"
+                    value={kmPerLiter(stats.avgKmPerLiter)}
+                    hint={`medido · ${fuelName}`}
+                  />
+                ) : null}
+              </div>
+              {consumption.state !== "ready" ? <ConsumptionPending progress={consumption} /> : null}
+            </>
+          ) : null}
 
-        <InstallCard />
-      </motion.div>
+          {/* TanqueIA em uma frase — detalhes ficam no painel */}
+          <TanqueIALine
+            insights={insights}
+            brand={primaryVehicle.brand}
+            dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
+          />
+
+          <InstallCard />
+        </motion.div>
+      </PullToRefresh>
     </AppShell>
   );
 }

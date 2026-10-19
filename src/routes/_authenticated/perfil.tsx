@@ -39,6 +39,7 @@ import { track } from "@/lib/analytics";
 import { BR_UFS, PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL, GENDER_OPTIONS } from "@/constants/app";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { InstallCard } from "@/components/app/InstallCard";
+import { InviteButton } from "@/components/app/InviteButton";
 import { amIAdmin } from "@/lib/admin.functions";
 import { queuedFuelings } from "@/lib/offline-queue";
 import { photoToAvatarDataUrl } from "@/lib/image";
@@ -281,6 +282,16 @@ function PerfilPage() {
         </AppCard>
 
         <InstallCard persistent />
+
+        <AppCard>
+          <p className="text-sm font-semibold text-foreground">Convide amigos</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            O Tanque+ cresce quando alguém indica. Mande para quem abastece toda semana.
+          </p>
+          <div className="mt-3">
+            <InviteButton source="perfil" variant="primary" />
+          </div>
+        </AppCard>
 
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Versão beta</p>

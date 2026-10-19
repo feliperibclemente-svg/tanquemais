@@ -39,6 +39,8 @@ import {
 } from "@/services/analytics";
 import { vehicleWords, vehicleName, fuelsFor, vehicleKind } from "@/constants/vehicles";
 import { shareCard } from "@/lib/share-image";
+import { Confetti, haptic } from "@/components/app/Confetti";
+import { InviteButton } from "@/components/app/InviteButton";
 import { deriveAmounts, priceVerdict } from "@/services/verdict";
 import type { PriceVerdict } from "@/services/verdict";
 import {
@@ -275,6 +277,7 @@ function AbastecerPage() {
         },
       });
 
+      haptic(20);
       setSaved({
         liters: parsed.data.liters,
         total: parsed.data.total_cost,
@@ -342,6 +345,12 @@ function AbastecerPage() {
   }
 
   if (saved) {
+    // Conquista: primeiro registro, primeira medição ou preço abaixo do habitual/da cidade.
+    const celebrate =
+      !saved.queued &&
+      (!!saved.milestone ||
+        saved.verdict.tone === "good" ||
+        (!!saved.cityRef && saved.price < saved.cityRef.avgPrice - 0.005));
     return (
       <AppShell fab={false}>
         <div className="flex flex-col items-center py-4 text-center">
@@ -441,6 +450,19 @@ function AbastecerPage() {
             </AppCard>
           )}
         </div>
+
+        {celebrate ? (
+          <>
+            <Confetti />
+            <div className="mt-3">
+              <InviteButton
+                source="pos-abastecimento"
+                variant="ghost"
+                label="Contar para um amigo"
+              />
+            </div>
+          </>
+        ) : null}
 
         <div className="mt-6 space-y-3">
           <ActionLink to="/app">Voltar para o início</ActionLink>

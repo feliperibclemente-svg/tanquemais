@@ -11,6 +11,7 @@ import {
   ScreenSkeleton,
 } from "@/components/ds";
 import { RecapStories } from "@/components/app/RecapStories";
+import { InviteButton } from "@/components/app/InviteButton";
 import { markRecapSeen, recapSeen, useMonthlyRecap } from "@/hooks/use-recap";
 import { THEME_COLORS, shareCard } from "@/lib/share-image";
 import { track } from "@/lib/analytics";
@@ -138,6 +139,7 @@ function RecapSummary({ recap, onReplay }: { recap: MonthlyRecap; onReplay: () =
             <PlayCircle className="h-4 w-4" /> Rever em stories
           </Action>
         ) : null}
+        <InviteButton source="retrospectiva" variant="ghost" />
       </div>
     </AppShell>
   );
