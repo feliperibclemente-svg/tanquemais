@@ -16,9 +16,15 @@ import {
   TeoSays,
   TextField,
 } from "@/components/ds";
-import { FUEL_TYPES, GENDER_OPTIONS } from "@/constants/app";
+import { BR_UFS, FUEL_TYPES, GENDER_OPTIONS } from "@/constants/app";
 import { canonicalVehicle, vehicleWords, fuelsFor } from "@/constants/vehicles";
-import { useCreateVehicle, useProfile, useUpdateProfile, useVehicles } from "@/hooks/use-tanque";
+import {
+  useAnpCities,
+  useCreateVehicle,
+  useProfile,
+  useUpdateProfile,
+  useVehicles,
+} from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { sendWelcomeEmail } from "@/lib/welcome-email.functions";
@@ -93,6 +99,9 @@ function AboutYouStep({ profile }: { profile: Profile }) {
   const [last, setLast] = useState(profile.last_name ?? tidyName(prefill.last));
   const [birth, setBirth] = useState(formatBirthDate(profile.birth_date));
   const [gender, setGender] = useState(profile.gender ?? "");
+  const [uf, setUf] = useState(profile.state ?? "");
+  const [city, setCity] = useState(profile.city ?? "");
+  const cities = useAnpCities(uf || null);
   const [error, setError] = useState<string | null>(null);
   const [minor, setMinor] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -104,6 +113,7 @@ function AboutYouStep({ profile }: { profile: Profile }) {
     const lastName = tidyName(last);
     if (firstName.length < 2) return setError("Informe seu nome.");
     if (lastName.length < 2) return setError("Informe seu sobrenome.");
+    if (city.trim() && !uf) return setError("Escolha o estado da sua cidade.");
     const check = checkBirthDate(birth);
     if (!check.ok) {
       if (check.reason === "minor") {
@@ -125,8 +135,10 @@ function AboutYouStep({ profile }: { profile: Profile }) {
         birth_date: check.iso,
         age_range: ageRangeOf(check.age),
         gender: gender || null,
+        state: uf || null,
+        city: tidyName(city) || null,
       });
-      track("onboarding_identity_saved", { gender: !!gender });
+      track("onboarding_identity_saved", { gender: !!gender, city: !!city.trim() });
     } catch {
       /* o hook já mostra o erro */
     }
@@ -200,6 +212,31 @@ function AboutYouStep({ profile }: { profile: Profile }) {
           hint="Para confirmar que você tem 18 anos ou mais. Não aparece para ninguém."
           onChange={(event) => setBirth(maskDate(event.target.value))}
         />
+        <div className="grid grid-cols-[6rem_1fr] gap-3">
+          <SelectField
+            label="Estado"
+            value={uf}
+            onChange={(event) => setUf(event.target.value)}
+            options={[{ value: "", label: "UF" }, ...BR_UFS.map((u) => ({ value: u, label: u }))]}
+          />
+          <TextField
+            label="Cidade"
+            value={city}
+            list="anp-cities"
+            autoComplete="address-level2"
+            autoCapitalize="words"
+            onChange={(event) => setCity(event.target.value)}
+          />
+        </div>
+        <datalist id="anp-cities">
+          {(cities.data ?? []).map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
+        <p className="-mt-2 text-xs text-muted-foreground">
+          Opcional. Com a cidade, já no primeiro abastecimento eu mostro se você pagou acima ou
+          abaixo da média dela (fonte: ANP).
+        </p>
         <SelectField
           label="Gênero (opcional)"
           value={gender}

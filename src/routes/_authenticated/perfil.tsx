@@ -36,7 +36,7 @@ import { useHomeData, useProfile, useUpdateProfile } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { track } from "@/lib/analytics";
-import { PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL, GENDER_OPTIONS } from "@/constants/app";
+import { BR_UFS, PRIVACY_URL, SUPPORT_EMAIL, TERMS_URL, GENDER_OPTIONS } from "@/constants/app";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { InstallCard } from "@/components/app/InstallCard";
 import { amIAdmin } from "@/lib/admin.functions";
@@ -363,35 +363,7 @@ function PerfilPage() {
   );
 }
 
-const UFS = [
-  "AC",
-  "AL",
-  "AP",
-  "AM",
-  "BA",
-  "CE",
-  "DF",
-  "ES",
-  "GO",
-  "MA",
-  "MT",
-  "MS",
-  "MG",
-  "PA",
-  "PB",
-  "PR",
-  "PE",
-  "PI",
-  "RJ",
-  "RN",
-  "RS",
-  "RO",
-  "RR",
-  "SC",
-  "SP",
-  "SE",
-  "TO",
-] as const;
+const UFS = BR_UFS;
 
 function Avatar({
   url,

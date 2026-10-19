@@ -25,6 +25,7 @@ import { brl, kmPerLiter, num } from "@/lib/format";
 import {
   useCreateFueling,
   useFuelings,
+  usePriceReferences,
   useProfile,
   useSetPrimaryVehicle,
   useStations,
@@ -39,6 +40,12 @@ import {
 import { vehicleWords, vehicleName, fuelsFor } from "@/constants/vehicles";
 import { deriveAmounts, priceVerdict } from "@/services/verdict";
 import type { PriceVerdict } from "@/services/verdict";
+import {
+  chooseReference,
+  referenceFuelName,
+  weekLabel,
+  type ChosenReference,
+} from "@/services/anp";
 import { fuelingSchema } from "@/validators";
 import { captureException } from "@/lib/telemetry";
 import type { Fueling } from "@/types/domain";
@@ -78,6 +85,8 @@ interface Saved {
   tanksMissing: 1 | 2;
   /** Marco que merece o Teo: primeiro registro ou primeira medição de consumo. */
   milestone: "first-fueling" | "first-consumption" | null;
+  /** Média da ANP na cidade (ou estado) para o mesmo combustível e semana. */
+  cityRef: ChosenReference | null;
 }
 
 const todayLocal = () => {
@@ -96,6 +105,8 @@ function AbastecerPage() {
   const vehicles = useVehicles();
   const fuelings = useFuelings();
   const profile = useProfile();
+  const place = { uf: profile.data?.state ?? null, city: profile.data?.city ?? null };
+  const references = usePriceReferences(place);
   const stations = useStations(profile.data?.city ?? null);
   const create = useCreateFueling();
   const setPrimary = useSetPrimaryVehicle();
@@ -279,6 +290,9 @@ function AbastecerPage() {
                 !vehicleHistory.some((r) => r.computed_km_per_liter)
               ? "first-consumption"
               : null,
+        cityRef: references.data
+          ? chooseReference(references.data, place, fuelTypeId, filledAt)
+          : null,
         tanksMissing: fullTanksMissing([
           ...vehicleHistory,
           { full_tank: parsed.data.full_tank, odometer: parsed.data.odometer },
@@ -368,7 +382,18 @@ function AbastecerPage() {
             </TeoSays>
           ) : null}
 
-          {saved.queued ? null : <VerdictCard verdict={saved.verdict} />}
+          {saved.queued ? null : saved.verdict.tone === "neutral" && saved.cityRef ? (
+            // Sem histórico para comparar com o habitual: a média da cidade já dá valor
+            // desde o primeiro abastecimento.
+            <CityPriceCard reference={saved.cityRef} paid={saved.price} />
+          ) : (
+            <VerdictCard verdict={saved.verdict} />
+          )}
+          {!saved.queued && !place.city ? (
+            <ActionLink to="/perfil" variant="secondary" size="md" className="w-full">
+              Informe sua cidade e compare com a média da ANP
+            </ActionLink>
+          ) : null}
 
           {saved.milestone ? null : saved.kmPerLiter ? (
             <AppCard className="p-4">
@@ -613,5 +638,28 @@ function AbastecerPage() {
         </Action>
       </form>
     </AppShell>
+  );
+}
+
+/** Seu preço x média da ANP na cidade, com fonte e semana. */
+function CityPriceCard({ reference, paid }: { reference: ChosenReference; paid: number }) {
+  const diff = Math.round((paid - reference.avgPrice) * 100) / 100;
+  const where = reference.scope === "municipio" ? `de ${reference.place}` : `em ${reference.place}`;
+  const of = referenceFuelName(reference.fuelTypeId).article === "a" ? "da" : "do";
+  const good = diff <= 0;
+  return (
+    <AppCard className={good ? "border-primary/30 bg-accent/50" : "border-border"}>
+      <p className={`text-base font-semibold ${good ? "text-primary" : "text-foreground"}`}>
+        {Math.abs(diff) < 0.01
+          ? `Na média ${where}`
+          : `${brl(Math.abs(diff))}/${reference.unit} ${diff < 0 ? "abaixo" : "acima"} da média ${where}`}
+      </p>
+      <p className="mt-1 text-sm text-foreground">
+        Você pagou {brl(paid)}. A média {of} {reference.fuelName} foi {brl(reference.avgPrice)}.
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Fonte: ANP, semana de {weekLabel(reference.weekStart, reference.weekEnd)}.
+      </p>
+    </AppCard>
   );
 }

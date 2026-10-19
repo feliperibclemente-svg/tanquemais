@@ -76,6 +76,31 @@ export function useCityPrices(fuelTypeId: string, uf: string | null) {
   });
 }
 
+/** Nomes das cidades pesquisadas pela ANP num estado (sugestões ao digitar a cidade). */
+export function useAnpCities(uf: string | null) {
+  return useQuery({
+    ...base,
+    staleTime: 24 * 60 * 60_000,
+    retry: 1,
+    enabled: !!uf,
+    queryKey: ["anp-cities", uf ?? ""],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fuel_price_references")
+        .select("municipio_label")
+        .eq("scope", "municipio")
+        .eq("uf", uf!)
+        .eq("fuel_type_id", "gasolina")
+        .order("week_start", { ascending: false })
+        .limit(1000);
+      if (error) throw error;
+      return [
+        ...new Set((data ?? []).map((r) => r.municipio_label).filter(Boolean) as string[]),
+      ].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    },
+  });
+}
+
 export function usePriceReferences(place: { uf: string | null; city: string | null }) {
   const uf = toUf(place.uf ?? "") ?? "";
   const city = normalizeName(place.city);
