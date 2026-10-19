@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   chooseReference,
+  rankCities,
   normalizeName,
   parseReferenceSheet,
   toFuelTypeId,
@@ -11,7 +12,7 @@ import {
   weekLabel,
 } from "@/services/anp";
 import { readXlsx } from "@/lib/xlsx-lite.server";
-import { rowsFromWorkbook } from "@/lib/anp-import.server";
+import { ibgeNameMap, rowsFromWorkbook, withOfficialNames } from "@/lib/anp-import.server";
 import { buildInsights, cityPriceInsight } from "@/services/insights";
 import type { Overview, SavingsOpportunity } from "@/services/analytics";
 
@@ -214,5 +215,71 @@ describe("planilha real da ANP (semana 04/10 a 10/10/2026)", () => {
       "gnv",
     ]);
     expect(rows.every((r) => r.avg_price > 0.5 && r.avg_price < 30)).toBe(true);
+  });
+});
+
+describe("cidades com menor média", () => {
+  const row = (municipio: string, avg: number, stations: number | null = 10, uf = "SP") => ({
+    uf,
+    municipio,
+    municipio_label: municipio.charAt(0) + municipio.slice(1).toLowerCase(),
+    avg_price: avg,
+    stations,
+  });
+  const rows = [
+    row("CAMPINAS", 6.3),
+    row("SOROCABA", 6.1),
+    row("JUNDIAI", 6.45),
+    row("ITU", 5.9, 3), // poucos postos: fica fora
+    row("BAURU", 6.1),
+  ];
+  it("ordena da menor para a maior média e acha a posição da cidade", () => {
+    const r = rankCities(rows, { uf: "SP", city: "campinas" });
+    expect(r.cities.map((c) => c.municipio)).toEqual(["BAURU", "SOROCABA", "CAMPINAS", "JUNDIAI"]);
+    expect(r.position).toBe(3);
+    expect(r.mine?.label).toBe("Campinas");
+  });
+  it("cidade com poucos postos não entra na comparação, e isso é explicado", () => {
+    const r = rankCities(rows, { uf: "SP", city: "Itu" });
+    expect(r.position).toBeNull();
+    expect(r.mineTooFewStations).toBe(true);
+    expect(rankCities(rows, { uf: "SP", city: "Holambra" }).mineTooFewStations).toBe(false);
+  });
+  it("mesma cidade em outro estado não conta", () => {
+    expect(rankCities(rows, { uf: "MG", city: "Campinas" }).position).toBeNull();
+  });
+});
+
+describe("nomes oficiais das cidades (IBGE)", () => {
+  it("troca o nome sem acento da ANP pelo oficial, na mesma UF", () => {
+    const names = ibgeNameMap([
+      { "municipio-nome": "São José dos Campos", "UF-sigla": "SP" },
+      { "municipio-nome": "Taubaté", "UF-sigla": "SP" },
+      { "municipio-nome": "Goiânia", "UF-sigla": "GO" },
+    ]);
+    const base = {
+      week_start: "2026-10-04",
+      week_end: "2026-10-10",
+      fuel_type_id: "gasolina",
+      avg_price: 6,
+      min_price: null,
+      max_price: null,
+      stations: 10,
+    };
+    const out = withOfficialNames(
+      [
+        {
+          ...base,
+          scope: "municipio",
+          uf: "SP",
+          municipio: "SAO JOSE DOS CAMPOS",
+          municipio_label: "Sao Jose dos Campos",
+        },
+        { ...base, scope: "municipio", uf: "MG", municipio: "TAUBATE", municipio_label: "Taubate" },
+        { ...base, scope: "estado", uf: "GO", municipio: "", municipio_label: null },
+      ],
+      names,
+    );
+    expect(out.map((r) => r.municipio_label)).toEqual(["São José dos Campos", "Taubate", null]);
   });
 });

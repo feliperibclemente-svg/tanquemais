@@ -81,6 +81,46 @@ export function rowsFromWorkbook(
   return [...unique.values()];
 }
 
+const IBGE_MUNICIPIOS =
+  "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?view=nivelado";
+
+/** "UF|NOME NORMALIZADO" → nome oficial com acentos, a partir da lista do IBGE. */
+export function ibgeNameMap(
+  list: { "municipio-nome"?: string; "UF-sigla"?: string }[],
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const m of list) {
+    const name = m["municipio-nome"];
+    const uf = m["UF-sigla"];
+    if (name && uf) map.set(`${uf}|${normalizeName(name)}`, name);
+  }
+  return map;
+}
+
+/** A planilha da ANP vem sem acentos ("Sao Jose dos Campos"); usamos o nome oficial. */
+export function withOfficialNames(
+  rows: PriceReferenceRow[],
+  names: Map<string, string>,
+): PriceReferenceRow[] {
+  if (!names.size) return rows;
+  return rows.map((r) => {
+    if (r.scope !== "municipio") return r;
+    const official = names.get(`${r.uf}|${r.municipio}`);
+    return official ? { ...r, municipio_label: official } : r;
+  });
+}
+
+/** Melhor esforço: sem IBGE, os nomes ficam como vieram da ANP. */
+async function fetchIbgeNames(): Promise<Map<string, string>> {
+  try {
+    const res = await fetch(IBGE_MUNICIPIOS, { signal: AbortSignal.timeout(10_000) });
+    if (!res.ok) return new Map();
+    return ibgeNameMap((await res.json()) as { "municipio-nome"?: string; "UF-sigla"?: string }[]);
+  } catch {
+    return new Map();
+  }
+}
+
 export async function importAnpWeek(
   options: { force?: boolean; now?: Date } = {},
 ): Promise<AnpImportResult> {
@@ -115,6 +155,8 @@ export async function importAnpWeek(
     } catch (error) {
       return { status: "error", week: file.start, message: (error as Error).message };
     }
+
+    rows = withOfficialNames(rows, await fetchIbgeNames());
 
     for (let i = 0; i < rows.length; i += 500) {
       const { error } = await supabaseAdmin.from("fuel_price_references").upsert(

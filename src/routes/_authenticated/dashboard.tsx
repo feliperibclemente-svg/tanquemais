@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MessagesSquare } from "lucide-react";
+import { MapPinned, MessagesSquare } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import {
   ActionLink,
@@ -85,6 +85,7 @@ function DashboardPage() {
               odometers={rows.map((r) => Number(r.odometer) || 0)}
             />
           ) : null}
+          <PricesEntry />
           <CommunityEntry />
           <DrivingTips brand={primaryVehicle?.brand ?? null} />
         </div>
@@ -173,6 +174,7 @@ function DashboardPage() {
             odometers={rows.map((r) => Number(r.odometer) || 0)}
           />
         ) : null}
+        <PricesEntry />
         <CommunityEntry />
         <HowWeCalculate duplicates={stats.duplicates} outliers={stats.outliers} />
         <DrivingTips brand={primaryVehicle?.brand ?? null} />
@@ -366,6 +368,28 @@ function CommunityEntry() {
       </div>
       <ActionLink to="/comunidade" size="md" variant="secondary" className="mt-3 w-full">
         Ver dicas da comunidade
+      </ActionLink>
+    </AppCard>
+  );
+}
+
+/** Entrada para a comparação de preços por cidade (dados públicos da ANP). */
+function PricesEntry() {
+  return (
+    <AppCard>
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-primary">
+          <MapPinned className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground">Preços por cidade</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Cidades com a menor média de combustível no seu estado, pela pesquisa semanal da ANP.
+          </p>
+        </div>
+      </div>
+      <ActionLink to="/precos" size="md" variant="secondary" className="mt-3 w-full">
+        Ver preços por cidade
       </ActionLink>
     </AppCard>
   );

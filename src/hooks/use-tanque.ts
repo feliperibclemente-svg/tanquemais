@@ -35,6 +35,47 @@ export const queryKeys = {
  * Médias semanais da ANP para a cidade e o estado do perfil (últimos 60 dias).
  * Dado público; sem cidade/UF no perfil não há consulta.
  */
+/**
+ * Médias por cidade da semana mais recente da ANP para um combustível
+ * (no estado informado, ou no Brasil todo). Dado público.
+ */
+export function useCityPrices(fuelTypeId: string, uf: string | null) {
+  return useQuery({
+    ...base,
+    staleTime: 6 * 60 * 60_000,
+    retry: 1,
+    queryKey: ["city-prices", fuelTypeId, uf ?? "BR"],
+    queryFn: async () => {
+      const latest = await supabase
+        .from("fuel_price_references")
+        .select("week_start, week_end")
+        .eq("scope", "municipio")
+        .order("week_start", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latest.error) throw latest.error;
+      if (!latest.data) return { week: null, rows: [] };
+      let query = supabase
+        .from("fuel_price_references")
+        .select("uf, municipio, municipio_label, avg_price, stations")
+        .eq("scope", "municipio")
+        .eq("week_start", latest.data.week_start)
+        .eq("fuel_type_id", fuelTypeId)
+        .limit(2000);
+      if (uf) query = query.eq("uf", uf);
+      const { data, error } = await query;
+      if (error) throw error;
+      return {
+        week: { start: latest.data.week_start, end: latest.data.week_end },
+        rows: (data ?? []) as Pick<
+          PriceReferenceRow,
+          "uf" | "municipio" | "municipio_label" | "avg_price" | "stations"
+        >[],
+      };
+    },
+  });
+}
+
 export function usePriceReferences(place: { uf: string | null; city: string | null }) {
   const uf = toUf(place.uf ?? "") ?? "";
   const city = normalizeName(place.city);

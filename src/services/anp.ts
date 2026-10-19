@@ -280,3 +280,60 @@ export function weekLabel(start: string, end: string): string {
   const f = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
   return `${f(start)} a ${f(end)}`;
 }
+
+/* ---------------------------------------------------------------------------
+ * Cidades com menor média (ANP). Compara cidades, nunca postos.
+ * ------------------------------------------------------------------------- */
+
+/** Mínimo de postos pesquisados para a média da cidade entrar na comparação. */
+export const MIN_STATIONS_FOR_RANKING = 5;
+
+export interface CityPrice {
+  uf: string;
+  municipio: string;
+  label: string;
+  avgPrice: number;
+  stations: number | null;
+}
+
+export interface CityRanking {
+  /** Cidades ordenadas da menor para a maior média (só as com postos suficientes). */
+  cities: CityPrice[];
+  /** Posição da cidade da pessoa (1 = menor média) ou null se ela não está na comparação. */
+  position: number | null;
+  mine: CityPrice | null;
+  /** A cidade aparece na pesquisa, mas com poucos postos para comparar. */
+  mineTooFewStations: boolean;
+}
+
+export function rankCities(
+  rows: Pick<
+    PriceReferenceRow,
+    "uf" | "municipio" | "municipio_label" | "avg_price" | "stations"
+  >[],
+  myCity: { uf: string | null | undefined; city: string | null | undefined },
+): CityRanking {
+  const myUf = toUf(myCity.uf ?? "");
+  const myName = normalizeName(myCity.city);
+  const all = rows
+    .filter((r) => r.municipio && Number(r.avg_price) > 0)
+    .map((r) => ({
+      uf: r.uf,
+      municipio: r.municipio,
+      label: r.municipio_label ?? titleCase(r.municipio),
+      avgPrice: Number(r.avg_price),
+      stations: r.stations ?? null,
+    }));
+  const cities = all
+    .filter((c) => (c.stations ?? 0) >= MIN_STATIONS_FOR_RANKING)
+    .sort((a, b) => a.avgPrice - b.avgPrice || a.label.localeCompare(b.label, "pt-BR"));
+  const isMine = (c: CityPrice) => !!myName && c.municipio === myName && c.uf === myUf;
+  const index = cities.findIndex(isMine);
+  const mine = index >= 0 ? cities[index] : null;
+  return {
+    cities,
+    position: index >= 0 ? index + 1 : null,
+    mine: mine ? { ...mine, label: titleCase((myCity.city ?? "").trim()) || mine.label } : null,
+    mineTooFewStations: index < 0 && all.some(isMine),
+  };
+}
