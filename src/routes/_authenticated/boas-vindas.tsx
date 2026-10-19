@@ -16,7 +16,7 @@ import {
   TeoSays,
   TextField,
 } from "@/components/ds";
-import { BR_UFS, FUEL_TYPES, GENDER_OPTIONS } from "@/constants/app";
+import { BR_UFS, FUEL_TYPES } from "@/constants/app";
 import { canonicalVehicle, vehicleWords, fuelsFor } from "@/constants/vehicles";
 import {
   useAnpCities,
@@ -98,7 +98,6 @@ function AboutYouStep({ profile }: { profile: Profile }) {
   const [first, setFirst] = useState(profile.first_name ?? tidyName(prefill.first));
   const [last, setLast] = useState(profile.last_name ?? tidyName(prefill.last));
   const [birth, setBirth] = useState(formatBirthDate(profile.birth_date));
-  const [gender, setGender] = useState(profile.gender ?? "");
   const [uf, setUf] = useState(profile.state ?? "");
   const [city, setCity] = useState(profile.city ?? "");
   const cities = useAnpCities(uf || null);
@@ -134,11 +133,10 @@ function AboutYouStep({ profile }: { profile: Profile }) {
         full_name: `${firstName} ${lastName}`,
         birth_date: check.iso,
         age_range: ageRangeOf(check.age),
-        gender: gender || null,
         state: uf || null,
         city: tidyName(city) || null,
       });
-      track("onboarding_identity_saved", { gender: !!gender, city: !!city.trim() });
+      track("onboarding_identity_saved", { city: !!city.trim() });
     } catch {
       /* o hook já mostra o erro */
     }
@@ -237,13 +235,6 @@ function AboutYouStep({ profile }: { profile: Profile }) {
           Opcional. Com a cidade, já no primeiro abastecimento eu mostro se você pagou acima ou
           abaixo da média dela (fonte: ANP).
         </p>
-        <SelectField
-          label="Gênero (opcional)"
-          value={gender}
-          onChange={(event) => setGender(event.target.value)}
-          hint="Só entra em números gerais do beta, sem identificar você."
-          options={[{ value: "", label: "Selecione" }, ...GENDER_OPTIONS]}
-        />
 
         {error ? (
           <p role="alert" className="text-sm font-medium text-destructive">
