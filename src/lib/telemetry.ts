@@ -96,8 +96,47 @@ function describe(error: unknown) {
 }
 
 /** Captura de exceção (crash reporting). */
+/**
+ * Depois de uma atualização, uma aba aberta antes dela pode pedir um pedaço de código que
+ * não existe mais no servidor. Não é defeito do app: basta recarregar para pegar a versão nova.
+ */
+export function isStaleBuildError(message: string | undefined | null): boolean {
+  return /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Unable to preload CSS|Loading (CSS )?chunk .* failed/i.test(
+    message ?? "",
+  );
+}
+
+/** Avisos do React de que houve um problema, mas ele se recuperou sozinho (tela funcionou). */
+export function isReactRecoverable(message: string | undefined | null): boolean {
+  return /Minified React error #(418|419|421|422|423|425|520)\b/.test(message ?? "");
+}
+
+const RELOAD_KEY = "tanque:reload-new-version";
+
+/** Recarrega uma vez para buscar a versão nova; nunca entra em ciclo (1x a cada 30 s). */
+export function reloadForNewVersion(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const last = Number(sessionStorage.getItem(RELOAD_KEY) ?? 0);
+    if (Date.now() - last < 30_000) return false;
+    sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+  } catch {
+    return false;
+  }
+  window.location.reload();
+  return true;
+}
+
 export function captureException(error: unknown, context: Record<string, unknown> = {}) {
   const described = describe(error);
+  if (isStaleBuildError(described.message)) {
+    // Registra (para sabermos que acontece) e recarrega com a versão nova.
+    if (typeof window !== "undefined" && !isDev()) {
+      void reportError(described, "versao-antiga");
+    }
+    reloadForNewVersion();
+    return;
+  }
   log("error", described.message || "Erro desconhecido", {
     ...context,
     errorName: described.name,
@@ -105,7 +144,10 @@ export function captureException(error: unknown, context: Record<string, unknown
   });
 
   if (typeof window === "undefined" || isDev()) return;
-  void reportError(described, String(context.mechanism ?? context.scope ?? "manual"));
+  const mechanism = isReactRecoverable(described.message)
+    ? "react-recuperado"
+    : String(context.mechanism ?? context.scope ?? "manual");
+  void reportError(described, mechanism);
 }
 
 /** Tira do texto o que poderia identificar alguém ou dar acesso (e-mails, tokens). */
@@ -197,6 +239,18 @@ function observeWebVitals() {
 export function installTelemetry() {
   if (installed || typeof window === "undefined") return;
   installed = true;
+
+  // Vite avisa quando um pedaço de código não carrega (aba aberta antes de uma atualização).
+  window.addEventListener("vite:preloadError", (event) => {
+    event.preventDefault();
+    captureException(
+      (event as Event & { payload?: unknown }).payload ??
+        new Error("Failed to fetch dynamically imported module (preload)"),
+      {
+        mechanism: "preload",
+      },
+    );
+  });
 
   window.addEventListener("error", (event) =>
     captureException(event.error ?? event.message, { mechanism: "onerror" }),

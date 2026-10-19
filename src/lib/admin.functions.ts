@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { isReactRecoverable, isStaleBuildError } from "@/lib/telemetry";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { computeBetaMetrics, type BetaMetrics } from "@/services/beta-metrics";
 
@@ -170,6 +171,12 @@ export const recentErrors = createServerFn({ method: "GET" })
         .slice(0, 10)
         .map((g) => ({
           message: g.message,
+          // Tipos inofensivos, explicados no painel (valem também para registros antigos).
+          kind: isStaleBuildError(g.message)
+            ? ("versao-antiga" as const)
+            : isReactRecoverable(g.message)
+              ? ("recuperado" as const)
+              : ("erro" as const),
           count: g.count,
           users: g.users.size,
           routes: [...g.routes].slice(0, 3),

@@ -16,3 +16,21 @@ describe("scrub (registro de erros sem dados pessoais)", () => {
     expect(scrub(undefined, 10)).toBeNull();
   });
 });
+
+describe("erros inofensivos", () => {
+  it("reconhece código de versão antiga e avisos de recuperação do React", async () => {
+    const { isStaleBuildError, isReactRecoverable } = await import("@/lib/telemetry");
+    expect(
+      isStaleBuildError(
+        "Failed to fetch dynamically imported module: https://www.tanquemais.com.br/assets/auth-DsgJSW6w.js",
+      ),
+    ).toBe(true);
+    expect(isStaleBuildError("Importing a module script failed.")).toBe(true);
+    expect(isStaleBuildError("Cannot read properties of undefined")).toBe(false);
+    expect(
+      isReactRecoverable("Minified React error #422; visit https://react.dev/errors/422"),
+    ).toBe(true);
+    expect(isReactRecoverable("Minified React error #520; visit")).toBe(true);
+    expect(isReactRecoverable("Minified React error #185; visit")).toBe(false);
+  });
+});

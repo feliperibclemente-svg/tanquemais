@@ -343,6 +343,13 @@ function ErrorsCard() {
           <ul className="mt-3 space-y-3">
             {data.groups.map((g) => (
               <li key={g.message} className="text-xs">
+                {g.kind !== "erro" ? (
+                  <p className="mb-0.5 font-semibold text-primary">
+                    {g.kind === "versao-antiga"
+                      ? "Inofensivo: aba aberta antes de uma atualização (o app recarrega sozinho)"
+                      : "Inofensivo: o React se recuperou sozinho e a tela funcionou"}
+                  </p>
+                ) : null}
                 <p className="break-words font-medium text-foreground">{g.message}</p>
                 <p className="text-muted-foreground">
                   {g.count}× · {g.users} pessoa{g.users === 1 ? "" : "s"} · {g.routes.join(", ")} ·
