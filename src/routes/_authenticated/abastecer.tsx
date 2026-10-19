@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, ChevronDown, Fuel, ShieldAlert } from "lucide-react";
+import { CheckCircle2, ChevronDown, Fuel, Share2, ShieldAlert } from "lucide-react";
 import {
   Action,
   ActionLink,
@@ -37,7 +37,8 @@ import {
   fullTanksMissing,
   validateOdometer,
 } from "@/services/analytics";
-import { vehicleWords, vehicleName, fuelsFor } from "@/constants/vehicles";
+import { vehicleWords, vehicleName, fuelsFor, vehicleKind } from "@/constants/vehicles";
+import { shareCard } from "@/lib/share-image";
 import { deriveAmounts, priceVerdict } from "@/services/verdict";
 import type { PriceVerdict } from "@/services/verdict";
 import {
@@ -380,6 +381,27 @@ function AbastecerPage() {
               Entre os dois tanques cheios, {words.your} fez {kmPerLiter(saved.kmPerLiter)}. A cada
               tanque completo, essa média fica mais precisa.
             </TeoSays>
+          ) : null}
+          {saved.milestone === "first-consumption" && saved.kmPerLiter ? (
+            <Action
+              variant="secondary"
+              size="md"
+              className="w-full"
+              onClick={() =>
+                void shareCard(
+                  {
+                    theme: "lima",
+                    eyebrow: "Consumo real, medido por mim",
+                    big: kmPerLiter(saved.kmPerLiter),
+                    title: `${vehicleKind(vehicle.brand) === "moto" ? "Minha" : "Meu"} ${vehicle.nickname || vehicle.model} faz isso de verdade`,
+                    caption: "Medido entre dois tanques cheios, não pelo manual.",
+                  },
+                  "primeiro-consumo",
+                ).catch(() => undefined)
+              }
+            >
+              <Share2 className="h-4 w-4" /> Compartilhar meu consumo
+            </Action>
           ) : null}
 
           {saved.queued ? null : saved.verdict.tone === "neutral" && saved.cityRef ? (

@@ -7,6 +7,7 @@ import {
   AppShell,
   CheckupCard,
   EmptyState,
+  RecapCard,
   ErrorState,
   formatCents,
   NumericField,
@@ -134,6 +135,10 @@ function DashboardPage() {
             stats.totalKm > 0 ? `em ${num(stats.totalKm, 0)} km medidos` : "sem trechos medidos"
           }
         />
+      </div>
+
+      <div className="mt-4">
+        <RecapCard force />
       </div>
 
       <section className="mt-5 space-y-4">

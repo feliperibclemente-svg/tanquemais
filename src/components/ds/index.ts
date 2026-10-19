@@ -41,6 +41,7 @@ export { BrandModelFields } from "@/components/app/BrandModelFields";
 export { PrimaryStar } from "@/components/app/PrimaryStar";
 export { InstallCard } from "@/components/app/InstallCard";
 export { CheckupCard, CheckupNudge } from "@/components/app/CheckupCard";
+export { RecapCard } from "@/components/app/RecapCard";
 export { ReminderCard } from "@/components/app/ReminderCard";
 export { BrandMark, Logo, BRAND_GREEN } from "@/components/app/Logo";
 export { TeoAvatar, TeoSays } from "@/components/app/Teo";

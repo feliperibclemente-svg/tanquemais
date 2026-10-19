@@ -12,6 +12,7 @@ import {
   CheckupNudge,
   ErrorState,
   InstallCard,
+  RecapCard,
   ReminderCard,
   TeoAvatar,
   ScreenSkeleton,
@@ -137,6 +138,9 @@ function HomePage() {
           <Fuel className="h-6 w-6" strokeWidth={2.4} />
           Registrar abastecimento
         </ActionLink>
+
+        {/* Cartão do momento: retrospectiva do mês, até a pessoa abrir */}
+        <RecapCard />
 
         {reminder && last ? (
           <ReminderCard

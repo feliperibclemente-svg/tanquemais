@@ -30,6 +30,7 @@ import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedPostosRouteImport } from './routes/_authenticated/postos'
 import { Route as AuthenticatedPrecosRouteImport } from './routes/_authenticated/precos'
+import { Route as AuthenticatedRetrospectivaRouteImport } from './routes/_authenticated/retrospectiva'
 import { Route as AuthenticatedVeiculoRouteImport } from './routes/_authenticated/veiculo'
 import { Route as ApiCronDiarioRouteImport } from './routes/api/cron/diario'
 
@@ -138,6 +139,12 @@ const AuthenticatedPrecosRoute = AuthenticatedPrecosRouteImport.update({
   path: '/precos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRetrospectivaRoute =
+  AuthenticatedRetrospectivaRouteImport.update({
+    id: '/retrospectiva',
+    path: '/retrospectiva',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedVeiculoRoute = AuthenticatedVeiculoRouteImport.update({
   id: '/veiculo',
   path: '/veiculo',
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/postos': typeof AuthenticatedPostosRoute
   '/precos': typeof AuthenticatedPrecosRoute
+  '/retrospectiva': typeof AuthenticatedRetrospectivaRoute
   '/veiculo': typeof AuthenticatedVeiculoRoute
   '/api/cron/diario': typeof ApiCronDiarioRoute
 }
@@ -194,6 +202,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/postos': typeof AuthenticatedPostosRoute
   '/precos': typeof AuthenticatedPrecosRoute
+  '/retrospectiva': typeof AuthenticatedRetrospectivaRoute
   '/veiculo': typeof AuthenticatedVeiculoRoute
   '/api/cron/diario': typeof ApiCronDiarioRoute
 }
@@ -220,6 +229,7 @@ export interface FileRoutesById {
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/postos': typeof AuthenticatedPostosRoute
   '/_authenticated/precos': typeof AuthenticatedPrecosRoute
+  '/_authenticated/retrospectiva': typeof AuthenticatedRetrospectivaRoute
   '/_authenticated/veiculo': typeof AuthenticatedVeiculoRoute
   '/api/cron/diario': typeof ApiCronDiarioRoute
 }
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/postos'
     | '/precos'
+    | '/retrospectiva'
     | '/veiculo'
     | '/api/cron/diario'
   fileRoutesByTo: FileRoutesByTo
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/postos'
     | '/precos'
+    | '/retrospectiva'
     | '/veiculo'
     | '/api/cron/diario'
   id:
@@ -295,6 +307,7 @@ export interface FileRouteTypes {
     | '/_authenticated/perfil'
     | '/_authenticated/postos'
     | '/_authenticated/precos'
+    | '/_authenticated/retrospectiva'
     | '/_authenticated/veiculo'
     | '/api/cron/diario'
   fileRoutesById: FileRoutesById
@@ -459,6 +472,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPrecosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/retrospectiva': {
+      id: '/_authenticated/retrospectiva'
+      path: '/retrospectiva'
+      fullPath: '/retrospectiva'
+      preLoaderRoute: typeof AuthenticatedRetrospectivaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/veiculo': {
       id: '/_authenticated/veiculo'
       path: '/veiculo'
@@ -491,6 +511,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedPostosRoute: typeof AuthenticatedPostosRoute
   AuthenticatedPrecosRoute: typeof AuthenticatedPrecosRoute
+  AuthenticatedRetrospectivaRoute: typeof AuthenticatedRetrospectivaRoute
   AuthenticatedVeiculoRoute: typeof AuthenticatedVeiculoRoute
 }
 
@@ -509,6 +530,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedPostosRoute: AuthenticatedPostosRoute,
   AuthenticatedPrecosRoute: AuthenticatedPrecosRoute,
+  AuthenticatedRetrospectivaRoute: AuthenticatedRetrospectivaRoute,
   AuthenticatedVeiculoRoute: AuthenticatedVeiculoRoute,
 }
 
