@@ -122,6 +122,8 @@ export type AnalyticsEvent =
   | "recap_opened"
   | "share_opened"
   | "share_completed"
+  | "moment_opened"
+  | "moment_dismissed"
   | "onboarding_identity_saved"
   | "onboarding_underage"
   | "retention_day_return"

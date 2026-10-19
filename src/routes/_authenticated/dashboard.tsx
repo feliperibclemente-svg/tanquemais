@@ -1,13 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MapPinned, MessagesSquare } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import {
   ActionLink,
   AppCard,
   AppShell,
-  CheckupCard,
   EmptyState,
-  RecapCard,
   ErrorState,
   formatCents,
   NumericField,
@@ -80,14 +77,6 @@ function DashboardPage() {
           }
         />
         <div className="mt-5 space-y-4">
-          {primaryVehicle ? (
-            <CheckupCard
-              vehicle={primaryVehicle}
-              odometers={rows.map((r) => Number(r.odometer) || 0)}
-            />
-          ) : null}
-          <PricesEntry />
-          <CommunityEntry />
           <DrivingTips brand={primaryVehicle?.brand ?? null} />
         </div>
       </AppShell>
@@ -137,10 +126,6 @@ function DashboardPage() {
         />
       </div>
 
-      <div className="mt-4">
-        <RecapCard force />
-      </div>
-
       <section className="mt-5 space-y-4">
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Gasto por mês</p>
@@ -173,14 +158,6 @@ function DashboardPage() {
           </dl>
         </AppCard>
 
-        {primaryVehicle ? (
-          <CheckupCard
-            vehicle={primaryVehicle}
-            odometers={rows.map((r) => Number(r.odometer) || 0)}
-          />
-        ) : null}
-        <PricesEntry />
-        <CommunityEntry />
         <HowWeCalculate duplicates={stats.duplicates} outliers={stats.outliers} />
         <DrivingTips brand={primaryVehicle?.brand ?? null} />
       </section>
@@ -353,49 +330,5 @@ function DrivingTips({ brand }: { brand: string | null }) {
         ))}
       </ul>
     </details>
-  );
-}
-
-/** Entrada para a comunidade (sem aba própria: o centro do app continua sendo o consumo). */
-function CommunityEntry() {
-  return (
-    <AppCard>
-      <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-primary">
-          <MessagesSquare className="h-5 w-5" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground">Comunidade</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Dicas reais de outros motoristas sobre consumo, economia, preços e manutenção.
-          </p>
-        </div>
-      </div>
-      <ActionLink to="/comunidade" size="md" variant="secondary" className="mt-3 w-full">
-        Ver dicas da comunidade
-      </ActionLink>
-    </AppCard>
-  );
-}
-
-/** Entrada para a comparação de preços por cidade (dados públicos da ANP). */
-function PricesEntry() {
-  return (
-    <AppCard>
-      <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-primary">
-          <MapPinned className="h-5 w-5" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground">Preços por cidade</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Cidades com a menor média de combustível no seu estado, pela pesquisa semanal da ANP.
-          </p>
-        </div>
-      </div>
-      <ActionLink to="/precos" size="md" variant="secondary" className="mt-3 w-full">
-        Ver preços por cidade
-      </ActionLink>
-    </AppCard>
   );
 }

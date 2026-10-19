@@ -9,11 +9,10 @@ import {
   ActionLink,
   AppCard,
   AppShell,
-  CheckupNudge,
   ErrorState,
   InstallCard,
-  RecapCard,
-  ReminderCard,
+  MomentCard,
+  Shortcuts,
   TeoAvatar,
   ScreenSkeleton,
   VerdictPill,
@@ -76,6 +75,8 @@ function HomePage() {
     rows,
     lastReference,
     hasPlace,
+    references,
+    place,
   } = useHomeData();
 
   if (isLoading) {
@@ -139,16 +140,19 @@ function HomePage() {
           Registrar abastecimento
         </ActionLink>
 
-        {/* Cartão do momento: retrospectiva do mês, até a pessoa abrir */}
-        <RecapCard />
+        {/* Atalhos: tudo o que o app faz, a um toque (como iFood e Uber) */}
+        <Shortcuts />
 
-        {reminder && last ? (
-          <ReminderCard
-            lastId={last.id}
-            daysSince={reminder.daysSince}
-            typicalDays={reminder.typicalDays}
-          />
-        ) : null}
+        {/* Cartão do momento: um assunto por vez, o mais relevante agora */}
+        <MomentCard
+          vehicle={primaryVehicle}
+          odometers={rows.map((r) => Number(r.odometer) || 0)}
+          reminder={reminder}
+          lastFuelingId={last?.id ?? null}
+          fuelTypeId={last?.fuel_type_id ?? null}
+          references={references}
+          place={place}
+        />
 
         {/* Último abastecimento com a conclusão em destaque */}
         {last ? (
@@ -232,11 +236,6 @@ function HomePage() {
           insights={insights}
           brand={primaryVehicle.brand}
           dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
-        />
-
-        <CheckupNudge
-          vehicle={primaryVehicle}
-          odometers={rows.map((r) => Number(r.odometer) || 0)}
         />
 
         <InstallCard />
