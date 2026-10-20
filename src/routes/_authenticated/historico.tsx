@@ -34,6 +34,7 @@ import { track } from "@/lib/analytics";
 import { toast } from "sonner";
 import { deriveAmounts, historyVerdicts } from "@/services/verdict";
 import type { Fueling } from "@/types/domain";
+import { inPeriod, PERIODS, periodRange, type PeriodId } from "@/services/periods";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   /** ?abrir=<id>: abre um abastecimento (ex.: vindo do "Onde você pagou menos"). */
@@ -87,11 +88,10 @@ function HistoricoPage() {
   const verdicts = useMemo(() => historyVerdicts(allRows), [allRows]);
   const [period, setPeriod] = useState<PeriodId>("all");
   const rows = useMemo(() => {
-    const since = periodStart(period);
+    const range = periodRange(period);
     return allRows.filter(
       (r) =>
-        (vehicleFilter === "all" || r.vehicle_id === vehicleFilter) &&
-        (!since || new Date(r.filled_at) >= since),
+        (vehicleFilter === "all" || r.vehicle_id === vehicleFilter) && inPeriod(r.filled_at, range),
     );
   }, [allRows, vehicleFilter, period]);
   /** Totais do filtro atual, sem os registros duplicados (os mesmos números do Painel). */
@@ -341,21 +341,6 @@ const monthLabel = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "nume
 
 /** "outubro de 2026" → "Outubro de 2026" (o CSS capitalize deixaria "De"). */
 const capitalizeFirst = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
-
-const PERIODS = [
-  { id: "month", label: "Este mês" },
-  { id: "3m", label: "3 meses" },
-  { id: "12m", label: "12 meses" },
-  { id: "all", label: "Tudo" },
-] as const;
-type PeriodId = (typeof PERIODS)[number]["id"];
-
-/** Início do período (meses de calendário, horário local); null = sem limite. */
-function periodStart(period: PeriodId, now = new Date()): Date | null {
-  if (period === "all") return null;
-  const back = period === "month" ? 0 : period === "3m" ? 2 : 11;
-  return new Date(now.getFullYear(), now.getMonth() - back, 1);
-}
 
 const ISSUE_SHORT: Record<FuelingIssue, string> = {
   duplicate: "Possível duplicado",

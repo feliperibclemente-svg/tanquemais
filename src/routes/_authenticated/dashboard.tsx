@@ -22,6 +22,7 @@ import { consumptionProgress, consumptionProgressText } from "@/services/analyti
 import { chooseReference, weekLabel, type ChosenReference } from "@/services/anp";
 import { tipsFor } from "@/content/teo-tips";
 import { BEST_PRICE_DAYS, bestPricesByFuel } from "@/services/best-price";
+import { estimatedCostPerKm } from "@/services/cost-estimate";
 import type { FuelingComputed } from "@/services/analytics";
 
 const DashboardCharts = lazy(() => import("@/components/charts/DashboardCharts"));
@@ -91,6 +92,8 @@ function DashboardPage() {
     const r = rows.find((x) => x.fuel_type_id === fuel);
     return r ? Number(r.price_per_liter) : null;
   };
+  // Sem trechos entre tanques cheios: estimativa pelo km do painel (rotulada como tal).
+  const estimate = stats.costPerKm ? null : estimatedCostPerKm(rows);
   const gas = lastPrice("gasolina");
   const eth = lastPrice("etanol");
 
@@ -121,9 +124,15 @@ function DashboardPage() {
         />
         <StatTile
           label="Combustível por km"
-          value={stats.costPerKm ? brl(stats.costPerKm) : "—"}
+          value={
+            stats.costPerKm ? brl(stats.costPerKm) : estimate ? `≈ ${brl(estimate.costPerKm)}` : "—"
+          }
           hint={
-            stats.totalKm > 0 ? `em ${num(stats.totalKm, 0)} km medidos` : "sem trechos medidos"
+            stats.costPerKm && stats.totalKm > 0
+              ? `em ${num(stats.totalKm, 0)} km medidos`
+              : estimate
+                ? `estimado pelo km do painel, ${num(estimate.distance, 0)} km`
+                : "sem trechos medidos"
           }
         />
       </div>
@@ -363,8 +372,9 @@ function HowWeCalculate({ duplicates, outliers }: { duplicates: number; outliers
         <div>
           <dt className="font-medium text-foreground">Combustível por km</dt>
           <dd>
-            Valor pago nos trechos medidos ÷ km desses trechos. Não inclui manutenção, impostos ou
-            seguro.
+            Valor pago nos trechos medidos ÷ km desses trechos. Sem tanque cheio, mostramos uma
+            estimativa (≈): o que você pagou nos últimos 90 dias, menos o último abastecimento, ÷ km
+            rodados pelo painel no mesmo período. Não inclui manutenção, impostos ou seguro.
           </dd>
         </div>
         <div>

@@ -73,7 +73,8 @@ export const Route = createFileRoute("/_authenticated/abastecer")({
 });
 
 /** Valores redondos mais comuns na bomba. */
-const QUICK_AMOUNTS = [30, 50, 70, 100];
+/** Valores mais comuns: moto abastece pouco por vez (entregador, quase todo dia). */
+const QUICK_AMOUNTS = { carro: [30, 50, 70, 100], moto: [10, 15, 20, 30] } as const;
 
 interface Saved {
   liters: number;
@@ -121,6 +122,8 @@ function AbastecerPage() {
   const [vehicleId, setVehicleId] = useState<string | null>(null);
   const vehicle = list.find((v) => v.id === vehicleId) ?? list.find((v) => v.is_primary) ?? list[0];
   const words = vehicleWords(vehicle?.brand);
+  const quickAmounts: readonly number[] =
+    words.kind === "moto" ? QUICK_AMOUNTS.moto : QUICK_AMOUNTS.carro;
 
   const [date, setDate] = useState(todayLocal());
   const filledAt = filledAtFor(date);
@@ -549,11 +552,11 @@ function AbastecerPage() {
             label="Valores rápidos"
             fill
             className="grid grid-cols-4"
-            value={QUICK_AMOUNTS.includes(parseDecimal(total)) ? String(parseDecimal(total)) : ""}
+            value={quickAmounts.includes(parseDecimal(total)) ? String(parseDecimal(total)) : ""}
             onChange={(value) => {
               setTotal(formatCents(Number(value)));
             }}
-            options={QUICK_AMOUNTS.map((v) => ({ value: String(v), label: `R$ ${v}` }))}
+            options={quickAmounts.map((v) => ({ value: String(v), label: `R$ ${v}` }))}
           />
         </div>
 

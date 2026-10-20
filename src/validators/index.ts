@@ -20,7 +20,8 @@ export const vehicleSchema = z.object({
     .or(z.literal("")),
   color: z.string().trim().max(20).optional().or(z.literal("")),
   fuel_type_id: z.string().min(1, "Escolha o combustível"),
-  tank_liters: z.coerce.number().min(10, "Tanque muito pequeno").max(500).optional(),
+  // motos pequenas (Pop, Biz) têm tanque de 4 a 6 litros
+  tank_liters: z.coerce.number().min(3, "Tanque muito pequeno").max(500).optional(),
   current_odometer: z.coerce.number().min(0, "Quilometragem inválida").max(2_000_000),
 });
 

@@ -56,3 +56,17 @@ describe("motos", () => {
     expect(new Set(BRANDS).size).toBe(BRANDS.length);
   });
 });
+
+describe("cadastro de moto pequena", () => {
+  it("aceita tanque de 5,1 L (Biz) e recusa valores sem sentido", async () => {
+    const { vehicleSchema } = await import("@/validators");
+    const base = {
+      brand: "Honda Motos",
+      model: "Biz",
+      fuel_type_id: "gasolina",
+      current_odometer: 1000,
+    };
+    expect(vehicleSchema.safeParse({ ...base, tank_liters: 5.1 }).success).toBe(true);
+    expect(vehicleSchema.safeParse({ ...base, tank_liters: 1 }).success).toBe(false);
+  });
+});
