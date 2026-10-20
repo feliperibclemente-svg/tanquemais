@@ -1,3 +1,4 @@
+import { CityField } from "@/components/app/CityField";
 import { createFileRoute, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -545,19 +546,18 @@ function ProfileEditor({ profile, onDone }: { profile: Profile; onDone: () => vo
         onChange={(event) => setGender(event.target.value)}
         options={[{ value: "", label: "Não preenchido" }, ...GENDER_OPTIONS]}
       />
-      <div className="grid grid-cols-[1fr_6rem] gap-3">
-        <TextField
-          label="Cidade"
-          hint="Para comparar preços da sua região"
-          value={city}
-          autoComplete="address-level2"
-          onChange={(event) => setCity(event.target.value)}
-        />
+      <div className="grid grid-cols-[6rem_1fr] gap-3">
         <SelectField
           label="UF"
           value={state}
           onChange={(event) => setState(event.target.value)}
           options={[{ value: "", label: "—" }, ...UFS.map((uf) => ({ value: uf, label: uf }))]}
+        />
+        <CityField
+          uf={state}
+          value={city}
+          onChange={setCity}
+          hint="Para comparar preços da sua região. Se não achar na lista, pode digitar."
         />
       </div>
 

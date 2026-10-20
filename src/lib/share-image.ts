@@ -32,6 +32,9 @@ const W = 1080;
 const H = 1920;
 const PAD = 96;
 const FONT = "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+const SITE_HOST = SITE_URL.replace(/^https?:\/\//, "");
+export const SHARE_FOOTER = "Grátis, em versão beta · iPhone e Android";
+export const SHARE_TEXT = `Meus números no Tanque+ ⛽ Grátis, em versão beta para iPhone e Android: ${SITE_HOST}`;
 const DROP = "M50 2 C46 20 10 50 10 82 A40 40 0 0 0 90 82 C90 50 54 20 50 2 Z";
 
 function wrap(ctx: CanvasRenderingContext2D, text: string, max: number): string[] {
@@ -172,13 +175,13 @@ export async function renderShareImage(card: ShareCard): Promise<Blob> {
     }
   }
 
-  // Rodapé com o endereço do app
+  // Rodapé: como conhecer o app. Sem citar lojas (o beta abre pelo navegador).
   ctx.fillStyle = c.sub;
   ctx.font = `600 40px ${FONT}`;
-  ctx.fillText("Meus números no Tanque+", PAD, H - 170);
+  ctx.fillText(SHARE_FOOTER, PAD, H - 170);
   ctx.fillStyle = c.fg;
   ctx.font = `800 48px ${FONT}`;
-  ctx.fillText(SITE_URL.replace(/^https?:\/\/(www\.)?/, ""), PAD, H - 108);
+  ctx.fillText(SITE_HOST, PAD, H - 108);
 
   return new Promise((resolve, reject) =>
     canvas.toBlob(
@@ -198,7 +201,7 @@ export async function shareCard(card: ShareCard, kind: string): Promise<ShareRes
   track("share_opened", { kind });
   const blob = await renderShareImage(card);
   const file = new File([blob], `tanquemais-${kind}.png`, { type: "image/png" });
-  const text = `Meus números no Tanque+ ⛽ ${SITE_URL.replace(/^https?:\/\//, "")}`;
+  const text = SHARE_TEXT;
   try {
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], text });

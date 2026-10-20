@@ -1,3 +1,5 @@
+import { useServerFn } from "@tanstack/react-start";
+import { listMunicipios } from "@/lib/municipios.functions";
 import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { QUERY_STALE_TIME } from "@/constants/app";
@@ -99,6 +101,25 @@ export function useAnpCities(uf: string | null) {
       ].sort((a, b) => a.localeCompare(b, "pt-BR"));
     },
   });
+}
+
+/**
+ * Lista de cidades da UF para o campo de cidade: a do IBGE (completa); se o IBGE não
+ * responder, as cidades da pesquisa da ANP. Nunca impede digitar outra.
+ */
+export function useCityList(uf: string | null) {
+  const fetchIbge = useServerFn(listMunicipios);
+  const anp = useAnpCities(uf);
+  const ibge = useQuery({
+    ...base,
+    staleTime: 7 * 24 * 60 * 60_000,
+    retry: 1,
+    enabled: !!uf,
+    queryKey: ["ibge-cities", uf ?? ""],
+    queryFn: () => fetchIbge({ data: { uf: uf! } }),
+  });
+  const list = ibge.data?.length ? ibge.data : (anp.data ?? []);
+  return { list, complete: !!ibge.data?.length, isLoading: ibge.isLoading };
 }
 
 export function usePriceReferences(place: { uf: string | null; city: string | null }) {

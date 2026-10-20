@@ -16,7 +16,6 @@ import {
   PrimaryStar,
   ScreenSkeleton,
   TeoSays,
-  SelectField,
   TextField,
   VerdictCard,
 } from "@/components/ds";
@@ -28,7 +27,6 @@ import {
   usePriceReferences,
   useProfile,
   useSetPrimaryVehicle,
-  useStations,
   useVehicles,
 } from "@/hooks/use-tanque";
 import {
@@ -110,7 +108,6 @@ function AbastecerPage() {
   const profile = useProfile();
   const place = { uf: profile.data?.state ?? null, city: profile.data?.city ?? null };
   const references = usePriceReferences(place);
-  const stations = useStations(profile.data?.city ?? null);
   const create = useCreateFueling();
   const setPrimary = useSetPrimaryVehicle();
 
@@ -151,7 +148,6 @@ function AbastecerPage() {
   const [litersInput, setLitersInput] = useState("");
   /** null = a pessoa não mexeu no campo: vale o km sugerido (se houver). */
   const [odometerInput, setOdometer] = useState<string | null>(null);
-  const [stationId, setStationId] = useState<string>("");
   /**
    * Começa sempre em "Não": marcar tanque cheio sem ter enchido estraga a medição do consumo.
    * Quem completou escolhe "Sim" de propósito.
@@ -252,7 +248,8 @@ function AbastecerPage() {
     const parsed = fuelingSchema.safeParse({
       id: crypto.randomUUID(),
       vehicle_id: vehicle.id,
-      station_id: stationId || null,
+      // Sem base de postos confiável no beta (a tabela antiga tem exemplos do protótipo).
+      station_id: null,
       fuel_type_id: fuelTypeId,
       filled_at: filledAt.toISOString(),
       liters: Number(amounts.liters.toFixed(3)),
@@ -650,18 +647,6 @@ function AbastecerPage() {
               suffix={unit}
               hint="Só se você preferir informar os litros no lugar do preço."
             />
-
-            {(stations.data ?? []).length > 0 ? (
-              <SelectField
-                label="Posto"
-                value={stationId}
-                onChange={(event) => setStationId(event.target.value)}
-                options={[
-                  { value: "", label: "Não informar" },
-                  ...(stations.data ?? []).map((s) => ({ value: s.id, label: s.name })),
-                ]}
-              />
-            ) : null}
           </div>
         ) : null}
 

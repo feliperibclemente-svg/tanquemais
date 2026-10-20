@@ -1,6 +1,7 @@
 import type { FuelingComputed } from "@/services/analytics";
 import { chooseReference, type PriceReferenceRow } from "@/services/anp";
 import { brl, num } from "@/lib/format";
+import { FUEL_LABEL } from "@/constants/app";
 
 /* =========================================================================
  * Retrospectiva do mês (no estilo das retrospectivas de apps de música):
@@ -192,21 +193,29 @@ export function buildMonthlyRecap(o: {
     }
   }
 
-  // Melhor preço do mês
+  // Melhor preço do mês: só entre abastecimentos do mesmo combustível (etanol é sempre
+  // mais barato por litro que gasolina; misturar daria um "melhor preço" enganoso).
   const priced = inMonth.filter((r) => Number(r.price_per_liter) > 0);
-  if (priced.length >= 2) {
-    const best = priced.reduce((a, b) =>
+  const byFuel = new Map<string, typeof priced>();
+  for (const r of priced) byFuel.set(r.fuel_type_id, [...(byFuel.get(r.fuel_type_id) ?? []), r]);
+  const mainFuel = [...byFuel.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+  if (mainFuel && mainFuel[1].length >= 2) {
+    const best = mainFuel[1].reduce((a, b) =>
       Number(b.price_per_liter) < Number(a.price_per_liter) ? b : a,
     );
+    const fuel = FUEL_LABEL[best.fuel_type_id] ?? best.fuel_type_id;
     const d = new Date(best.filled_at);
     slides.push({
       id: "melhor-preco",
       theme: "verde",
-      eyebrow: "Seu melhor preço do mês",
+      eyebrow: `Seu melhor preço de ${fuel.toLowerCase()} no mês`,
       big: `${brl(Number(best.price_per_liter))}`,
       title: `por litro, em ${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`,
     });
-    summary.push({ label: "Melhor preço", value: `${brl(Number(best.price_per_liter))}/L` });
+    summary.push({
+      label: `Melhor preço (${fuel})`,
+      value: `${brl(Number(best.price_per_liter))}/L`,
+    });
   }
 
   // Resumo só quando acrescenta algo (3 números ou mais).

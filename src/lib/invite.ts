@@ -1,9 +1,12 @@
 import { SITE_URL } from "@/constants/app";
 import { track } from "@/lib/analytics";
 
-/** Mensagem do convite: curta, no tom de quem indica para um amigo. */
+/**
+ * Mensagem do convite: natural entre amigos, com o benefício, "grátis" e "beta".
+ * "iPhone e Android" sem citar lojas: o app abre pelo navegador e pode ir para a tela inicial.
+ */
 export function inviteMessage(): string {
-  return `Tô usando o Tanque+ pra saber quanto meu carro gasta de verdade e se tô pagando caro no combustível. É grátis: ${SITE_URL.replace(/^https?:\/\//, "")}`;
+  return `Estou usando o Tanque+ para ver o consumo real do meu carro e quanto gasto de combustível. É grátis e está em versão beta, funciona no iPhone e no Android: ${SITE_URL.replace(/^https?:\/\//, "")}`;
 }
 
 /**

@@ -11,7 +11,8 @@ import { cn } from "@/lib/utils";
  * movimento" ativo não há avanço automático. Guia de voz: docs/marca/teo.md.
  */
 
-const STORY_MS = 7000;
+/** 10 s por tela: dá para ler a fala do Teo com calma; tocar avança antes. */
+const STORY_MS = 10_000;
 export const TOUR_SEEN_KEY = "tanque:tour:v1";
 
 export function tourSeen(): boolean {
@@ -76,7 +77,7 @@ const STORIES: Story[] = [
     ),
   },
   {
-    title: "Registre em uns 20 segundos",
+    title: "Registre em 20 segundos",
     mood: "tip",
     teo: "No posto, com o veículo parado: quanto pagou, o preço do litro e o km do painel. Os valores mais comuns ficam a um toque.",
     visual: (

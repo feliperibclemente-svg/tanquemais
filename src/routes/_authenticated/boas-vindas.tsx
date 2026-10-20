@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Fuel } from "lucide-react";
+import { CityField } from "@/components/app/CityField";
 import {
   Action,
   ActionLink,
@@ -18,13 +19,7 @@ import {
 } from "@/components/ds";
 import { BR_UFS, FUEL_TYPES } from "@/constants/app";
 import { canonicalVehicle, vehicleWords, fuelsFor } from "@/constants/vehicles";
-import {
-  useAnpCities,
-  useCreateVehicle,
-  useProfile,
-  useUpdateProfile,
-  useVehicles,
-} from "@/hooks/use-tanque";
+import { useCreateVehicle, useProfile, useUpdateProfile, useVehicles } from "@/hooks/use-tanque";
 import { supabase } from "@/integrations/supabase/client";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { sendWelcomeEmail } from "@/lib/welcome-email.functions";
@@ -100,7 +95,6 @@ function AboutYouStep({ profile }: { profile: Profile }) {
   const [birth, setBirth] = useState(formatBirthDate(profile.birth_date));
   const [uf, setUf] = useState(profile.state ?? "");
   const [city, setCity] = useState(profile.city ?? "");
-  const cities = useAnpCities(uf || null);
   const [error, setError] = useState<string | null>(null);
   const [minor, setMinor] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -217,23 +211,11 @@ function AboutYouStep({ profile }: { profile: Profile }) {
             onChange={(event) => setUf(event.target.value)}
             options={[{ value: "", label: "UF" }, ...BR_UFS.map((u) => ({ value: u, label: u }))]}
           />
-          <TextField
-            label="Cidade"
-            value={city}
-            list="anp-cities"
-            autoComplete="address-level2"
-            autoCapitalize="words"
-            onChange={(event) => setCity(event.target.value)}
-          />
+          <CityField uf={uf} value={city} onChange={setCity} hint="" />
         </div>
-        <datalist id="anp-cities">
-          {(cities.data ?? []).map((c) => (
-            <option key={c} value={c} />
-          ))}
-        </datalist>
         <p className="-mt-2 text-xs text-muted-foreground">
-          Opcional. Com a cidade, já no primeiro abastecimento eu mostro se você pagou acima ou
-          abaixo da média dela (fonte: ANP).
+          Opcional. Digite e escolha sua cidade na lista (se não achar, pode digitar). Com ela, já
+          no primeiro abastecimento eu mostro se você pagou acima ou abaixo da média (ANP).
         </p>
 
         {error ? (

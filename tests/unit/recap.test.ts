@@ -47,6 +47,27 @@ describe("retrospectiva do mês", () => {
     expect(r.slides.find((s) => s.id === "melhor-preco")!.big).toMatch(/5,90/);
     expect(r.summary.map((x) => x.label)).toContain("Custo por km");
   });
+  it("melhor preço compara só o mesmo combustível (etanol não 'vence' a gasolina)", () => {
+    const eth = { ...f("5", 25, 11900, 4.2), fuel_type_id: "etanol" } as Fueling;
+    const mixed = computeFuelings([
+      f("1", 2, 10000, 6.0),
+      f("2", 9, 10480, 6.1),
+      f("3", 16, 10960, 5.9),
+      eth,
+    ]);
+    const r = buildMonthlyRecap({
+      rows: mixed,
+      key: "2026-10",
+      partial: false,
+      vehicleYour: "Seu Argo",
+    });
+    const best = r.slides.find((s) => s.id === "melhor-preco")!;
+    expect(best.big).toMatch(/5,90/);
+    expect(best.eyebrow).toContain("gasolina");
+    expect(r.summary.find((x) => x.label.startsWith("Melhor preço"))!.label).toBe(
+      "Melhor preço (Gasolina)",
+    );
+  });
   it("compara com a média da cidade quando há referência da ANP", () => {
     const refs = [
       {

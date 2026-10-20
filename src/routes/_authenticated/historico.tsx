@@ -28,8 +28,9 @@ import {
   type FuelingComputed,
   type FuelingIssue,
 } from "@/services/analytics";
-import { downloadText, fuelingsToCsv } from "@/lib/csv";
+import { fuelingsToCsv, saveCsv } from "@/lib/csv";
 import { track } from "@/lib/analytics";
+import { toast } from "sonner";
 import { deriveAmounts, historyVerdicts } from "@/services/verdict";
 import type { Fueling } from "@/types/domain";
 
@@ -92,11 +93,18 @@ function HistoricoPage() {
     };
   }, [rows]);
 
-  function exportCsv() {
+  async function exportCsv() {
     const csv = fuelingsToCsv(rows, vehicleName);
     const stamp = new Date().toISOString().slice(0, 10);
-    downloadText(csv, `tanque-abastecimentos-${stamp}.csv`);
-    track("export_csv", { rows: rows.length, period });
+    const result = await saveCsv(csv, `tanque-abastecimentos-${stamp}.csv`);
+    if (result === "cancelled") return;
+    track("export_csv", { rows: rows.length, period, via: result });
+    toast.success(
+      result === "downloaded"
+        ? "Planilha baixada (CSV). Abra no Excel ou no Google Planilhas."
+        : "Planilha pronta (CSV). Abra no Excel ou no Google Planilhas.",
+      { description: "No computador fica mais confortável para analisar." },
+    );
   }
   /** Agrupa por mês (mais recente primeiro) com o total gasto. */
   const months = useMemo(() => {
@@ -174,11 +182,15 @@ function HistoricoPage() {
               size="sm"
               onClick={exportCsv}
               disabled={rows.length === 0}
-              aria-label="Exportar planilha CSV"
+              aria-label="Baixar planilha deste período (CSV, abre no Excel)"
             >
-              <Download className="h-4 w-4" /> CSV
+              <Download className="h-4 w-4" /> Planilha
             </Action>
           </AppCard>
+          <p className="-mt-3 px-1 text-xs text-muted-foreground">
+            A planilha sai em CSV, com os filtros acima. Abre no Excel, no Google Planilhas e no
+            Numbers.
+          </p>
           {rows.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
               Nenhum abastecimento neste período.

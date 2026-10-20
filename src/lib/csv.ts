@@ -101,3 +101,27 @@ export function downloadText(content: string, filename: string, type = "text/csv
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+export type SaveResult = "shared" | "downloaded" | "cancelled";
+
+/**
+ * Salva a planilha. No celular abre o menu do aparelho (Salvar em Arquivos, mandar por
+ * e-mail ou WhatsApp para abrir no computador), porque o download direto costuma só
+ * pré-visualizar o arquivo, principalmente no iPhone. No computador, baixa.
+ */
+export async function saveCsv(content: string, filename: string): Promise<SaveResult> {
+  const mobile = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
+  if (mobile && typeof navigator !== "undefined" && navigator.canShare) {
+    const file = new File([content], filename, { type: "text/csv" });
+    try {
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "Abastecimentos Tanque+" });
+        return "shared";
+      }
+    } catch (error) {
+      if ((error as Error)?.name === "AbortError") return "cancelled";
+    }
+  }
+  downloadText(content, filename);
+  return "downloaded";
+}
