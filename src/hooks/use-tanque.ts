@@ -2,11 +2,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { listMunicipios } from "@/lib/municipios.functions";
 import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/user-error";
 import { QUERY_STALE_TIME } from "@/constants/app";
 import {
   fuelingsRepository,
   profilesRepository,
-  stationsRepository,
   statisticsRepository,
   vehiclesRepository,
   type FuelingDraft,
@@ -26,7 +26,6 @@ export const queryKeys = {
   profile: (userId: string) => ["profile", userId] as const,
   vehicles: (userId: string) => ["vehicles", userId] as const,
   fuelings: (userId: string) => ["fuelings", userId] as const,
-  stations: (city: string | null) => ["stations", city ?? "all"] as const,
   userStats: (userId: string) => ["user-stats", userId] as const,
   vehicleStats: (vehicleId: string) => ["vehicle-stats", vehicleId] as const,
   priceReferences: (uf: string, city: string) => ["price-references", uf, city] as const,
@@ -267,15 +266,6 @@ export function useFuelings() {
   });
 }
 
-export function useStations(city: string | null) {
-  return useQuery({
-    ...base,
-    staleTime: 5 * 60_000,
-    queryKey: queryKeys.stations(city),
-    queryFn: () => stationsRepository.list(city),
-  });
-}
-
 export function useVehicleStats(vehicleId: string | null) {
   return useQuery({
     ...base,
@@ -290,7 +280,7 @@ export function useVehicleStats(vehicleId: string | null) {
 function reportMutationError(scope: string) {
   return (error: Error) => {
     captureException(error, { scope });
-    toast.error(error.message);
+    toast.error(friendlyError(error));
   };
 }
 
@@ -444,7 +434,7 @@ export function useUpdateProfile() {
     onSuccess: () => {
       client.invalidateQueries({ queryKey: queryKeys.profile(user?.id ?? "") });
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: (error: Error) => toast.error(friendlyError(error)),
   });
 }
 
@@ -456,7 +446,6 @@ export function useHomeData() {
   const vehicles = useVehicles();
   const fuelings = useFuelings();
   const primary = vehicles.data?.find((v) => v.is_primary) ?? vehicles.data?.[0] ?? null;
-  const stations = useStations(profile.data?.city ?? null);
 
   // Home, Painel e Perfil mostram só o veículo principal.
   const rows = computeFuelings(
@@ -472,7 +461,7 @@ export function useHomeData() {
       : null;
   const savings = savingsOpportunity(
     rows,
-    stations.data ?? [],
+    [],
     primary?.fuel_type_id ?? null,
     primary?.tank_liters ?? null,
   );
@@ -502,6 +491,5 @@ export function useHomeData() {
     hasPlace: !!toUf(place.uf ?? ""),
     references: references.data ?? [],
     lastReference,
-    stations: stations.data ?? [],
   };
 }

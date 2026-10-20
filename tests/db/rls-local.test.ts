@@ -54,7 +54,7 @@ const fueling = (uid: string, vehicle: string, odometer: number) => ({
   full_tank: true,
 });
 
-describeDb("RLS local: abastecimentos e veículos", () => {
+if (ADMIN_URL) {
   beforeAll(async () => {
     admin = postgres(ADMIN_URL!, { max: 1, onnotice: () => {} });
     await admin.unsafe(`create database ${dbName}`);
@@ -75,7 +75,9 @@ describeDb("RLS local: abastecimentos e veículos", () => {
     await admin?.unsafe(`drop database if exists ${dbName}`);
     await admin?.end();
   });
+}
 
+describeDb("RLS local: abastecimentos e veículos", () => {
   it("registra abastecimento no próprio veículo", async () => {
     const rows = await asUser(
       A,
@@ -119,5 +121,49 @@ describeDb("RLS local: abastecimentos e veículos", () => {
     }));
     expect(result.updated).toHaveLength(0);
     expect(result.deleted).toHaveLength(0);
+  });
+});
+
+describeDb("limites e limpeza do protótipo", () => {
+  it("limite diário de IA por pessoa", async () => {
+    const answers = await asUser(A, async (tx) => {
+      const out: boolean[] = [];
+      for (let i = 0; i < 3; i++) {
+        const [r] = await tx`select public.ai_take('dica', 2) as ok`;
+        out.push(r.ok);
+      }
+      return out;
+    });
+    expect(answers).toEqual([true, true, false]);
+  });
+
+  it("visitante não usa a função de limite de IA", async () => {
+    await expect(
+      db.begin(async (tx) => {
+        await tx.unsafe("set local role anon");
+        await tx`select public.ai_take('dica', 2)`;
+      }),
+    ).rejects.toThrow(/permission denied/);
+  });
+
+  it("app_errors descarta o excesso por hora sem dar erro", async () => {
+    const count = await db.begin(async (tx) => {
+      await tx.unsafe("set local role anon");
+      for (let i = 0; i < 205; i++) {
+        await tx`insert into public.app_errors (message) values (${`erro ${i}`})`;
+      }
+      await tx.unsafe("reset role");
+      const [r] = await tx`select count(*)::int as n from public.app_errors`;
+      return r.n as number;
+    });
+    expect(count).toBe(200);
+  });
+
+  it("sem postos, preços e clubes inventados do protótipo", async () => {
+    const [r] = await db`select
+      (select count(*) from public.stations where id::text like '22222222-0000-4000-8000-%')::int as stations,
+      (select count(*) from public.station_prices)::int as prices,
+      (select count(*) from public.clubs where id::text like '11111111-0000-4000-8000-%')::int as clubs`;
+    expect(r).toEqual({ stations: 0, prices: 0, clubs: 0 });
   });
 });

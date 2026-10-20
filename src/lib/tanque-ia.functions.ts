@@ -16,12 +16,21 @@ import type { Fueling } from "@/types/domain";
  * Se a frase da IA citar um número que não está nos fatos, falar em economia/previsão
  * sem base, ou falhar por qualquer motivo, o app mostra o texto calculado.
  */
+/** Frases da IA por pessoa por dia; depois disso o app mostra o texto calculado. */
+const AI_DAILY_TIPS = 20;
+
 export const phraseInsight = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const none = { text: null as string | null, basis: null as string | null };
     const ai = aiProvider();
     if (!ai) return none;
+    // Limite diário por pessoa (custo). Sem a função no banco, segue sem limite.
+    const { data: allowed } = await context.supabase.rpc("ai_take", {
+      _kind: "dica",
+      _max: AI_DAILY_TIPS,
+    });
+    if (allowed === false) return none;
 
     const [{ data: vehicles }, { data: fuelings }, { data: profile }] = await Promise.all([
       context.supabase

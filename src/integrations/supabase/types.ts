@@ -1315,6 +1315,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      ai_take: { Args: { _kind: string; _max: number }; Returns: boolean };
       community_delete: { Args: { _post_id: string }; Returns: undefined };
       community_feed: {
         Args: Record<PropertyKey, never>;

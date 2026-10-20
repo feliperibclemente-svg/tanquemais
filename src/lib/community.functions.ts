@@ -104,6 +104,9 @@ export const moderatePost = createServerFn({ method: "POST" })
  * 3. aprovação do admin antes de aparecer no mural.
  * Dicas recusadas não são guardadas.
  */
+/** Tentativas de publicar por pessoa por dia (cada uma passa pela IA). */
+const AI_DAILY_MODERATIONS = 10;
+
 export const publishTip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { topic: string; content: string }) => {
@@ -120,6 +123,19 @@ export const publishTip = createServerFn({ method: "POST" })
     if (hasLink(text)) return { ok: false, message: "Links não são aceitos na comunidade." };
 
     const ai = aiProvider();
+    if (ai) {
+      // Limite diário de dicas analisadas pela IA (as recusadas não chegam ao limite do banco).
+      const { data: allowed } = await context.supabase.rpc("ai_take", {
+        _kind: "moderacao",
+        _max: AI_DAILY_MODERATIONS,
+      });
+      if (allowed === false) {
+        return {
+          ok: false,
+          message: "Você chegou ao limite de tentativas de hoje. Tente de novo amanhã.",
+        };
+      }
+    }
     if (ai) {
       try {
         const res = await fetch(ai.url, {
