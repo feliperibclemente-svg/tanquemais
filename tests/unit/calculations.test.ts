@@ -276,3 +276,30 @@ describe("lembrete de registro (sem notificação)", () => {
     expect(fuelingReminder(rows, new Date(2026, 11, 1, 12))).toBeNull();
   });
 });
+
+describe("km improvável (dígito a mais)", () => {
+  const row = (id: string, day: number, odometer: number) => ({
+    id,
+    vehicle_id: "v1",
+    filled_at: new Date(2026, 9, day, 12).toISOString(),
+    odometer,
+  });
+  it("pede confirmação para um dígito a mais", async () => {
+    const { odometerJump } = await import("@/services/analytics");
+    const j = odometerJump([row("a", 10, 48210)], new Date(2026, 9, 17, 12), 482100);
+    expect(j?.jump).toBe(433890);
+  });
+  it("não incomoda em uso normal nem depois de meses sem registrar", async () => {
+    const { odometerJump } = await import("@/services/analytics");
+    expect(odometerJump([row("a", 10, 48210)], new Date(2026, 9, 17, 12), 48700)).toBeNull();
+    // 90 dias sem registrar, 6.000 km: plausível
+    expect(odometerJump([row("a", 1, 48210)], new Date(2026, 11, 30, 12), 54210)).toBeNull();
+    // estrada: 1.800 km em 2 dias
+    expect(odometerJump([row("a", 10, 48210)], new Date(2026, 9, 12, 12), 50010)).toBeNull();
+  });
+  it("aponta no histórico o registro com o salto", async () => {
+    const { suspiciousJumpIds } = await import("@/services/analytics");
+    const ids = suspiciousJumpIds([row("a", 1, 48210), row("b", 8, 482100), row("c", 15, 48900)]);
+    expect([...ids]).toEqual(["b"]);
+  });
+});

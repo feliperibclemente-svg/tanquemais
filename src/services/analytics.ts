@@ -408,6 +408,67 @@ export function validateOdometer(
   return null;
 }
 
+/* -------------------------------------------------------------------------
+ * Km improvável: um dígito a mais (482.100 em vez de 48.210) passa na validação
+ * "maior que o anterior" e depois trava os registros corretos. Não bloqueia: pede
+ * confirmação. Suspeito = salto acima de 2.000 km E acima de 1.000 km por dia desde
+ * o registro anterior (nem caminhão de estrada roda isso).
+ * ------------------------------------------------------------------------- */
+export const JUMP_MIN_KM = 2000;
+export const JUMP_KM_PER_DAY = 1000;
+
+type OdoRow = Pick<Fueling, "id" | "filled_at" | "odometer">;
+
+function isSuspiciousJump(previous: OdoRow, filledAt: Date, odometer: number): number | null {
+  const prevKm = Number(previous.odometer) || 0;
+  if (!(prevKm > 0) || !(odometer > prevKm)) return null;
+  const jump = odometer - prevKm;
+  const days = Math.max(
+    1,
+    (filledAt.getTime() - new Date(previous.filled_at).getTime()) / 86_400_000,
+  );
+  return jump > JUMP_MIN_KM && jump > days * JUMP_KM_PER_DAY ? jump : null;
+}
+
+/** Salto suspeito em relação ao registro anterior (por data) do mesmo veículo, ou null. */
+export function odometerJump(
+  vehicleRows: OdoRow[],
+  filledAt: Date,
+  odometer: number,
+  ignoreId?: string,
+): { previous: number; jump: number } | null {
+  const t = filledAt.getTime();
+  const prev = vehicleRows
+    .filter((r) => r.id !== ignoreId && new Date(r.filled_at).getTime() <= t)
+    .sort((a, b) => new Date(b.filled_at).getTime() - new Date(a.filled_at).getTime())[0];
+  if (!prev) return null;
+  const jump = isSuspiciousJump(prev, filledAt, odometer);
+  return jump ? { previous: Number(prev.odometer), jump } : null;
+}
+
+export function odometerJumpText(j: { previous: number; jump: number }): string {
+  const fmt = (n: number) => Math.round(n).toLocaleString("pt-BR");
+  return `Confere o km? São ${fmt(j.jump)} km a mais que o registro anterior (${fmt(j.previous)} km). Um dígito a mais atrapalha o cálculo do consumo.`;
+}
+
+/** Registros com salto suspeito, para o Histórico apontar onde provavelmente está o erro. */
+export function suspiciousJumpIds(rows: (OdoRow & Pick<Fueling, "vehicle_id">)[]): Set<string> {
+  const ids = new Set<string>();
+  const byVehicle = new Map<string, OdoRow[]>();
+  for (const r of rows) byVehicle.set(r.vehicle_id, [...(byVehicle.get(r.vehicle_id) ?? []), r]);
+  for (const list of byVehicle.values()) {
+    const asc = [...list].sort(
+      (a, b) => new Date(a.filled_at).getTime() - new Date(b.filled_at).getTime(),
+    );
+    for (let i = 1; i < asc.length; i++) {
+      const cur = asc.at(i)!;
+      if (isSuspiciousJump(asc.at(i - 1)!, new Date(cur.filled_at), Number(cur.odometer)))
+        ids.add(cur.id);
+    }
+  }
+  return ids;
+}
+
 /**
  * Quantos tanques cheios ainda faltam para o primeiro consumo real (método tanque cheio →
  * tanque cheio). Sem nenhum tanque cheio com km registrado faltam 2; com a âncora, falta 1.

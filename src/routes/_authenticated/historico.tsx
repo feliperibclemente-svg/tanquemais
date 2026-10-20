@@ -25,6 +25,9 @@ import { brl, fullDate, kmPerLiter, num, shortDate } from "@/lib/format";
 import { useDeleteFueling, useFuelings, useUpdateFueling, useVehicles } from "@/hooks/use-tanque";
 import {
   computeFuelings,
+  odometerJump,
+  odometerJumpText,
+  suspiciousJumpIds,
   validateOdometer,
   type FuelingComputed,
   type FuelingIssue,
@@ -86,6 +89,8 @@ function HistoricoPage() {
     [fuelings.data, vehicleList],
   );
   const verdicts = useMemo(() => historyVerdicts(allRows), [allRows]);
+  /** Registros com km muito acima do anterior: provável dígito a mais. */
+  const suspicious = useMemo(() => suspiciousJumpIds(allRows), [allRows]);
   const [period, setPeriod] = useState<PeriodId>("all");
   const rows = useMemo(() => {
     const range = periodRange(period);
@@ -243,6 +248,10 @@ function HistoricoPage() {
                               <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-destructive/30 px-2 py-0.5 text-[11px] font-medium text-destructive">
                                 <AlertTriangle className="h-3 w-3" /> {ISSUE_SHORT[row.issue]}
                               </span>
+                            ) : suspicious.has(row.id) ? (
+                              <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-destructive/30 px-2 py-0.5 text-[11px] font-medium text-destructive">
+                                <AlertTriangle className="h-3 w-3" /> Km muito acima do anterior
+                              </span>
                             ) : verdict ? (
                               <span className="mt-1 block">
                                 <VerdictPill verdict={verdict} />
@@ -286,6 +295,13 @@ function HistoricoPage() {
                             {row.issue ? (
                               <p className="rounded-2xl bg-muted px-3 py-2 text-xs text-foreground">
                                 {ISSUE_HELP[row.issue]}
+                              </p>
+                            ) : null}
+                            {suspicious.has(row.id) ? (
+                              <p className="rounded-2xl bg-muted px-3 py-2 text-xs text-foreground">
+                                O km deste registro está muito acima do anterior. Se tiver um dígito
+                                a mais, corrija em Editar: isso destrava o cálculo do consumo e os
+                                registros seguintes.
                               </p>
                             ) : null}
                             <Row
@@ -392,6 +408,7 @@ function EditFueling({
   const [fuel, setFuel] = useState(row.fuel_type_id);
   const [station, setStation] = useState(row.station_name ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [jumpConfirmed, setJumpConfirmed] = useState<number | null>(null);
 
   const amounts = deriveAmounts({
     total: parseDecimal(total),
@@ -420,6 +437,12 @@ function EditFueling({
     const odometerError = validateOdometer(siblings, filledAt, odo, row.id);
     if (odometerError) {
       setError(odometerError);
+      return;
+    }
+    const jump = odometerJump(siblings, filledAt, odo, row.id);
+    if (jump && jumpConfirmed !== odo) {
+      setError(`${odometerJumpText(jump)} Se estiver certo, toque em Salvar de novo.`);
+      setJumpConfirmed(odo);
       return;
     }
     try {

@@ -1,0 +1,84 @@
+name: Verificações
+
+# Roda em todo pull request e push no main: lint, testes de regras de negócio, build,
+# tipos e as regras de acesso (RLS) num Postgres descartável com o schema do repositório.
+# Nunca acessa o Supabase de produção.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: Lint, testes, build e tipos
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache de dependências (bun)
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb', 'bun.lock', 'package.json') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bunx eslint --quiet src tests
+
+      - name: Testes de regras de negócio
+        run: bunx vitest run tests/unit
+
+      - name: Build
+        run: NITRO_PRESET=vercel bun run build
+
+      # Depois do build, que gera a árvore de rotas.
+      - name: Tipos
+        run: bunx tsc --noEmit
+
+  rls-local:
+    name: Regras de acesso (Postgres local)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Testes de RLS no schema do repositório
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
+        run: bunx vitest run tests/db

@@ -34,6 +34,8 @@ import {
   consumptionPendingText,
   fullTanksMissing,
   validateOdometer,
+  odometerJump,
+  odometerJumpText,
 } from "@/services/analytics";
 import { vehicleWords, vehicleName, fuelsFor, vehicleKind } from "@/constants/vehicles";
 import { shareCard } from "@/lib/share-image";
@@ -166,6 +168,8 @@ function AbastecerPage() {
   const unit = FUEL_TYPES.find((f) => f.id === fuelTypeId)?.unit ?? "L";
   const [details, setDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** km confirmado pela pessoa depois do aviso de salto improvável. */
+  const [jumpConfirmed, setJumpConfirmed] = useState<number | null>(null);
   const [saved, setSaved] = useState<Saved | null>(null);
 
   const amounts = deriveAmounts({
@@ -188,6 +192,9 @@ function AbastecerPage() {
     odometerInput ?? (registeredOdometer > 0 ? maskInteger(String(registeredOdometer)) : "");
   const odometerFromRegistration = odometerInput === null && registeredOdometer > 0;
   const odometerValue = odometer ? parseDecimal(odometer) : 0;
+  const jump =
+    vehicle && odometerValue > 0 ? odometerJump(vehicleHistory, filledAt, odometerValue) : null;
+  const jumpPending = !!jump && jumpConfirmed !== odometerValue;
 
   /** Consumo do novo registro calculado com o histórico real (tanque cheio → tanque cheio). */
   const previewKml = useMemo(() => {
@@ -251,6 +258,10 @@ function AbastecerPage() {
     const odometerError = validateOdometer(vehicleHistory, filledAt, odometerValue);
     if (odometerError) {
       setError(odometerError);
+      return;
+    }
+    if (jumpPending) {
+      setError('Confira o km acima: corrija ou toque em "O km está certo".');
       return;
     }
 
@@ -600,6 +611,28 @@ function AbastecerPage() {
                 : `Odômetro do painel ${words.ofThe}`
           }
         />
+        {jump ? (
+          <div className="-mt-3 space-y-2 rounded-2xl border border-destructive/30 px-3 py-2.5 text-sm text-foreground">
+            <p className="flex items-start gap-2">
+              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+              <span>{odometerJumpText(jump)}</span>
+            </p>
+            {jumpPending ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setJumpConfirmed(odometerValue);
+                  setError(null);
+                }}
+                className="inline-flex min-h-11 items-center text-sm font-semibold text-primary"
+              >
+                O km está certo
+              </button>
+            ) : (
+              <p className="text-xs text-muted-foreground">Ok, vou salvar com esse km.</p>
+            )}
+          </div>
+        ) : null}
 
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-foreground">

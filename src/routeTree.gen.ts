@@ -32,6 +32,7 @@ import { Route as AuthenticatedPostosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedPrecosRouteImport } from './routes/_authenticated/precos'
 import { Route as AuthenticatedRetrospectivaRouteImport } from './routes/_authenticated/retrospectiva'
 import { Route as AuthenticatedVeiculoRouteImport } from './routes/_authenticated/veiculo'
+import { Route as AuthenticatedViagemRouteImport } from './routes/_authenticated/viagem'
 import { Route as ApiCronDiarioRouteImport } from './routes/api/cron/diario'
 
 const IndexRoute = IndexRouteImport.update({
@@ -150,6 +151,11 @@ const AuthenticatedVeiculoRoute = AuthenticatedVeiculoRouteImport.update({
   path: '/veiculo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedViagemRoute = AuthenticatedViagemRouteImport.update({
+  id: '/viagem',
+  path: '/viagem',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiCronDiarioRoute = ApiCronDiarioRouteImport.update({
   id: '/api/cron/diario',
   path: '/api/cron/diario',
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/precos': typeof AuthenticatedPrecosRoute
   '/retrospectiva': typeof AuthenticatedRetrospectivaRoute
   '/veiculo': typeof AuthenticatedVeiculoRoute
+  '/viagem': typeof AuthenticatedViagemRoute
   '/api/cron/diario': typeof ApiCronDiarioRoute
 }
 export interface FileRoutesByTo {
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/precos': typeof AuthenticatedPrecosRoute
   '/retrospectiva': typeof AuthenticatedRetrospectivaRoute
   '/veiculo': typeof AuthenticatedVeiculoRoute
+  '/viagem': typeof AuthenticatedViagemRoute
   '/api/cron/diario': typeof ApiCronDiarioRoute
 }
 export interface FileRoutesById {
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/_authenticated/precos': typeof AuthenticatedPrecosRoute
   '/_authenticated/retrospectiva': typeof AuthenticatedRetrospectivaRoute
   '/_authenticated/veiculo': typeof AuthenticatedVeiculoRoute
+  '/_authenticated/viagem': typeof AuthenticatedViagemRoute
   '/api/cron/diario': typeof ApiCronDiarioRoute
 }
 export interface FileRouteTypes {
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/retrospectiva'
     | '/veiculo'
+    | '/viagem'
     | '/api/cron/diario'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/precos'
     | '/retrospectiva'
     | '/veiculo'
+    | '/viagem'
     | '/api/cron/diario'
   id:
     | '__root__'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/_authenticated/precos'
     | '/_authenticated/retrospectiva'
     | '/_authenticated/veiculo'
+    | '/_authenticated/viagem'
     | '/api/cron/diario'
   fileRoutesById: FileRoutesById
 }
@@ -486,6 +498,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVeiculoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/viagem': {
+      id: '/_authenticated/viagem'
+      path: '/viagem'
+      fullPath: '/viagem'
+      preLoaderRoute: typeof AuthenticatedViagemRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/cron/diario': {
       id: '/api/cron/diario'
       path: '/api/cron/diario'
@@ -513,6 +532,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrecosRoute: typeof AuthenticatedPrecosRoute
   AuthenticatedRetrospectivaRoute: typeof AuthenticatedRetrospectivaRoute
   AuthenticatedVeiculoRoute: typeof AuthenticatedVeiculoRoute
+  AuthenticatedViagemRoute: typeof AuthenticatedViagemRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -532,6 +552,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPrecosRoute: AuthenticatedPrecosRoute,
   AuthenticatedRetrospectivaRoute: AuthenticatedRetrospectivaRoute,
   AuthenticatedVeiculoRoute: AuthenticatedVeiculoRoute,
+  AuthenticatedViagemRoute: AuthenticatedViagemRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
