@@ -1,7 +1,8 @@
 name: Verificações
 
 # Roda em todo pull request e push no main: lint, testes de regras de negócio, build,
-# tipos e as regras de acesso (RLS) num Postgres descartável com o schema do repositório.
+# tipos, as regras de acesso (RLS) num Postgres descartável com o schema do repositório e
+# os fluxos críticos da interface num celular simulado.
 # Nunca acessa o Supabase de produção.
 on:
   pull_request:
@@ -82,3 +83,34 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
         run: bunx vitest run tests/db
+
+  e2e:
+    name: Telas (cadastro, abastecer, histórico)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Instalar o Chromium do Playwright
+        run: bunx playwright install --with-deps chromium
+
+      # Supabase simulado no navegador; nada é gravado de verdade.
+      - name: Testes de interface
+        env:
+          CI: "true"
+        run: bunx playwright test
+
+      - name: Relatório em caso de falha
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
