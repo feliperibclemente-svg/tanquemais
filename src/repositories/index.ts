@@ -115,6 +115,8 @@ export type FuelingDraft = {
   id?: string;
   vehicle_id: string;
   station_id?: string | null;
+  /** Nome do posto digitado pela pessoa (opcional). */
+  station_name?: string | null;
   fuel_type_id: string;
   filled_at: string;
   liters: number;
@@ -124,6 +126,13 @@ export type FuelingDraft = {
   full_tank: boolean;
   note?: string | null;
 };
+
+/** Erro do PostgREST para coluna que ainda não existe no banco. */
+export function isMissingColumn(error: { code?: string; message?: string }, column: string) {
+  return (
+    (error.code === "PGRST204" || error.code === "42703") && (error.message ?? "").includes(column)
+  );
+}
 
 export const fuelingsRepository = {
   async list(userId: string, limit = 200): Promise<Fueling[]> {
@@ -144,29 +153,37 @@ export const fuelingsRepository = {
     draft: FuelingDraft,
     computed: { km_per_liter: number | null; cost_per_km: number | null },
   ): Promise<Fueling | null> {
-    const { data, error } = await supabase
-      .from("fuelings")
-      .upsert(
-        {
-          ...(draft.id ? { id: draft.id } : {}),
-          user_id: userId,
-          vehicle_id: draft.vehicle_id,
-          station_id: draft.station_id ?? null,
-          fuel_type_id: draft.fuel_type_id,
-          filled_at: draft.filled_at,
-          liters: draft.liters,
-          price_per_liter: draft.price_per_liter,
-          total_cost: draft.total_cost,
-          odometer: draft.odometer,
-          full_tank: draft.full_tank,
-          note: draft.note || null,
-          km_per_liter: computed.km_per_liter,
-          cost_per_km: computed.cost_per_km,
-        },
-        { onConflict: "id", ignoreDuplicates: true },
-      )
-      .select("*")
-      .maybeSingle();
+    const station = draft.station_name?.trim() || null;
+    const row = {
+      ...(draft.id ? { id: draft.id } : {}),
+      user_id: userId,
+      vehicle_id: draft.vehicle_id,
+      station_id: draft.station_id ?? null,
+      ...(station ? { station_name: station } : {}),
+      fuel_type_id: draft.fuel_type_id,
+      filled_at: draft.filled_at,
+      liters: draft.liters,
+      price_per_liter: draft.price_per_liter,
+      total_cost: draft.total_cost,
+      odometer: draft.odometer,
+      full_tank: draft.full_tank,
+      note: draft.note || null,
+      km_per_liter: computed.km_per_liter,
+      cost_per_km: computed.cost_per_km,
+    };
+    const save = (values: typeof row) =>
+      supabase
+        .from("fuelings")
+        .upsert(values, { onConflict: "id", ignoreDuplicates: true })
+        .select("*")
+        .maybeSingle();
+    let { data, error } = await save(row);
+    // Banco ainda sem a coluna station_name (migração pendente): salva sem o posto,
+    // para o abastecimento nunca se perder por causa de um campo opcional.
+    if (error && station && isMissingColumn(error, "station_name")) {
+      const { station_name: _omit, ...rest } = row as typeof row & { station_name?: string };
+      ({ data, error } = await save(rest));
+    }
     if (error) throw error;
     return data;
   },

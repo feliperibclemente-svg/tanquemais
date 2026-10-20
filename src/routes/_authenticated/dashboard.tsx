@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
 import {
   ActionLink,
@@ -16,11 +16,13 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useHomeData } from "@/hooks/use-tanque";
-import { FUEL_LABEL } from "@/constants/app";
+import { FUEL_LABEL, FUEL_TYPES } from "@/constants/app";
 import { ethanolAdvice } from "@/services/insights";
 import { consumptionProgress, consumptionProgressText } from "@/services/analytics";
 import { chooseReference, weekLabel, type ChosenReference } from "@/services/anp";
 import { tipsFor } from "@/content/teo-tips";
+import { BEST_PRICE_DAYS, bestPricesByFuel } from "@/services/best-price";
+import type { FuelingComputed } from "@/services/analytics";
 
 const DashboardCharts = lazy(() => import("@/components/charts/DashboardCharts"));
 
@@ -136,6 +138,8 @@ function DashboardPage() {
           </div>
         </AppCard>
 
+        <BestPriceCard rows={rows} />
+
         <EthanolCard
           lastGasoline={gas}
           lastEthanol={eth}
@@ -162,6 +166,67 @@ function DashboardPage() {
         <DrivingTips brand={primaryVehicle?.brand ?? null} />
       </section>
     </AppShell>
+  );
+}
+
+/**
+ * Onde você pagou menos: o menor preço por litro registrado pela pessoa, por combustível.
+ * Deixa claro que é o preço daquele dia, não uma promessa de que o posto segue mais barato.
+ */
+function BestPriceCard({ rows }: { rows: FuelingComputed[] }) {
+  const best = bestPricesByFuel(rows);
+  return (
+    <AppCard>
+      <p className="text-sm font-semibold text-foreground">Onde você pagou menos</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Menor preço por litro entre os seus abastecimentos dos últimos {BEST_PRICE_DAYS} dias.
+      </p>
+      {best.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Com 2 abastecimentos do mesmo combustível nesse período, aparece aqui o posto onde você
+          pagou menos.
+        </p>
+      ) : (
+        <ul className="mt-3 divide-y divide-border">
+          {best.map((b) => {
+            const fuel = FUEL_LABEL[b.fuelTypeId] ?? b.fuelTypeId;
+            const unit = FUEL_TYPES.find((f) => f.id === b.fuelTypeId)?.unit ?? "L";
+            const d = new Date(b.filledAt);
+            const date = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+            return (
+              <li key={b.fuelTypeId} className="flex items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-muted-foreground">{fuel}</p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {b.stationName ?? "Posto não informado"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    em {date}
+                    {" · "}
+                    <Link
+                      to="/historico"
+                      search={{ abrir: b.fuelingId }}
+                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      {b.stationName ? "Ver registro" : "Informar o posto"}
+                    </Link>
+                  </p>
+                </div>
+                <p className="shrink-0 text-lg font-extrabold text-foreground tabular-nums">
+                  {brl(b.price)}
+                  <span className="text-xs font-semibold text-muted-foreground">/{unit}</span>
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {best.length > 0 ? (
+        <p className="mt-1 text-xs text-muted-foreground">
+          É o preço daquele dia. Hoje pode ser outro.
+        </p>
+      ) : null}
+    </AppCard>
   );
 }
 

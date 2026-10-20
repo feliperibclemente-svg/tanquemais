@@ -395,6 +395,7 @@ export function useCreateFueling() {
         liters: variables.draft.liters,
         total_cost: variables.draft.total_cost,
         full_tank: variables.draft.full_tank,
+        station: !!variables.draft.station_name?.trim(),
       });
     },
     onError: reportMutationError("fueling.create"),

@@ -53,7 +53,10 @@ function Privacidade() {
             etária (não fica pública);
           </li>
           <li>Veículos cadastrados;</li>
-          <li>Abastecimentos (valor, preço, litros, quilometragem, data);</li>
+          <li>
+            Abastecimentos (valor, preço, litros, quilometragem, data e, se você informar, o nome do
+            posto);
+          </li>
           <li>
             Dicas que você enviar à comunidade (tema e texto) e denúncias que fizer (motivo). As
             dicas aparecem para outros usuários sem nome nem qualquer dado seu; ninguém vê quem

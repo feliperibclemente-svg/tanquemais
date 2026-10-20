@@ -48,6 +48,7 @@ import {
   type ChosenReference,
 } from "@/services/anp";
 import { fuelingSchema } from "@/validators";
+import { recentStations } from "@/services/best-price";
 import { captureException } from "@/lib/telemetry";
 import type { Fueling } from "@/types/domain";
 
@@ -153,6 +154,11 @@ function AbastecerPage() {
    * Quem completou escolhe "Sim" de propósito.
    */
   const [fullTank, setFullTank] = useState(false);
+  const [station, setStation] = useState("");
+  const myStations = useMemo(
+    () => recentStations((fuelings.data ?? []) as Fueling[], 3),
+    [fuelings.data],
+  );
 
   const unit = FUEL_TYPES.find((f) => f.id === fuelTypeId)?.unit ?? "L";
   const [details, setDetails] = useState(false);
@@ -250,6 +256,7 @@ function AbastecerPage() {
       vehicle_id: vehicle.id,
       // Sem base de postos confiável no beta (a tabela antiga tem exemplos do protótipo).
       station_id: null,
+      station_name: station.trim(),
       fuel_type_id: fuelTypeId,
       filled_at: filledAt.toISOString(),
       liters: Number(amounts.liters.toFixed(3)),
@@ -618,6 +625,33 @@ function AbastecerPage() {
               Encheu até a bomba desligar sozinha? Marque Sim: é o que permite medir o consumo real.
             </p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <TextField
+            label="Posto (opcional)"
+            value={station}
+            maxLength={60}
+            autoCapitalize="words"
+            autoComplete="off"
+            placeholder="Ex.: Posto da Av. 85"
+            hint="Só você vê. Serve para saber onde você pagou menos."
+            onChange={(event) => setStation(event.target.value)}
+          />
+          {myStations.length > 0 && !station.trim() ? (
+            <div className="flex flex-wrap gap-2" aria-label="Postos que você já usou">
+              {myStations.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => setStation(name)}
+                  className="inline-flex min-h-9 items-center rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground"
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <button

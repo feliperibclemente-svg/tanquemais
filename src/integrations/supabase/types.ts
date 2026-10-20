@@ -428,6 +428,7 @@ export type Database = {
           photo_url: string | null;
           price_per_liter: number;
           station_id: string | null;
+          station_name: string | null;
           synced_at: string;
           total_cost: number;
           updated_at: string;
@@ -449,6 +450,7 @@ export type Database = {
           photo_url?: string | null;
           price_per_liter: number;
           station_id?: string | null;
+          station_name?: string | null;
           synced_at?: string;
           total_cost: number;
           updated_at?: string;
@@ -470,6 +472,7 @@ export type Database = {
           photo_url?: string | null;
           price_per_liter?: number;
           station_id?: string | null;
+          station_name?: string | null;
           synced_at?: string;
           total_cost?: number;
           updated_at?: string;

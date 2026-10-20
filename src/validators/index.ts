@@ -31,6 +31,7 @@ export const fuelingSchema = z
     id: z.string().uuid().optional(),
     vehicle_id: z.string().uuid("Selecione um veículo"),
     station_id: z.string().uuid().nullable().optional(),
+    station_name: z.string().trim().max(60, "Nome do posto muito longo").optional(),
     fuel_type_id: z.string().min(1, "Escolha o combustível"),
     filled_at: z.string().min(1),
     liters: z.coerce.number().positive("Litros deve ser maior que zero").max(500),

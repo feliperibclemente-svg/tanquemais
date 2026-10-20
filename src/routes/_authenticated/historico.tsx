@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { vehicleName as displayVehicleName } from "@/constants/vehicles";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { z } from "zod";
 import { AlertTriangle, Download, Pencil, Trash2 } from "lucide-react";
 import {
   Action,
@@ -35,6 +36,8 @@ import { deriveAmounts, historyVerdicts } from "@/services/verdict";
 import type { Fueling } from "@/types/domain";
 
 export const Route = createFileRoute("/_authenticated/historico")({
+  /** ?abrir=<id>: abre um abastecimento (ex.: vindo do "Onde você pagou menos"). */
+  validateSearch: z.object({ abrir: z.string().uuid().optional() }),
   head: () => ({
     meta: [
       { title: "Histórico de abastecimentos — Tanque+" },
@@ -57,7 +60,15 @@ export const Route = createFileRoute("/_authenticated/historico")({
 function HistoricoPage() {
   const fuelings = useFuelings();
   const remove = useDeleteFueling();
-  const [open, setOpen] = useState<string | null>(null);
+  const { abrir } = Route.useSearch();
+  const [open, setOpen] = useState<string | null>(abrir ?? null);
+  const opened = useRef(false);
+  useEffect(() => {
+    if (!abrir || !fuelings.data || opened.current) return;
+    opened.current = true;
+    setOpen(abrir);
+    document.getElementById(`abastecimento-${abrir}`)?.scrollIntoView({ block: "center" });
+  }, [abrir, fuelings.data]);
   const [editing, setEditing] = useState<string | null>(null);
 
   const vehicles = useVehicles();
@@ -207,7 +218,7 @@ function HistoricoPage() {
                   const expanded = open === row.id;
                   const verdict = verdicts.get(row.id);
                   return (
-                    <li key={row.id}>
+                    <li key={row.id} id={`abastecimento-${row.id}`}>
                       <AppCard className="p-0">
                         <button
                           type="button"
@@ -249,6 +260,10 @@ function HistoricoPage() {
                         ) : expanded ? (
                           <div className="space-y-2 border-t border-border px-4 py-4 text-sm">
                             <Row label="Data" value={fullDate(row.filled_at)} />
+                            <Row
+                              label="Posto"
+                              value={row.station_name?.trim() || "Não informado"}
+                            />
                             <Row
                               label="Combustível"
                               value={FUEL_LABEL[row.fuel_type_id] ?? row.fuel_type_id}
@@ -390,6 +405,7 @@ function EditFueling({
   const [date, setDate] = useState(toDateInput(row.filled_at));
   const [fullTank, setFullTank] = useState(row.full_tank);
   const [fuel, setFuel] = useState(row.fuel_type_id);
+  const [station, setStation] = useState(row.station_name ?? "");
   const [error, setError] = useState<string | null>(null);
 
   const amounts = deriveAmounts({
@@ -432,6 +448,10 @@ function EditFueling({
           filled_at: filledAt.toISOString(),
           full_tank: fullTank,
           fuel_type_id: fuel,
+          // só envia o posto quando mudou
+          ...(station.trim() !== (row.station_name ?? "").trim()
+            ? { station_name: station.trim() || null }
+            : {}),
           // recalculados a partir do odômetro dos registros vizinhos
           km_per_liter: null,
           cost_per_km: null,
@@ -476,6 +496,14 @@ function EditFueling({
           { value: "sim", label: "Sim" },
           { value: "nao", label: "Não" },
         ]}
+      />
+      <TextField
+        label="Posto (opcional)"
+        value={station}
+        maxLength={60}
+        autoCapitalize="words"
+        autoComplete="off"
+        onChange={(event) => setStation(event.target.value)}
       />
       <TextField
         label="Data"
