@@ -127,6 +127,8 @@ export type AnalyticsEvent =
   | "invite_opened"
   | "invite_shared"
   | "celebration_shown"
+  | "trip_simulated"
+  | "trip_maps_opened"
   | "onboarding_identity_saved"
   | "onboarding_underage"
   | "retention_day_return"

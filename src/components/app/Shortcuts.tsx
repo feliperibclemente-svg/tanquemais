@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { MapPinned, MessagesSquare, Sparkles, Wrench } from "lucide-react";
+import { MapPinned, MessagesSquare, Route, Sparkles, Wrench } from "lucide-react";
 import { recapSeen, useMonthlyRecap } from "@/hooks/use-recap";
 
 /**
@@ -12,18 +12,19 @@ export function Shortcuts() {
   const items = [
     { to: "/checkup", label: "Check-up", icon: Wrench, dot: false },
     { to: "/precos", label: "Preços", icon: MapPinned, dot: false },
+    { to: "/viagem", label: "Viagem", icon: Route, dot: false },
     { to: "/comunidade", label: "Comunidade", icon: MessagesSquare, dot: false },
     { to: "/retrospectiva", label: "Meu mês", icon: Sparkles, dot: recapNew },
   ] as const;
   return (
-    <nav aria-label="Atalhos" className="grid grid-cols-4 gap-2">
+    <nav aria-label="Atalhos" className="grid grid-cols-5 gap-1">
       {items.map(({ to, label, icon: Icon, dot }) => (
         <Link
           key={to}
           to={to}
           className="flex min-h-11 flex-col items-center gap-1.5 rounded-2xl py-1 text-center"
         >
-          <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-primary">
+          <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-primary">
             <Icon className="h-6 w-6" strokeWidth={2.2} />
             {dot ? (
               <span
@@ -32,7 +33,7 @@ export function Shortcuts() {
               />
             ) : null}
           </span>
-          <span className="text-xs font-medium text-foreground">{label}</span>
+          <span className="text-[11px] font-medium leading-tight text-foreground">{label}</span>
         </Link>
       ))}
     </nav>
