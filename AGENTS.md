@@ -7,3 +7,4 @@
 - Usage events are batched client-side into `public.events` (insert-only RLS, no PII); why: product analytics without a third-party tracker.
 - Account deletion runs in an authenticated server function using the service-role client; why: users must be able to erase their data (LGPD) without admin help.
 - Fueling ids are generated on the device and inserted via upsert(ignoreDuplicates); why: offline retries must never duplicate records.
+- Product decisions follow `docs/produto/diretriz-estrategica.md` (focus and simplicity: improve what exists before adding features; classify ideas as "melhorar agora", "validar primeiro" or "explorar depois"; flag scope creep and propose the simpler alternative). `docs/produto/principios.md` (popular-app patterns) applies within it.

@@ -1,5 +1,9 @@
 # Princípios de produto do Tanque+
 
+> Subordinados à `diretriz-estrategica.md`: primeiro aperfeiçoar o que existe; a "cara de app
+> popular" serve para tornar a proposta central mais fácil de entender, usar e recomendar,
+> nunca para justificar recursos novos por si só.
+
 Objetivo: o Tanque+ ser um app que "todo mundo tem", como Uber, iFood e Instagram, mesmo
 para quem não abre todo dia. Toda mudança passa por este filtro.
 
