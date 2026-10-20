@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BellRing, ChevronRight, MapPin, MapPinned, Sparkles, Wrench, X } from "lucide-react";
+import { BellRing, CalendarDays, ChevronRight, MapPin, MapPinned, Wrench, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useCheckups } from "@/hooks/use-tanque";
 import { markRecapSeen, recapSeen, useMonthlyRecap } from "@/hooks/use-recap";
@@ -87,10 +87,10 @@ export function MomentCard({
       <Link
         to="/retrospectiva"
         onClick={() => track("moment_opened", { id: "recap" })}
-        className="flex items-center gap-3 rounded-3xl bg-[linear-gradient(135deg,#1E9A66,#0D5C3B)] p-4 text-white shadow-[0_18px_40px_-22px_#1E9A66]"
+        className="flex items-center gap-3 rounded-3xl bg-primary p-4 text-primary-foreground"
       >
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/15">
-          <Sparkles className="h-5 w-5" />
+          <CalendarDays className="h-5 w-5" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-base font-bold">

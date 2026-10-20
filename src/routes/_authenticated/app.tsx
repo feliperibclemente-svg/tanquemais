@@ -172,8 +172,8 @@ function HomePage() {
                         {brl(Number(last.total_cost))}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {relativeDate(last.filled_at)} · {brl(Number(last.price_per_liter))}/L ·{" "}
-                        {num(Number(last.liters), 1)} L
+                        {capitalizeFirst(relativeDate(last.filled_at))},{" "}
+                        {num(Number(last.liters), 1)} L a {brl(Number(last.price_per_liter))}/L
                       </p>
                     </div>
                     <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
@@ -220,14 +220,14 @@ function HomePage() {
                 <Mini
                   label="Preço médio"
                   value={stats.avgPricePerLiter ? brl(stats.avgPricePerLiter) : "—"}
-                  hint={`por litro · ${fuelName}`}
+                  hint={`por litro de ${fuelName.toLowerCase()}`}
                 />
                 {consumption.state === "ready" ? (
                   <Mini
                     className="col-span-2 min-[380px]:col-span-1"
                     label="Consumo"
                     value={kmPerLiter(stats.avgKmPerLiter)}
-                    hint={`medido · ${fuelName}`}
+                    hint={`medido com ${fuelName.toLowerCase()}`}
                   />
                 ) : null}
               </div>
@@ -289,8 +289,8 @@ function ReferenceLine({ reference, paid }: { reference: ChosenReference; paid: 
         {brl(reference.avgPrice)}/{reference.unit}
       </span>
       {Math.abs(diff) >= 0.005
-        ? ` · você pagou ${brl(Math.abs(diff))} ${diff > 0 ? "a mais" : "a menos"}`
-        : " · você pagou a média"}
+        ? `. Você pagou ${brl(Math.abs(diff))} ${diff > 0 ? "a mais" : "a menos"}.`
+        : ". Você pagou a média."}
       <br />
       Fonte: ANP, semana de {weekLabel(reference.weekStart, reference.weekEnd)}
     </p>
@@ -391,9 +391,7 @@ function TanqueIALine({
         </p>
       )}
       {hasData && !ai.isFetching ? (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Calculado com os seus registros{main ? ` · ${main.title}` : ""}.
-        </p>
+        <p className="mt-2 text-xs text-muted-foreground">Calculado com os seus registros.</p>
       ) : null}
       <Link
         to="/dashboard"
@@ -404,3 +402,5 @@ function TanqueIALine({
     </AppCard>
   );
 }
+
+const capitalizeFirst = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);

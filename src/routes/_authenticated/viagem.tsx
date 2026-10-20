@@ -169,7 +169,7 @@ function TripForm({
 
       {result ? (
         <AppCard className="border-primary/30 bg-accent/40" aria-live="polite">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Simulação</p>
+          <p className="text-sm font-semibold text-primary">Simulação</p>
           <p className="mt-2 text-3xl font-extrabold tracking-tight text-foreground">
             cerca de {brl(result.cost, 0)}
           </p>

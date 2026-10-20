@@ -190,7 +190,7 @@ function HistoricoPage() {
                 {totals.count === 1 ? "abastecimento" : "abastecimentos"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {num(totals.liters, 1)} L · {PERIODS.find((p) => p.id === period)?.label}
+                {num(totals.liters, 1)} litros no período escolhido
               </p>
             </div>
             <Action

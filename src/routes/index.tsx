@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Gauge, MapPinned, ShieldCheck, Sparkles, Wrench } from "lucide-react";
+import { CalendarDays, Gauge, MapPinned, ShieldCheck, Wrench } from "lucide-react";
 import { ActionLink } from "@/components/ds";
 import { useAuth } from "@/providers/AuthProvider";
 import { PRIVACY_URL, TERMS_URL } from "@/constants/app";
@@ -37,7 +37,7 @@ const features = [
   },
   { icon: MapPinned, title: "Média da cidade", body: "Seu preço comparado com a pesquisa da ANP." },
   {
-    icon: Sparkles,
+    icon: CalendarDays,
     title: "Seu mês",
     body: "Retrospectiva com seus números, pronta para compartilhar.",
   },
@@ -80,8 +80,8 @@ function Landing() {
       </ul>
 
       {/* Exemplo do que a pessoa vê depois de abastecer */}
-      <figure className="mt-6 rounded-[2rem] border border-border bg-card p-4 shadow-[var(--shadow-soft)]">
-        <figcaption className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <figure className="mt-6 rounded-[2rem] border border-border bg-card p-4">
+        <figcaption className="text-xs font-medium text-muted-foreground">
           Exemplo de tela
         </figcaption>
         <div className="mt-3 rounded-2xl border border-primary/30 bg-accent/50 p-3">
@@ -91,11 +91,11 @@ function Landing() {
           <p className="mt-0.5 text-xs text-muted-foreground">Fonte: ANP, média da semana</p>
         </div>
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <div className="rounded-2xl bg-[linear-gradient(135deg,#7BE0AE,#2FB37A)] p-3 text-[#0B2A1C]">
+          <div className="rounded-2xl bg-accent p-3 text-accent-foreground">
             <p className="text-[11px] font-semibold">Consumo real</p>
             <p className="text-2xl font-extrabold leading-tight">12,4 km/L</p>
           </div>
-          <div className="rounded-2xl bg-[linear-gradient(135deg,#1E9A66,#0D5C3B)] p-3 text-white">
+          <div className="rounded-2xl bg-primary p-3 text-primary-foreground">
             <p className="text-[11px] font-semibold text-white/80">Gasto no mês</p>
             <p className="text-2xl font-extrabold leading-tight">R$ 642</p>
           </div>

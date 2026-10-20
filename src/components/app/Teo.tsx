@@ -95,7 +95,7 @@ export function TeoSays({
     <div className={cn("flex items-start gap-3", className)}>
       <TeoAvatar spot={spot} size={size} mood={mood} />
       <motion.div
-        className="relative min-w-0 flex-1 rounded-2xl rounded-tl-md border border-border bg-card px-4 py-3 text-sm leading-relaxed text-foreground shadow-[var(--shadow-soft)]"
+        className="relative min-w-0 flex-1 rounded-2xl rounded-tl-md border border-border bg-card px-4 py-3 text-sm leading-relaxed text-foreground"
         initial={reduce ? false : { opacity: 0, x: -6 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: reduce ? 0 : 0.25, duration: 0.25 }}

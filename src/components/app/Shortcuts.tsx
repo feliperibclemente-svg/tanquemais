@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { MapPinned, MessagesSquare, Route, Sparkles, Wrench } from "lucide-react";
+import { CalendarDays, MapPinned, MessagesSquare, Route, Wrench } from "lucide-react";
 import { recapSeen, useMonthlyRecap } from "@/hooks/use-recap";
 
 /**
@@ -14,7 +14,7 @@ export function Shortcuts() {
     { to: "/precos", label: "Preços", icon: MapPinned, dot: false },
     { to: "/viagem", label: "Viagem", icon: Route, dot: false },
     { to: "/comunidade", label: "Comunidade", icon: MessagesSquare, dot: false },
-    { to: "/retrospectiva", label: "Meu mês", icon: Sparkles, dot: recapNew },
+    { to: "/retrospectiva", label: "Meu mês", icon: CalendarDays, dot: recapNew },
   ] as const;
   return (
     <nav aria-label="Atalhos" className="grid grid-cols-5 gap-1">

@@ -111,7 +111,7 @@ function RecapSummary({ recap, onReplay }: { recap: MonthlyRecap; onReplay: () =
 
       <section
         aria-label={`Resumo de ${label}`}
-        className="rounded-3xl p-5 shadow-[0_18px_40px_-22px_#1E9A66]"
+        className="rounded-3xl p-5"
         style={{ background: `linear-gradient(160deg, ${c.from}, ${c.to})`, color: c.fg }}
       >
         <p className="text-sm font-semibold" style={{ color: c.sub }}>
