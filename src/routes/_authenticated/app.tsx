@@ -33,6 +33,7 @@ import {
 import { firstNameOf, needsIdentity } from "@/services/identity";
 import { weekLabel, type ChosenReference } from "@/services/anp";
 import { teoNoteOfTheDay } from "@/content/teo-tips";
+import { consumptionTrendText, homeCostPerKm } from "@/services/home-summary";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -102,6 +103,9 @@ function HomePage() {
   const reminder = fuelingReminder(rows);
   const fuelName = stats.fuelTypeId ? (FUEL_LABEL[stats.fuelTypeId] ?? stats.fuelTypeId) : "";
   const consumption = consumptionProgress(rows, stats.avgKmPerLiter);
+  /** As perguntas do Início: quanto custa rodar e se o consumo mudou. */
+  const costPerKm = homeCostPerKm(stats, rows);
+  const trendText = consumptionTrendText(stats.consumptionTrend, last?.filled_at, fuelName);
 
   if (needsIdentity(profile) || !primaryVehicle) {
     // Primeiro acesso: o cadastro guiado leva direto ao primeiro abastecimento.
@@ -143,20 +147,6 @@ function HomePage() {
             <Fuel className="h-6 w-6" strokeWidth={2.4} />
             Registrar abastecimento
           </ActionLink>
-
-          {/* Atalhos: tudo o que o app faz, a um toque (como iFood e Uber) */}
-          <Shortcuts />
-
-          {/* Cartão do momento: um assunto por vez, o mais relevante agora */}
-          <MomentCard
-            vehicle={primaryVehicle}
-            odometers={rows.map((r) => Number(r.odometer) || 0)}
-            reminder={reminder}
-            lastFuelingId={last?.id ?? null}
-            fuelTypeId={last?.fuel_type_id ?? null}
-            references={references}
-            place={place}
-          />
 
           {/* Último abastecimento com a conclusão em destaque */}
           {last ? (
@@ -217,11 +207,19 @@ function HomePage() {
                       : `nenhum abastecimento em ${monthName()}`
                   }
                 />
-                <Mini
-                  label="Preço médio"
-                  value={stats.avgPricePerLiter ? brl(stats.avgPricePerLiter) : "—"}
-                  hint={`por litro de ${fuelName.toLowerCase()}`}
-                />
+                {costPerKm ? (
+                  <Mini
+                    label="Custo por km"
+                    value={`${costPerKm.estimated ? "≈ " : ""}${brl(costPerKm.value)}`}
+                    hint={costPerKm.estimated ? "combustível, estimado" : "combustível, medido"}
+                  />
+                ) : (
+                  <Mini
+                    label="Preço médio"
+                    value={stats.avgPricePerLiter ? brl(stats.avgPricePerLiter) : "—"}
+                    hint={`por litro de ${fuelName.toLowerCase()}`}
+                  />
+                )}
                 {consumption.state === "ready" ? (
                   <Mini
                     className="col-span-2 min-[380px]:col-span-1"
@@ -232,12 +230,27 @@ function HomePage() {
                 ) : null}
               </div>
               {consumption.state !== "ready" ? <ConsumptionPending progress={consumption} /> : null}
+              {trendText ? <p className="px-1 text-sm text-muted-foreground">{trendText}</p> : null}
             </>
           ) : null}
 
+          {/* Cartão do momento: um assunto por vez, o mais relevante agora */}
+          <MomentCard
+            vehicle={primaryVehicle}
+            odometers={rows.map((r) => Number(r.odometer) || 0)}
+            reminder={reminder}
+            lastFuelingId={last?.id ?? null}
+            fuelTypeId={last?.fuel_type_id ?? null}
+            references={references}
+            place={place}
+          />
+
+          {/* Atalhos: tudo o que o app faz, a um toque (como iFood e Uber) */}
+          <Shortcuts />
+
           {/* TanqueIA em uma frase — detalhes ficam no painel */}
           <TanqueIALine
-            insights={insights}
+            insights={trendText ? insights.filter((i) => i.id !== "trend") : insights}
             brand={primaryVehicle.brand}
             dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
           />
