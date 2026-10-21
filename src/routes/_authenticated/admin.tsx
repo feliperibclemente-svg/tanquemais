@@ -27,7 +27,6 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 /** Metas da onda 1 do beta (ver plano de lançamento). */
-const GOALS = { activation48h: 0.6, threeIn21Days: 0.4, rating: 4 };
 
 const pct = (value: number | null) => (value == null ? "—" : `${num(value * 100, 0)}%`);
 
@@ -105,26 +104,17 @@ function AdminPage() {
         <StatTile
           label="1º abastecimento em 48 h"
           value={pct(m.activation48h.rate)}
-          tone={toneFor(m.activation48h.rate, GOALS.activation48h)}
-          hint={`meta ${pct(GOALS.activation48h)} · ${m.activation48h.activated}/${m.activation48h.eligible}`}
+          hint={`${m.activation48h.activated} de ${m.activation48h.eligible} cadastrados há 48 h ou mais`}
         />
         <StatTile
           label="3 abastecimentos em 21 dias"
           value={pct(m.threeIn21Days.rate)}
-          tone={toneFor(m.threeIn21Days.rate, GOALS.threeIn21Days)}
-          hint={`meta ${pct(GOALS.threeIn21Days)} · ${m.threeIn21Days.reached}/${m.threeIn21Days.eligible}`}
+          hint={`${m.threeIn21Days.reached} de ${m.threeIn21Days.eligible} cadastrados há 21 dias ou mais`}
         />
         <StatTile
           label="Nota média"
           value={m.feedback.averageRating ? num(m.feedback.averageRating, 1) : "—"}
-          tone={
-            m.feedback.averageRating == null
-              ? "default"
-              : m.feedback.averageRating >= GOALS.rating
-                ? "good"
-                : "warning"
-          }
-          hint={`meta ${GOALS.rating} · ${m.feedback.total} feedbacks`}
+          hint={`${m.feedback.total} ${m.feedback.total === 1 ? "avaliação" : "avaliações"}`}
         />
       </div>
 
@@ -262,11 +252,6 @@ function AdminPage() {
       </section>
     </AppShell>
   );
-}
-
-function toneFor(rate: number | null, goal: number): "default" | "good" | "warning" {
-  if (rate == null) return "default";
-  return rate >= goal ? "good" : "warning";
 }
 
 const ERROR_LABEL: Record<string, string> = {
