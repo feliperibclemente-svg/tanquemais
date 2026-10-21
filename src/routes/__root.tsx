@@ -16,7 +16,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { captureException, installTelemetry, setTelemetryUser } from "@/lib/telemetry";
-import { trackPageView } from "@/lib/analytics";
+import { trackPageView, captureSource } from "@/lib/analytics";
 
 import appCss from "../styles.css?url";
 
@@ -273,6 +273,11 @@ function AuthSync() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Origem do primeiro acesso (?ref=...), para saber quais canais trazem quem usa.
+  useEffect(() => {
+    captureSource(window.location.search);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

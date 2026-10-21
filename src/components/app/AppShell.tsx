@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { BarChart3, FlaskConical, Fuel, History, Home, User } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { trackOncePerSession } from "@/lib/analytics";
 
 /**
  * Início à esquerda (padrão de mercado) e a ação principal, Abastecer, no centro.
@@ -14,12 +15,24 @@ const tabs = [
   { to: "/perfil", label: "Perfil", icon: User, primary: false },
 ] as const;
 
+const SCREENS: Record<string, string> = {
+  "/app": "inicio",
+  "/dashboard": "painel",
+  "/historico": "historico",
+};
+
 /**
  * Layout único de todas as telas autenticadas: largura, respiros e navegação inferior.
  * `fab` ficou sem efeito: o Abastecer agora é o item central da barra.
  */
 export function AppShell({ children }: { children: ReactNode; fab?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Mensuração: quem consulta os números (uma vez por tela por sessão).
+  useEffect(() => {
+    const screen = SCREENS[pathname];
+    if (screen) trackOncePerSession("screen_viewed", screen, { screen });
+  }, [pathname]);
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-background">

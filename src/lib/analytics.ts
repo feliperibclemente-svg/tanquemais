@@ -150,7 +150,12 @@ export type AnalyticsEvent =
   | "beta_notice_viewed"
   | "feedback_opened"
   | "feedback_submitted"
-  | "app_error";
+  | "app_error"
+  /* mensuração do núcleo (auditoria de produto, 21/10/2026) */
+  | "screen_viewed"
+  | "fueling_form_opened"
+  | "fueling_form_error"
+  | "fueling_sync_failed";
 
 type Props = Record<string, string | number | boolean | null | undefined>;
 
@@ -234,5 +239,45 @@ export function trackPageView(path: string) {
     window.posthog?.capture?.("$pageview", { path });
   } catch {
     /* noop */
+  }
+}
+
+/** Uma vez por sessão do navegador (ex.: tela consultada), para não contar cada volta à tela. */
+export function trackOncePerSession(event: AnalyticsEvent, key: string, props: Props = {}) {
+  if (typeof window === "undefined") return;
+  const storageKey = `tanque:session-once:${event}:${key}`;
+  try {
+    if (sessionStorage.getItem(storageKey)) return;
+    sessionStorage.setItem(storageKey, "1");
+  } catch {
+    /* sem armazenamento: conta mesmo assim */
+  }
+  track(event, props);
+}
+
+/* ------------------------------ origem do usuário ------------------------------ */
+
+const SOURCE_KEY = "tanque:origem";
+
+/**
+ * Guarda a origem do primeiro acesso (link com ?ref=instagram, por exemplo). Só letras,
+ * números, - e _, até 40 caracteres; nada pessoal. Vai junto do marco de cadastro.
+ */
+export function captureSource(search: string) {
+  if (typeof window === "undefined") return;
+  try {
+    if (localStorage.getItem(SOURCE_KEY)) return;
+    const ref = new URLSearchParams(search).get("ref")?.toLowerCase() ?? "";
+    if (/^[a-z0-9_-]{1,40}$/.test(ref)) localStorage.setItem(SOURCE_KEY, ref);
+  } catch {
+    /* noop */
+  }
+}
+
+export function savedSource(): string {
+  try {
+    return localStorage.getItem(SOURCE_KEY) ?? "direto";
+  } catch {
+    return "direto";
   }
 }

@@ -136,6 +136,54 @@ function AdminPage() {
         <AnpCard />
 
         <AppCard>
+          <p className="text-sm font-semibold text-foreground">Uso do núcleo nos últimos 7 dias</p>
+          <dl className="mt-3 space-y-2 text-sm">
+            <MetricRow label="Abriram o Início" value={m.core.screens.inicio ?? 0} />
+            <MetricRow label="Abriram o Painel" value={m.core.screens.painel ?? 0} />
+            <MetricRow label="Abriram o Histórico" value={m.core.screens.historico ?? 0} />
+            <MetricRow label="Telas de registro abertas" value={m.core.formOpened} />
+            <MetricRow label="Abastecimentos registrados" value={m.core.fuelingsCreated} />
+            <MetricRow label="Falhas no envio offline" value={m.core.syncFailures} />
+          </dl>
+          {Object.keys(m.core.formErrors).length > 0 ? (
+            <>
+              <p className="mt-4 text-sm font-semibold text-foreground">
+                Por que o registro foi recusado
+              </p>
+              <dl className="mt-2 space-y-2 text-sm">
+                {Object.entries(m.core.formErrors)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([reason, n]) => (
+                    <MetricRow key={reason} label={ERROR_LABEL[reason] ?? reason} value={n} />
+                  ))}
+              </dl>
+            </>
+          ) : null}
+          <p className="mt-3 text-xs text-muted-foreground">
+            Telas: pessoas diferentes, uma vez por sessão. Registro: aberturas e envios contam cada
+            vez.
+          </p>
+        </AppCard>
+
+        {m.sources.length > 0 ? (
+          <AppCard>
+            <p className="text-sm font-semibold text-foreground">Origem dos cadastros</p>
+            <dl className="mt-3 space-y-2 text-sm">
+              {m.sources.map((s) => (
+                <MetricRow
+                  key={s.source}
+                  label={s.source}
+                  value={`${s.signups} (${s.withFirstFueling} com 1º abastecimento)`}
+                />
+              ))}
+            </dl>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Use links como tanquemais.com.br/?ref=instagram para separar os canais.
+            </p>
+          </AppCard>
+        ) : null}
+
+        <AppCard>
           <p className="text-sm font-semibold text-foreground">Funil</p>
           <div className="mt-3 space-y-3">
             <FunnelRow label="Cadastrados" value={m.funnel.signups} total={m.funnel.signups} />
@@ -146,10 +194,22 @@ function AdminPage() {
               total={m.funnel.signups}
             />
             <FunnelRow
+              label="2 ou mais abastecimentos"
+              value={m.funnel.withSecondFueling}
+              total={m.funnel.signups}
+            />
+            <FunnelRow
               label="3 ou mais abastecimentos"
               value={m.funnel.withThreeFuelings}
               total={m.funnel.signups}
             />
+            {m.funnel.withRealConsumption !== null ? (
+              <FunnelRow
+                label="Viu o consumo real"
+                value={m.funnel.withRealConsumption}
+                total={m.funnel.signups}
+              />
+            ) : null}
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
             {m.installs} {m.installs === 1 ? "pessoa instalou" : "pessoas instalaram"} o app na tela
@@ -207,6 +267,25 @@ function AdminPage() {
 function toneFor(rate: number | null, goal: number): "default" | "good" | "warning" {
   if (rate == null) return "default";
   return rate >= goal ? "good" : "warning";
+}
+
+const ERROR_LABEL: Record<string, string> = {
+  campos_faltando: "Faltou valor, preço ou km",
+  km_menor_que_anterior: "Km menor que o anterior",
+  km_maior_que_seguinte: "Km maior que o registro seguinte",
+  salto_de_km_nao_confirmado: "Km muito alto, não confirmado",
+  data_futura: "Data no futuro",
+  dados_invalidos: "Dados inválidos",
+  falha_ao_salvar: "Falha ao salvar",
+};
+
+function MetricRow({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-semibold tabular-nums text-foreground">{value}</dd>
+    </div>
+  );
 }
 
 function FunnelRow({ label, value, total }: { label: string; value: number; total: number }) {

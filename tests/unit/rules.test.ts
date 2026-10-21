@@ -174,7 +174,10 @@ describe("métricas do beta", () => {
       signups: 3,
       withVehicle: 2,
       withFirstFueling: 2,
+      withSecondFueling: 1,
       withThreeFuelings: 1,
+      // linhas sem km e tanque cheio: o painel não estima o consumo real
+      withRealConsumption: null,
     });
   });
   it("ativação em 48 h só conta quem já teve 48 h", () => {

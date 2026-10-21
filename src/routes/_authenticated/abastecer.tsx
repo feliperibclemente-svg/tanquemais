@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { track } from "@/lib/analytics";
 import { CheckCircle2, ChevronDown, Fuel, Share2, ShieldAlert } from "lucide-react";
 import {
   Action,
@@ -168,6 +169,9 @@ function AbastecerPage() {
   const unit = FUEL_TYPES.find((f) => f.id === fuelTypeId)?.unit ?? "L";
   const [details, setDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    track("fueling_form_opened");
+  }, []);
   /** km confirmado pela pessoa depois do aviso de salto improvável. */
   const [jumpConfirmed, setJumpConfirmed] = useState<number | null>(null);
   const [saved, setSaved] = useState<Saved | null>(null);
@@ -240,27 +244,36 @@ function AbastecerPage() {
   const canSubmit =
     amounts.total > 0 && amounts.price > 0 && amounts.liters > 0 && odometerValue > 0;
 
+  /** Mensuração: por que o envio foi recusado (só o motivo, nunca valores). */
+  const formError = (reason: string) => track("fueling_form_error", { reason });
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!vehicle) return;
     setError(null);
 
     if (!canSubmit) {
+      formError("campos_faltando");
       setError("Informe o valor, o preço por litro e a quilometragem atual.");
       return;
     }
 
     if (date > todayLocal()) {
+      formError("data_futura");
       setError("A data não pode ser no futuro.");
       return;
     }
 
     const odometerError = validateOdometer(vehicleHistory, filledAt, odometerValue);
     if (odometerError) {
+      formError(
+        odometerError.includes("maior") ? "km_menor_que_anterior" : "km_maior_que_seguinte",
+      );
       setError(odometerError);
       return;
     }
     if (jumpPending) {
+      formError("salto_de_km_nao_confirmado");
       setError('Confira o km acima: corrija ou toque em "O km está certo".');
       return;
     }
@@ -282,6 +295,7 @@ function AbastecerPage() {
     });
 
     if (!parsed.success) {
+      formError("dados_invalidos");
       setError(parsed.error.issues[0]?.message ?? "Confira os dados informados.");
       return;
     }
@@ -332,6 +346,7 @@ function AbastecerPage() {
       });
     } catch (err) {
       captureException(err, { scope: "fueling.create" });
+      formError("falha_ao_salvar");
       setError("Não conseguimos salvar agora. Tente novamente em instantes.");
     }
   }

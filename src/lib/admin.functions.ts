@@ -53,12 +53,17 @@ export const getBetaMetrics = createServerFn({ method: "GET" })
         supabaseAdmin.from("vehicles").select("user_id, brand, model").range(from, to),
       ),
       fetchAll((from, to) =>
-        supabaseAdmin.from("fuelings").select("user_id, created_at").range(from, to),
+        supabaseAdmin
+          .from("fuelings")
+          .select(
+            "id, user_id, vehicle_id, created_at, filled_at, odometer, liters, total_cost, price_per_liter, full_tank, fuel_type_id",
+          )
+          .range(from, to),
       ),
       fetchAll((from, to) =>
         supabaseAdmin
           .from("events")
-          .select("user_id, name, created_at")
+          .select("user_id, name, created_at, props")
           .gte("created_at", since)
           .range(from, to),
       ),

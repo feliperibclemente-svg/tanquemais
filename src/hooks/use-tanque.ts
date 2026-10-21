@@ -382,8 +382,6 @@ export function useCreateFueling() {
       }
       track("fueling_created", {
         fuel_type: variables.draft.fuel_type_id,
-        liters: variables.draft.liters,
-        total_cost: variables.draft.total_cost,
         full_tank: variables.draft.full_tank,
         station: !!variables.draft.station_name?.trim(),
       });

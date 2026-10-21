@@ -4,7 +4,7 @@
  * uma única vez por usuário.
  */
 import { useEffect } from "react";
-import { track, trackOnce, trackRetention } from "@/lib/analytics";
+import { savedSource, track, trackOnce, trackRetention } from "@/lib/analytics";
 import { useAuth } from "@/providers/AuthProvider";
 import { useFuelings, useVehicles } from "@/hooks/use-tanque";
 
@@ -22,7 +22,7 @@ export function useFunnelTracking() {
     if (!userId) return;
     track("app_opened");
     trackRetention(userId);
-    trackOnce("funnel_signup_completed", userId);
+    trackOnce("funnel_signup_completed", userId, { source: savedSource() });
   }, [userId]);
 
   useEffect(() => {

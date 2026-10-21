@@ -4,6 +4,7 @@
  * Quando não há rede (ou a requisição falha por conexão), o abastecimento é
  * gravado no localStorage e reenviado automaticamente assim que a rede volta.
  */
+import { track } from "@/lib/analytics";
 import type { FuelingDraft } from "@/repositories";
 import { logger } from "./telemetry";
 
@@ -128,6 +129,7 @@ export async function flushQueue(userId: string, process: QueueProcessor): Promi
           message: error instanceof Error ? error.message : String(error),
         });
         bumpAttempt(item.id);
+        track("fueling_sync_failed", { attempt: (item.attempts ?? 0) + 1 });
       }
     }
   } finally {
