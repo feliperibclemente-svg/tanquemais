@@ -26,6 +26,8 @@ const TONE = {
 
 /** Linha compacta: usada na Home e no histórico. */
 export function VerdictPill({ verdict }: { verdict: PriceVerdict }) {
+  // Sem base de comparação ainda: nada a dizer na lista.
+  if (!verdict.reference) return null;
   const tone = TONE[verdict.tone];
   const Icon = tone.icon;
   return (
@@ -46,6 +48,9 @@ export function VerdictPill({ verdict }: { verdict: PriceVerdict }) {
 export function VerdictCard({ verdict }: { verdict: PriceVerdict }) {
   const tone = TONE[verdict.tone];
   const Icon = tone.icon;
+  if (!verdict.reference) {
+    return <p className="px-1 text-sm text-muted-foreground">{verdict.headline}.</p>;
+  }
 
   return (
     <AppCard className={tone.surface}>

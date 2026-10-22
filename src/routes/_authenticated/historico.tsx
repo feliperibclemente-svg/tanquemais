@@ -203,10 +203,6 @@ function HistoricoPage() {
               <Download className="h-4 w-4" /> Planilha
             </Action>
           </AppCard>
-          <p className="-mt-3 px-1 text-xs text-muted-foreground">
-            A planilha sai em CSV, com os filtros acima. Abre no Excel, no Google Planilhas e no
-            Numbers.
-          </p>
           {rows.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
               Nenhum abastecimento neste período.

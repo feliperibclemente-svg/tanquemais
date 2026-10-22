@@ -469,18 +469,15 @@ function AbastecerPage() {
                 desde o último tanque cheio.
               </p>
               {saved.atypical ? (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Bem fora do esperado. Se algum abastecimento ficou sem registro ou o tanque não
-                  foi completado, este trecho não entra nas médias.
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Bem fora do esperado: fica fora das médias.
                 </p>
               ) : null}
             </AppCard>
           ) : (
-            <AppCard className="p-4">
-              <p className="text-sm text-muted-foreground">
-                {consumptionPendingText(saved.tanksMissing)}.
-              </p>
-            </AppCard>
+            <p className="px-1 text-sm text-muted-foreground">
+              {consumptionPendingText(saved.tanksMissing)}.
+            </p>
           )}
         </div>
 
@@ -497,24 +494,28 @@ function AbastecerPage() {
           </>
         ) : null}
 
-        <div className="mt-6 space-y-3">
-          <ActionLink to="/app">Voltar para o início</ActionLink>
-          <ActionLink to="/historico" variant="secondary">
-            Ver detalhes no histórico
-          </ActionLink>
-          <Action
-            variant="ghost"
-            onClick={() => {
-              setSaved(null);
-              setTotal("");
-              setLitersInput("");
-              setOdometer(null);
-              setFullTank(false);
-              setDate(todayLocal());
-            }}
-          >
-            Registrar outro
-          </Action>
+        <div className="mt-6 space-y-2">
+          <ActionLink to="/app">Pronto</ActionLink>
+          <div className="flex gap-2">
+            <ActionLink to="/historico" variant="ghost" size="md" className="flex-1">
+              Ver no histórico
+            </ActionLink>
+            <Action
+              variant="ghost"
+              size="md"
+              className="flex-1"
+              onClick={() => {
+                setSaved(null);
+                setTotal("");
+                setLitersInput("");
+                setOdometer(null);
+                setFullTank(false);
+                setDate(todayLocal());
+              }}
+            >
+              Registrar outro
+            </Action>
+          </div>
         </div>
       </AppShell>
     );
@@ -524,10 +525,9 @@ function AbastecerPage() {
     <AppShell fab={false}>
       <PageHeader title="Abastecer" subtitle={vehicleName(vehicle)} />
 
-      <p className="-mt-2 mb-4 flex items-start gap-2 rounded-2xl bg-muted px-3 py-2 text-xs text-muted-foreground">
-        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-        Não use o celular {words.driving}. Registre só com {words.the} {words.parked} em local
-        seguro.
+      <p className="-mt-3 mb-4 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <ShieldAlert className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        Só com {words.the} {words.parked}, nunca {words.driving}.
       </p>
 
       <form onSubmit={submit} className="space-y-5">
@@ -598,7 +598,7 @@ function AbastecerPage() {
           hint={
             amounts.liters > 0
               ? `Dá ${num(amounts.liters, 2)} ${unit === "L" ? "litros" : unit}`
-              : "Com o valor, calculamos os litros para você"
+              : undefined
           }
         />
 
@@ -673,7 +673,7 @@ function AbastecerPage() {
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Encheu até a bomba desligar sozinha? Marque Sim: é o que permite medir o consumo real.
+              Marque Sim se a bomba desligou sozinha: é o que mede o consumo real.
             </p>
           )}
         </div>
@@ -686,7 +686,7 @@ function AbastecerPage() {
             autoCapitalize="words"
             autoComplete="off"
             placeholder="Ex.: Posto da Av. 85"
-            hint="Só você vê. Serve para saber onde você pagou menos."
+            hint="Só você vê."
             onChange={(event) => setStation(event.target.value)}
           />
           {myStations.length > 0 && !station.trim() ? (
