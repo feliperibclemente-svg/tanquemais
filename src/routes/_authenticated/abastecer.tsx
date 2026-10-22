@@ -470,8 +470,8 @@ function AbastecerPage() {
               </p>
               {saved.atypical ? (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Bem diferente do seu padrão. Se algum abastecimento ficou sem registro ou o tanque
-                  não foi completado, este trecho não entra nas médias.
+                  Bem fora do esperado. Se algum abastecimento ficou sem registro ou o tanque não
+                  foi completado, este trecho não entra nas médias.
                 </p>
               ) : null}
             </AppCard>
@@ -738,6 +738,9 @@ function AbastecerPage() {
         {previewKml ? (
           <p className="text-sm text-muted-foreground">
             {words.Your} fez {kmPerLiter(previewKml.kmPerLiter)} nesse trecho.
+            {previewKml.atypical
+              ? " Bem fora do esperado: confira o km e se o tanque anterior foi completado."
+              : ""}
           </p>
         ) : null}
         {error ? (

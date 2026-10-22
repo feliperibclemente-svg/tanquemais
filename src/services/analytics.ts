@@ -48,6 +48,17 @@ export function maxKmlFor(brand: string | null | undefined): number {
 export const OUTLIER_MIN_INTERVALS = 4;
 /** Trecho atípico: consumo 50% acima ou abaixo da mediana do veículo no mesmo combustível. */
 export const OUTLIER_FACTOR = 1.5;
+/**
+ * Teto de consumo de carro por combustível, válido desde o 1º trecho (sem esperar o
+ * histórico). Acima disso, quase sempre o tanque anterior não foi completado ou faltou
+ * um registro. Folga sobre os melhores híbridos do Inmetro; GNV fica de fora.
+ */
+export const CAR_KML_CAP: Record<string, number> = {
+  etanol: 22,
+  gasolina: 30,
+  gasolina_aditivada: 30,
+  diesel: 25,
+};
 
 const byDateThenOdometer = (a: Fueling, b: Fueling) =>
   new Date(a.filled_at).getTime() - new Date(b.filled_at).getTime() ||
@@ -150,14 +161,17 @@ export function computeFuelings(
     };
   });
 
-  return markOutliers(rows).reverse();
+  return markOutliers(rows, brandOf).reverse();
 }
 
 /**
  * Trechos com consumo muito diferente do habitual do mesmo veículo e combustível saem das
  * médias. Só é aplicado com histórico suficiente para existir um "habitual".
  */
-function markOutliers(rows: FuelingComputed[]): FuelingComputed[] {
+function markOutliers(
+  rows: FuelingComputed[],
+  brandOf: Map<string, string | null>,
+): FuelingComputed[] {
   const groups = new Map<string, number[]>();
   for (const r of rows) {
     if (!r.computed_km_per_liter) continue;
@@ -166,10 +180,16 @@ function markOutliers(rows: FuelingComputed[]): FuelingComputed[] {
   }
   return rows.map((r) => {
     const values = groups.get(`${r.vehicle_id}|${r.fuel_type_id}`);
-    if (!r.computed_km_per_liter || !values || values.length < OUTLIER_MIN_INTERVALS) return r;
-    const typical = median(values);
+    if (!r.computed_km_per_liter || !values) return r;
     const kml = r.computed_km_per_liter;
-    if (kml <= typical * OUTLIER_FACTOR && kml >= typical / OUTLIER_FACTOR) return r;
+    const cap =
+      vehicleKind(brandOf.get(r.vehicle_id)) === "carro" ? CAR_KML_CAP[r.fuel_type_id] : undefined;
+    const overCap = cap !== undefined && kml > cap;
+    if (!overCap) {
+      if (values.length < OUTLIER_MIN_INTERVALS) return r;
+      const typical = median(values);
+      if (kml <= typical * OUTLIER_FACTOR && kml >= typical / OUTLIER_FACTOR) return r;
+    }
     return {
       ...r,
       issue: "outlier",

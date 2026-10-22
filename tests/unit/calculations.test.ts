@@ -303,3 +303,28 @@ describe("km improvável (dígito a mais)", () => {
     expect([...ids]).toEqual(["b"]);
   });
 });
+
+describe("consumo impossível desde o 1º trecho", () => {
+  // 350 km com 12,22 L de etanol = 28,6 km/L: o tanque anterior não foi completado.
+  const rows = [
+    f("a", 1, 11350, 40, 4.09, true, "etanol"),
+    f("b", 6, 11700, 12.22, 4.09, true, "etanol"),
+  ];
+
+  it("carro acima do teto do combustível vira trecho atípico e sai das médias", () => {
+    const b = computeFuelings(rows, [{ id: "v1", brand: "Fiat" }]).find((r) => r.id === "b")!;
+    expect(b.issue).toBe("outlier");
+    expect(b.computed_km_per_liter).toBeNull();
+    expect(b.outlier_km_per_liter).toBeCloseTo(350 / 12.22);
+  });
+
+  it("consumo normal de carro e moto econômica não são marcados", () => {
+    const normal = [rows[0], f("b", 6, 11700, 35, 4.09, true, "etanol")];
+    expect(computeFuelings(normal, [{ id: "v1", brand: "Fiat" }])[0].issue).toBeNull();
+    const moto = computeFuelings(rows, [{ id: "v1", brand: "Honda Motos" }]).find(
+      (r) => r.id === "b",
+    )!;
+    expect(moto.issue).toBeNull();
+    expect(moto.computed_km_per_liter).toBeCloseTo(350 / 12.22);
+  });
+});
