@@ -168,6 +168,9 @@ function AbastecerPage() {
 
   const unit = FUEL_TYPES.find((f) => f.id === fuelTypeId)?.unit ?? "L";
   const [details, setDetails] = useState(false);
+  /** Combustível e posto ficam recolhidos: na maioria das vezes repetem o último registro. */
+  const [fuelOpen, setFuelOpen] = useState(false);
+  const [stationOpen, setStationOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     track("fueling_form_opened");
@@ -552,18 +555,34 @@ function AbastecerPage() {
           </div>
         ) : null}
 
-        <div className="space-y-1.5">
-          <p className="text-sm font-medium text-foreground">Combustível</p>
-          <ChoiceGroup
-            label="Combustível"
-            value={fuelTypeId}
-            onChange={setFuel}
-            options={fuelsFor(vehicle.brand, FUEL_TYPES).map((f) => ({
-              value: f.id,
-              label: f.short,
-            }))}
-          />
-        </div>
+        {fuelOpen || vehicleHistory.length === 0 ? (
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-foreground">Combustível</p>
+            <ChoiceGroup
+              label="Combustível"
+              value={fuelTypeId}
+              onChange={setFuel}
+              options={fuelsFor(vehicle.brand, FUEL_TYPES).map((f) => ({
+                value: f.id,
+                label: f.short,
+              }))}
+            />
+          </div>
+        ) : (
+          <p className="flex items-center gap-1 text-sm text-foreground">
+            Combustível:{" "}
+            <span className="font-semibold">
+              {FUEL_TYPES.find((f) => f.id === fuelTypeId)?.short ?? fuelTypeId}
+            </span>
+            <button
+              type="button"
+              onClick={() => setFuelOpen(true)}
+              className="ml-1 inline-flex min-h-11 items-center px-1 font-semibold text-primary"
+            >
+              Trocar
+            </button>
+          </p>
+        )}
 
         <div className="space-y-2">
           <NumericField
@@ -678,32 +697,46 @@ function AbastecerPage() {
           )}
         </div>
 
-        <div className="space-y-2">
-          <TextField
-            label="Posto (opcional)"
-            value={station}
-            maxLength={60}
-            autoCapitalize="words"
-            autoComplete="off"
-            placeholder="Ex.: Posto da Av. 85"
-            hint="Só você vê."
-            onChange={(event) => setStation(event.target.value)}
-          />
-          {myStations.length > 0 && !station.trim() ? (
+        {stationOpen || station.trim() ? (
+          <div className="space-y-2">
+            <TextField
+              label="Posto (opcional)"
+              value={station}
+              maxLength={60}
+              autoCapitalize="words"
+              autoComplete="off"
+              placeholder="Ex.: Posto da Av. 85"
+              hint="Só você vê."
+              onChange={(event) => setStation(event.target.value)}
+            />
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-foreground">Posto (opcional)</p>
             <div className="flex flex-wrap gap-2" aria-label="Postos que você já usou">
               {myStations.map((name) => (
                 <button
                   key={name}
                   type="button"
-                  onClick={() => setStation(name)}
+                  onClick={() => {
+                    setStation(name);
+                    setStationOpen(true);
+                  }}
                   className="inline-flex min-h-11 items-center rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground"
                 >
                   {name}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => setStationOpen(true)}
+                className="inline-flex min-h-11 items-center rounded-full border border-dashed border-border px-3 text-sm font-medium text-primary"
+              >
+                {myStations.length > 0 ? "Outro" : "Informar posto"}
+              </button>
             </div>
-          ) : null}
-        </div>
+          </div>
+        )}
 
         <button
           type="button"
