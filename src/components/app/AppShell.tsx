@@ -63,7 +63,7 @@ export function AppShell({ children }: { children: ReactNode; fab?: boolean }) {
                     aria-current={active ? "page" : undefined}
                     className="flex min-h-11 flex-col items-center gap-1 px-1 pb-2.5 text-[11px] font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                   >
-                    <span className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_10px_24px_-10px_var(--primary)] ring-4 ring-background transition-transform active:scale-95">
+                    <span className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground ring-4 ring-background transition-transform active:scale-95">
                       <Fuel className="h-6 w-6" strokeWidth={2.4} />
                     </span>
                     {tab.label}

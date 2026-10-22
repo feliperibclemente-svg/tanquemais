@@ -58,7 +58,7 @@ export function ChoiceGroup({
             aria-checked={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              "min-h-11 shrink-0 rounded-2xl border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+              "min-h-11 shrink-0 rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
               fill && "flex-1 px-2",
               active
                 ? "border-primary bg-accent text-accent-foreground"

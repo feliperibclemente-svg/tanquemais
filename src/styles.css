@@ -149,6 +149,8 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    /* Algarismos da mesma largura: valores em reais e km se alinham em listas. */
+    font-variant-numeric: tabular-nums;
   }
 }
 

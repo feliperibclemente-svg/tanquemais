@@ -139,11 +139,7 @@ function HomePage() {
           </header>
 
           {/* Ação principal — o elemento de maior destaque da tela */}
-          <ActionLink
-            to="/abastecer"
-            size="lg"
-            className="h-16 rounded-3xl text-lg shadow-[0_18px_40px_-18px_var(--primary)]"
-          >
+          <ActionLink to="/abastecer" size="lg" className="h-16 rounded-3xl text-lg">
             <Fuel className="h-6 w-6" strokeWidth={2.4} />
             Registrar abastecimento
           </ActionLink>

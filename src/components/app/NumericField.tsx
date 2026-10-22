@@ -115,7 +115,7 @@ export const NumericField = forwardRef<HTMLInputElement, FieldProps>(function Nu
       </label>
       <div
         className={cn(
-          "flex min-h-14 items-center gap-2 rounded-2xl border bg-card px-4 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-ring/25",
+          "flex min-h-14 items-center gap-2 rounded-2xl border bg-card px-4 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary",
           error ? "border-destructive" : "border-border",
         )}
       >

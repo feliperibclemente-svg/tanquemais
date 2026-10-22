@@ -89,9 +89,9 @@ export function MomentCard({
       <Link
         to="/retrospectiva"
         onClick={() => track("moment_opened", { id: "recap" })}
-        className="flex items-center gap-3 rounded-3xl bg-primary p-4 text-primary-foreground"
+        className="flex items-center gap-3 rounded-3xl border border-primary/25 bg-accent/40 p-4 text-foreground"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-card text-primary">
           <CalendarDays className="h-5 w-5" />
         </span>
         <span className="min-w-0 flex-1">
@@ -100,9 +100,11 @@ export function MomentCard({
               ? `Seu ${recap.monthName} até agora`
               : `Sua retrospectiva de ${recap.monthName}`}
           </span>
-          <span className="block text-sm text-white/80">Veja e compartilhe seus números</span>
+          <span className="block text-sm text-muted-foreground">
+            Veja e compartilhe seus números
+          </span>
         </span>
-        <ChevronRight className="h-5 w-5 shrink-0" />
+        <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
       </Link>
     );
   }
