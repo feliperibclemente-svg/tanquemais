@@ -25,6 +25,8 @@ const tooltipStyle = {
 
 /** Gráficos do Painel. Carregados sob demanda (lazy) para aliviar o bundle inicial. */
 export default function DashboardCharts({ series }: { series: SeriesPoint[] }) {
+  // Com um ponto só, a linha vira um pontinho solto e o gráfico parece vazio.
+  const showConsumption = series.filter((p) => p.consumo != null).length >= 2;
   return (
     <>
       <div className="h-44">
@@ -43,25 +45,29 @@ export default function DashboardCharts({ series }: { series: SeriesPoint[] }) {
         </ResponsiveContainer>
       </div>
 
-      <p className="mt-6 text-sm font-semibold text-foreground">Consumo (km/L)</p>
-      <div className="mt-4 h-44">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={series}>
-            <CartesianGrid vertical={false} stroke="var(--border)" />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} />
-            <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
-            <Tooltip formatter={(v: number) => `${num(v)} km/L`} contentStyle={tooltipStyle} />
-            <Line
-              type="monotone"
-              dataKey="consumo"
-              stroke="var(--primary)"
-              strokeWidth={2.5}
-              dot={{ r: 3 }}
-              connectNulls
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      {showConsumption ? (
+        <>
+          <p className="mt-6 text-sm font-semibold text-foreground">Consumo (km/L)</p>
+          <div className="mt-4 h-44">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={series}>
+                <CartesianGrid vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} />
+                <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
+                <Tooltip formatter={(v: number) => `${num(v)} km/L`} contentStyle={tooltipStyle} />
+                <Line
+                  type="monotone"
+                  dataKey="consumo"
+                  stroke="var(--primary)"
+                  strokeWidth={2.5}
+                  dot={{ r: 3 }}
+                  connectNulls
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </>
+      ) : null}
     </>
   );
 }

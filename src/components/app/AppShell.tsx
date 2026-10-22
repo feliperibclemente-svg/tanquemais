@@ -49,7 +49,7 @@ export function AppShell({ children }: { children: ReactNode; fab?: boolean }) {
 
       <nav
         aria-label="Navegação principal"
-        className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 border-t border-border bg-card/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+        className="fixed bottom-0 left-1/2 z-40 [view-transition-name:bottom-nav] w-full max-w-md -translate-x-1/2 border-t border-border bg-card/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur"
       >
         <ul className="flex items-stretch justify-between">
           {tabs.map((tab) => {

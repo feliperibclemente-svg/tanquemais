@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface ChoiceOption {
@@ -25,11 +26,27 @@ export function ChoiceGroup({
   fill?: boolean;
   className?: string;
 }) {
+  const row = useRef<HTMLDivElement>(null);
+  // Na linha rolável, o chip escolhido precisa aparecer (ex.: "Tudo" é o último).
+  useEffect(() => {
+    const box = row.current;
+    const chip = box?.querySelector<HTMLElement>('[aria-checked="true"]');
+    if (!box || !chip || fill) return;
+    const left = chip.offsetLeft - box.offsetLeft;
+    if (left < box.scrollLeft || left + chip.offsetWidth > box.scrollLeft + box.clientWidth)
+      box.scrollLeft = left - 20;
+  }, [value, fill]);
   return (
     <div
+      ref={row}
       role="radiogroup"
       aria-label={label}
-      className={cn("flex gap-2", fill ? "" : "flex-wrap overflow-x-auto pb-1", className)}
+      className={cn(
+        "flex gap-2",
+        // Uma linha que rola para o lado, encostando nas bordas da tela.
+        fill ? "" : "no-scrollbar -mx-5 overflow-x-auto px-5",
+        className,
+      )}
     >
       {options.map((option) => {
         const active = option.value === value;
