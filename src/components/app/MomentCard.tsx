@@ -10,9 +10,10 @@ import {
   pickMoment,
   type MomentCandidate,
 } from "@/services/moments";
-import { chooseReference, referenceFuelName, weekLabel } from "@/services/anp";
+import { chooseReference, weekLabel } from "@/services/anp";
+import { cityWeek, cityWeekLines } from "@/services/city-week";
 import { localMonthKey } from "@/services/recap";
-import { brl, num } from "@/lib/format";
+import { num } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import type { Vehicle } from "@/types/domain";
 
@@ -47,7 +48,8 @@ export function MomentCard({
     currentKm,
   });
   const fuel = fuelTypeId ?? vehicle.fuel_type_id ?? "gasolina";
-  const ref = place.uf ? chooseReference(references, place, fuel, new Date()) : null;
+  const week = place.uf ? cityWeek(references, place, fuel, new Date()) : null;
+  const ref = week?.ref ?? null;
   const lastCheckup = checkups.data?.find((c) => c.vehicle_id === vehicle.id);
   const checkupDue =
     !checkups.isLoading &&
@@ -107,7 +109,14 @@ export function MomentCard({
 
   const content: Record<
     Exclude<MomentCandidate["id"], "recap">,
-    { icon: ReactNode; title: string; body: string; to: string; cta: string }
+    {
+      icon: ReactNode;
+      title: string;
+      body: string | string[];
+      note?: string;
+      to: string;
+      cta: string;
+    }
   > = {
     reminder: {
       icon: <BellRing className="h-5 w-5" />,
@@ -132,10 +141,9 @@ export function MomentCard({
     },
     "price-week": {
       icon: <MapPinned className="h-5 w-5" />,
-      title: ref ? `Preço da semana em ${ref.place}` : "",
-      body: ref
-        ? `Média ${referenceFuelName(ref.fuelTypeId).article === "a" ? "da" : "do"} ${ref.fuelName}: ${brl(ref.avgPrice)}/${ref.unit}. ANP, ${weekLabel(ref.weekStart, ref.weekEnd)}.`
-        : "",
+      title: ref ? `${ref.place} nesta semana` : "",
+      body: week ? cityWeekLines(week, vehicle.tank_liters) : "",
+      note: ref ? `Pesquisa da ANP, ${weekLabel(ref.weekStart, ref.weekEnd)}.` : undefined,
       to: "/precos",
       cta: "Ver preços por cidade",
     },
@@ -172,7 +180,16 @@ export function MomentCard({
         </span>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground">{c.title}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{c.body}</p>
+          {Array.isArray(c.body) ? (
+            <ul className="mt-1 space-y-1.5 text-sm text-muted-foreground">
+              {c.body.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-1 text-sm text-muted-foreground">{c.body}</p>
+          )}
+          {c.note ? <p className="mt-1.5 text-xs text-muted-foreground">{c.note}</p> : null}
           <Link
             to={c.to}
             onClick={opened}

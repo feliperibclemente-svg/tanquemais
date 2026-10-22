@@ -207,6 +207,9 @@ export interface ChosenReference {
   weekStart: string;
   weekEnd: string;
   stations: number | null;
+  /** Menor e maior preço encontrados pela ANP naquela semana (quando a planilha traz). */
+  minPrice: number | null;
+  maxPrice: number | null;
 }
 
 /** Referência mais antiga aceita: até 3 semanas antes do abastecimento. */
@@ -232,7 +235,11 @@ export function chooseReference(
       | "stations"
     >,
     "scope"
-  > & { scope: string })[],
+  > & {
+    scope: string;
+    min_price?: number | string | null;
+    max_price?: number | string | null;
+  })[],
   place: { uf: string | null | undefined; city: string | null | undefined },
   fuelTypeId: string | null | undefined,
   date: string | Date,
@@ -272,6 +279,8 @@ export function chooseReference(
     fuelName: referenceFuelName(chosen.fuel_type_id).name,
     unit: referenceFuelName(chosen.fuel_type_id).unit,
     stations: chosen.stations ?? null,
+    minPrice: chosen.min_price != null ? Number(chosen.min_price) : null,
+    maxPrice: chosen.max_price != null ? Number(chosen.max_price) : null,
   };
 }
 

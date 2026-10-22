@@ -135,7 +135,7 @@ export function usePriceReferences(place: { uf: string | null; city: string | nu
       const { data, error } = await supabase
         .from("fuel_price_references")
         .select(
-          "scope, uf, municipio, municipio_label, fuel_type_id, avg_price, week_start, week_end, stations",
+          "scope, uf, municipio, municipio_label, fuel_type_id, avg_price, min_price, max_price, week_start, week_end, stations",
         )
         .eq("uf", uf)
         .in("municipio", city ? ["", city] : [""])
@@ -154,6 +154,8 @@ export function usePriceReferences(place: { uf: string | null; city: string | nu
         | "week_start"
         | "week_end"
         | "stations"
+        | "min_price"
+        | "max_price"
       >[];
     },
   });
