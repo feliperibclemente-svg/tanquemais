@@ -14,6 +14,8 @@ export const getRouter = () => {
     defaultPreload: "intent",
     defaultPreloadDelay: 30,
     defaultPreloadStaleTime: 0,
+    // Troca de tela com fade nativo do navegador (onde não há suporte, troca normal).
+    defaultViewTransition: true,
   });
 
   return router;

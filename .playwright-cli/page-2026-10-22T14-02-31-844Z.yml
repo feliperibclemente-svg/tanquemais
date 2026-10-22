@@ -1,0 +1,4 @@
+- generic [active] [ref=f12e1]:
+  - status "Carregando o Tanque+" [ref=f12e2]:
+    - img "Tanque+" [ref=f12e3]
+  - region "Notifications alt+T"

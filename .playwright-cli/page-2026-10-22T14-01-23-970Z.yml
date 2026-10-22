@@ -1,0 +1,38 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e178]:
+    - main [ref=e179]:
+      - link "Versão Beta" [ref=e180] [cursor=pointer]:
+        - /url: /beta
+      - generic [ref=e279]:
+        - heading "Abastecimento registrado!" [level=1] [ref=e284]
+        - paragraph [ref=e285]: R$ 50,00
+        - paragraph [ref=e286]: 12,23 L · R$ 4,09/L
+      - generic [ref=e287]:
+        - generic [ref=e288]:
+          - paragraph [ref=e293]: Falta 1 registro para comparar o preço
+          - paragraph [ref=e294]: Com 3 abastecimentos de Etanol deste veículo nos últimos 90 dias dizemos se o preço foi bom.
+        - paragraph [ref=e296]: Seu carro fez 28,6 km/L desde o último tanque cheio.
+      - generic [ref=e297]:
+        - link "Voltar para o início" [ref=e298] [cursor=pointer]:
+          - /url: /app
+        - link "Ver detalhes no histórico" [ref=e299] [cursor=pointer]:
+          - /url: /historico
+        - button "Registrar outro" [ref=e300]
+    - navigation "Navegação principal" [ref=e238]:
+      - list [ref=e239]:
+        - listitem [ref=e240]:
+          - link [ref=e241] [cursor=pointer]:
+            - /url: /app
+        - listitem [ref=e246]:
+          - link [ref=e247] [cursor=pointer]:
+            - /url: /historico
+        - listitem [ref=e253]:
+          - link [ref=e254] [cursor=pointer]:
+            - /url: /abastecer
+        - listitem [ref=e259]:
+          - link [ref=e260] [cursor=pointer]:
+            - /url: /dashboard
+        - listitem [ref=e264]:
+          - link [ref=e265] [cursor=pointer]:
+            - /url: /perfil
+  - region "Notifications alt+T"

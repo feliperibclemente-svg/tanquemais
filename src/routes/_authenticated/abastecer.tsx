@@ -696,7 +696,7 @@ function AbastecerPage() {
                   key={name}
                   type="button"
                   onClick={() => setStation(name)}
-                  className="inline-flex min-h-9 items-center rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground"
+                  className="inline-flex min-h-11 items-center rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground"
                 >
                   {name}
                 </button>
@@ -746,10 +746,13 @@ function AbastecerPage() {
           </p>
         ) : null}
 
-        <Action type="submit" loading={create.isPending} disabled={!canSubmit}>
-          {create.isPending ? null : <Fuel className="h-5 w-5" />}
-          Registrar abastecimento
-        </Action>
+        {/* Sempre à mão, logo acima da barra inferior. */}
+        <div className="sticky bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 -mx-5 bg-background/95 px-5 py-2 backdrop-blur">
+          <Action type="submit" loading={create.isPending} disabled={!canSubmit}>
+            {create.isPending ? null : <Fuel className="h-5 w-5" />}
+            Registrar abastecimento
+          </Action>
+        </div>
       </form>
     </AppShell>
   );
