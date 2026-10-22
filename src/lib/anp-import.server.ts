@@ -48,7 +48,7 @@ async function candidateFiles(now: Date): Promise<WeekFile[]> {
     if (res.ok) {
       const html = await res.text();
       const found = new Map<string, WeekFile>();
-      for (const m of html.matchAll(/href="([^"]*resumo_semanal_lpc_[\d-]+_[\d-]+\.xlsx)"/gi)) {
+      for (const m of html.matchAll(/href="([^"]*resumo_semanal_lpc_[\d_-]+\.xlsx)"/gi)) {
         const url = new URL(m[1], ANP_PAGE_URL).toString();
         const week = weekFromFileName(url);
         if (week) found.set(week.start, { url, ...week });
@@ -59,10 +59,11 @@ async function candidateFiles(now: Date): Promise<WeekFile[]> {
     /* segue para o padrão de nomes */
   }
   return recentWeeks(now, 3).flatMap((w) =>
-    [...new Set([w.start.slice(0, 4), w.end.slice(0, 4)])].map((year) => ({
-      url: `${BASE}/${year}/resumo_semanal_lpc_${w.start}_${w.end}.xlsx`,
-      ...w,
-    })),
+    [...new Set([w.start.slice(0, 4), w.end.slice(0, 4)])].flatMap((year) =>
+      [`${w.start}_${w.end}`, `${w.start.replaceAll("-", "_")}-${w.end.replaceAll("-", "_")}`].map(
+        (dates) => ({ url: `${BASE}/${year}/resumo_semanal_lpc_${dates}.xlsx`, ...w }),
+      ),
+    ),
   );
 }
 

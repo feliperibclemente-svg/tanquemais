@@ -38,6 +38,11 @@ describe("normalização", () => {
     expect(weekFromFileName(".../2026/resumo_semanal_lpc_2026-10-04_2026-10-10.xlsx")).toEqual(
       week,
     );
+    // Formato novo usado pela ANP a partir da semana de 11/10/2026.
+    expect(weekFromFileName(".../2026/resumo_semanal_lpc_2026_10_11-2026_10_17.xlsx")).toEqual({
+      start: "2026-10-11",
+      end: "2026-10-17",
+    });
     expect(weekLabel(week.start, week.end)).toBe("04/10 a 10/10");
   });
 });

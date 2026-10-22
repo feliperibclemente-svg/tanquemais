@@ -170,8 +170,10 @@ function titleCase(value: string): string {
 
 /** Semana do arquivo "resumo_semanal_lpc_2026-10-04_2026-10-10.xlsx". */
 export function weekFromFileName(name: string): { start: string; end: string } | null {
-  const m = /resumo_semanal_lpc_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})\.xlsx/i.exec(name);
-  return m ? { start: m[1], end: m[2] } : null;
+  // A ANP alterna o padrão: "2026-10-04_2026-10-10" ou "2026_10_11-2026_10_17".
+  const d = "(\\d{4})[-_](\\d{2})[-_](\\d{2})";
+  const m = new RegExp(`resumo_semanal_lpc_${d}[-_]${d}\\.xlsx`, "i").exec(name);
+  return m ? { start: `${m[1]}-${m[2]}-${m[3]}`, end: `${m[4]}-${m[5]}-${m[6]}` } : null;
 }
 
 /** Nome do combustível como a ANP pesquisa, para deixar claro o que está sendo comparado. */
