@@ -16,6 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { brl, kmPerLiter, liters as fmtLiters, num } from "@/lib/format";
 import { useHomeData } from "@/hooks/use-tanque";
+import { TanqueIALine } from "@/components/app/TanqueIALine";
 import { FUEL_LABEL, FUEL_TYPES } from "@/constants/app";
 import { ethanolAdvice } from "@/services/insights";
 import { consumptionProgress, consumptionProgressText } from "@/services/analytics";
@@ -45,7 +46,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  const { isLoading, isError, refetch, stats, rows, references, place, primaryVehicle } =
+  const { isLoading, isError, refetch, stats, rows, references, place, primaryVehicle, insights } =
     useHomeData();
 
   if (isLoading) {
@@ -138,6 +139,13 @@ function DashboardPage() {
       </div>
 
       <section className="mt-5 space-y-4">
+        {primaryVehicle ? (
+          <TanqueIALine
+            insights={insights}
+            brand={primaryVehicle.brand}
+            dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
+          />
+        ) : null}
         <AppCard>
           <p className="text-sm font-semibold text-foreground">Gasto por mês</p>
           <div className="mt-4">

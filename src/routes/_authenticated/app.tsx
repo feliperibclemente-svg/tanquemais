@@ -1,10 +1,7 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { vehicleName } from "@/constants/vehicles";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronRight, Fuel, Gauge } from "lucide-react";
+import { ChevronRight, Fuel, Gauge } from "lucide-react";
 import {
   ActionLink,
   AppCard,
@@ -21,8 +18,6 @@ import { useHomeData } from "@/hooks/use-tanque";
 import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { FUEL_LABEL } from "@/constants/app";
 import { brl, kmPerLiter, num, relativeDate } from "@/lib/format";
-import { track } from "@/lib/analytics";
-import { phraseInsight } from "@/lib/tanque-ia.functions";
 import { historyVerdicts } from "@/services/verdict";
 import {
   consumptionProgress,
@@ -73,7 +68,6 @@ function HomePage() {
     profile,
     primaryVehicle,
     stats,
-    insights,
     rows,
     lastReference,
     hasPlace,
@@ -143,6 +137,9 @@ function HomePage() {
             <Fuel className="h-6 w-6" strokeWidth={2.4} />
             Registrar abastecimento
           </ActionLink>
+
+          {/* Atalhos logo abaixo da ação principal (como as ações rápidas dos apps de banco) */}
+          <Shortcuts />
 
           {/* Último abastecimento com a conclusão em destaque */}
           {last ? (
@@ -241,15 +238,8 @@ function HomePage() {
             place={place}
           />
 
-          {/* Atalhos: tudo o que o app faz, a um toque (como iFood e Uber) */}
-          <Shortcuts />
-
-          {/* TanqueIA em uma frase — detalhes ficam no painel */}
-          <TanqueIALine
-            insights={trendText ? insights.filter((i) => i.id !== "trend") : insights}
-            brand={primaryVehicle.brand}
-            dataKey={`${primaryVehicle.id}:${rows.length}:${rows[0]?.id ?? ""}:${rows[0]?.updated_at ?? ""}`}
-          />
+          {/* Teo no Início: só a dica ou curiosidade do dia. A análise fica no Painel. */}
+          <TeoTip brand={primaryVehicle.brand} />
 
           <InstallCard />
         </motion.div>
@@ -290,18 +280,20 @@ function Mini({
 function ReferenceLine({ reference, paid }: { reference: ChosenReference; paid: number }) {
   const diff = paid - reference.avgPrice;
   const where =
-    reference.scope === "municipio" ? `em ${reference.place}` : `no estado (${reference.place})`;
+    reference.scope === "municipio" ? `de ${reference.place}` : `do estado (${reference.place})`;
   return (
-    <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground">
-      Média da {reference.fuelName} {where}:{" "}
-      <span className="font-semibold text-foreground">
-        {brl(reference.avgPrice)}/{reference.unit}
-      </span>
-      {Math.abs(diff) >= 0.005
-        ? `. Você pagou ${brl(Math.abs(diff))} ${diff > 0 ? "a mais" : "a menos"}.`
-        : ". Você pagou a média."}
-      <br />
-      Fonte: ANP, semana de {weekLabel(reference.weekStart, reference.weekEnd)}
+    <p className="border-t border-border pt-3 text-sm text-muted-foreground">
+      {Math.abs(diff) >= 0.005 ? (
+        <>
+          <span className="font-semibold text-foreground">
+            {brl(Math.abs(diff))}/{reference.unit} {diff > 0 ? "acima" : "abaixo"}
+          </span>{" "}
+          da média {where}
+        </>
+      ) : (
+        `Na média ${where}`
+      )}
+      <span className="text-xs"> · ANP, {weekLabel(reference.weekStart, reference.weekEnd)}</span>
     </p>
   );
 }
@@ -342,72 +334,15 @@ function ConsumptionPending({
   );
 }
 
-function TanqueIALine({
-  insights,
-  brand,
-  dataKey,
-}: {
-  insights: ReturnType<typeof useHomeData>["insights"];
-  brand: string;
-  /** Muda quando os registros mudam, para a frase ser refeita. */
-  dataKey: string;
-}) {
-  const main = insights[0];
-  /** Sem dados suficientes a IA não é acionada: ela interpreta números, não os inventa. */
-  const hasData = !!main && main.id !== "empty";
-  const phrase = useServerFn(phraseInsight);
-  /** Sem números para comentar, o Teo traz uma curiosidade da marca ou uma dica do dia. */
-  const note = hasData ? null : teoNoteOfTheDay(brand);
-
-  const ai = useQuery({
-    queryKey: ["tanque-ia", dataKey],
-    enabled: hasData,
-    staleTime: 15 * 60_000,
-    retry: 1,
-    queryFn: async () => {
-      track("tanque_ia_requested");
-      return phrase();
-    },
-  });
-
-  useEffect(() => {
-    if (ai.data?.text) track("tanque_ia_answered", { length: ai.data.text.length });
-  }, [ai.data?.text]);
-
-  const text =
-    ai.data?.text ?? main?.body ?? "Com dois tanques cheios, eu calculo seu consumo real.";
-
+function TeoTip({ brand }: { brand: string }) {
+  const note = teoNoteOfTheDay(brand);
   return (
-    <AppCard className="border-primary/25 bg-accent/40">
-      <div className="flex items-center gap-3">
-        <TeoAvatar spot="home-insight" size="sm" mood="tip" />
-        <div className="leading-tight">
-          <p className="text-sm font-semibold text-foreground">Teo</p>
-          <p className="text-xs text-muted-foreground">sua TanqueIA</p>
-        </div>
+    <AppCard className="flex items-start gap-3 border-primary/25 bg-accent/40 p-4">
+      <TeoAvatar spot="home-insight" size="sm" mood="tip" />
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-primary">{note.title}</p>
+        <p className="mt-0.5 text-sm leading-snug text-foreground">{note.text}</p>
       </div>
-      {note ? (
-        <>
-          <p className="mt-3 text-xs font-semibold text-primary">{note.title}</p>
-          <p className="mt-1 text-sm leading-relaxed text-foreground">{note.text}</p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Com dois tanques cheios registrados, eu passo a comentar os seus números.
-          </p>
-        </>
-      ) : (
-        <p className="mt-3 text-sm leading-relaxed text-foreground">
-          {ai.isFetching ? "Analisando seus números…" : text}
-        </p>
-      )}
-      {hasData && !ai.isFetching ? (
-        <p className="mt-2 text-xs text-muted-foreground">Calculado com os seus registros.</p>
-      ) : null}
-      <Link
-        to="/dashboard"
-        className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary"
-      >
-        Ver detalhes <ArrowRight className="h-4 w-4" />
-      </Link>
     </AppCard>
   );
 }

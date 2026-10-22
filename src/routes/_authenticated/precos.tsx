@@ -10,16 +10,20 @@ import {
   ErrorState,
   PageHeader,
   ScreenSkeleton,
+  SelectField,
 } from "@/components/ds";
-import { useCityPrices, useHomeData } from "@/hooks/use-tanque";
+import { useAnpCities, useCityPrices, useHomeData, usePriceReferences } from "@/hooks/use-tanque";
 import {
   ANP_PAGE_URL,
   MIN_STATIONS_FOR_RANKING,
+  normalizeName,
   rankCities,
   referenceFuelName,
   toUf,
   weekLabel,
 } from "@/services/anp";
+import { cityWeek, cityWeekLines } from "@/services/city-week";
+import { BR_UFS } from "@/constants/app";
 import { brl } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/precos")({
@@ -78,6 +82,13 @@ function PricesPage() {
           ]}
         />
       </div>
+
+      <CityLookup
+        key={`${uf ?? ""}:${place.city ?? ""}`}
+        fuel={fuel}
+        home={{ uf: uf ?? "", city: place.city ?? "" }}
+        tankLiters={primaryVehicle?.tank_liters ?? null}
+      />
 
       {prices.isLoading ? (
         <div className="mt-5">
@@ -198,6 +209,75 @@ function MyCity({
           ? `Sua cidade teve menos de ${MIN_STATIONS_FOR_RANKING} postos pesquisados nesta semana, então fica fora da comparação.`
           : "Sua cidade não está na pesquisa da ANP desta semana para esse combustível."}
       </p>
+    </AppCard>
+  );
+}
+
+/** Consulta de qualquer cidade pesquisada pela ANP; abre na cidade do perfil. */
+function CityLookup({
+  fuel,
+  home,
+  tankLiters,
+}: {
+  fuel: string;
+  home: { uf: string; city: string };
+  tankLiters: number | null;
+}) {
+  const [uf, setUf] = useState(home.uf);
+  const [city, setCity] = useState(home.city);
+  const cities = useAnpCities(uf || null);
+  // A ANP escreve sem acento ("Goiania"): casa a cidade do perfil com a da lista.
+  const selected = cities.data?.find((c) => normalizeName(c) === normalizeName(city)) ?? "";
+  const refs = usePriceReferences({ uf, city: selected });
+  // Na cidade do perfil, mostra o nome como a pessoa escreveu (com acento).
+  const shown = normalizeName(selected) === normalizeName(home.city) ? home.city : selected;
+  const week = selected && refs.data ? cityWeek(refs.data, { uf, city: shown }, fuel) : null;
+  const lines = week ? cityWeekLines(week, tankLiters) : [];
+  if (week?.ref.minPrice) {
+    lines.splice(1, 0, `Menor preço pesquisado: ${brl(week.ref.minPrice)}/${week.ref.unit}.`);
+  }
+
+  return (
+    <AppCard className="mt-4">
+      <p className="text-sm font-semibold text-foreground">Consultar cidade</p>
+      <div className="mt-3 grid grid-cols-[6.5rem_1fr] gap-2">
+        <SelectField
+          label="Estado"
+          value={uf}
+          onChange={(e) => {
+            setUf(e.target.value);
+            setCity("");
+          }}
+          options={[{ value: "", label: "UF" }, ...BR_UFS.map((u) => ({ value: u, label: u }))]}
+        />
+        <SelectField
+          label="Cidade"
+          value={selected}
+          disabled={!uf || cities.isLoading}
+          onChange={(e) => setCity(e.target.value)}
+          options={[
+            { value: "", label: cities.isLoading ? "Carregando…" : "Escolha" },
+            ...(cities.data ?? []).map((c) => ({ value: c, label: c })),
+          ]}
+        />
+      </div>
+      {week ? (
+        <div className="mt-3">
+          <p className="text-base font-semibold text-foreground">{week.ref.place}</p>
+          <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+            {lines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Pesquisa da ANP, {weekLabel(week.ref.weekStart, week.ref.weekEnd)}.
+          </p>
+        </div>
+      ) : selected && !refs.isLoading ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Sem pesquisa da ANP para essa cidade e combustível nas últimas semanas.
+        </p>
+      ) : null}
     </AppCard>
   );
 }
