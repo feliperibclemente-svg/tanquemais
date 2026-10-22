@@ -129,9 +129,11 @@ export const runAnpImport = createServerFn({ method: "POST" })
       _role: "admin",
     });
     if (!isAdmin) throw new Error("Acesso restrito");
-    const { importAnpWeek } = await import("@/lib/anp-import.server");
+    const { importAnpWeek, importAnpStations } = await import("@/lib/anp-import.server");
     // Pelo botão do admin, reimporta a semana mesmo que já exista (corrige nomes e falhas).
-    return importAnpWeek({ force: true });
+    const averages = await importAnpWeek({ force: true });
+    const stations = await importAnpStations({ force: true });
+    return { ...averages, stations };
   });
 
 /** Erros do app nos últimos 7 dias, agrupados pela mensagem (painel admin). */

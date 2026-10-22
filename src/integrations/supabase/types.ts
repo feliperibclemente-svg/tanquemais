@@ -391,6 +391,60 @@ export type Database = {
         };
         Relationships: [];
       };
+      fuel_station_prices: {
+        Row: {
+          id: number;
+          source: string;
+          week_start: string;
+          week_end: string;
+          uf: string;
+          municipio: string;
+          cnpj: string;
+          name: string;
+          address: string | null;
+          bairro: string | null;
+          brand: string | null;
+          fuel_type_id: string;
+          price: number;
+          collected_on: string | null;
+          imported_at: string;
+        };
+        Insert: {
+          id?: number;
+          source?: string;
+          week_start: string;
+          week_end: string;
+          uf: string;
+          municipio: string;
+          cnpj: string;
+          name: string;
+          address?: string | null;
+          bairro?: string | null;
+          brand?: string | null;
+          fuel_type_id: string;
+          price: number;
+          collected_on?: string | null;
+          imported_at?: string;
+        };
+        Update: {
+          id?: number;
+          source?: string;
+          week_start?: string;
+          week_end?: string;
+          uf?: string;
+          municipio?: string;
+          cnpj?: string;
+          name?: string;
+          address?: string | null;
+          bairro?: string | null;
+          brand?: string | null;
+          fuel_type_id?: string;
+          price?: number;
+          collected_on?: string | null;
+          imported_at?: string;
+        };
+        Relationships: [];
+      };
       fuel_types: {
         Row: {
           id: string;

@@ -77,6 +77,38 @@ export function useCityPrices(fuelTypeId: string, uf: string | null) {
   });
 }
 
+/**
+ * Postos mais baratos da semana mais recente da ANP numa cidade, para um combustível.
+ * Antes de a tabela existir no banco, devolve lista vazia (a tela some sem erro).
+ */
+export function useCheapestStations(uf: string, city: string, fuelTypeId: string) {
+  const municipio = normalizeName(city);
+  return useQuery({
+    ...base,
+    staleTime: 6 * 60 * 60_000,
+    retry: 1,
+    enabled: !!uf && !!municipio,
+    queryKey: ["cheapest-stations", uf, municipio, fuelTypeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fuel_station_prices")
+        .select("name, address, bairro, brand, price, collected_on, week_start, week_end")
+        .eq("uf", uf)
+        .eq("municipio", municipio)
+        .eq("fuel_type_id", fuelTypeId)
+        .order("week_start", { ascending: false })
+        .order("price", { ascending: true })
+        .limit(40);
+      if (error) {
+        if (/fuel_station_prices|does not exist|PGRST205/i.test(error.message)) return [];
+        throw error;
+      }
+      const latest = data?.[0]?.week_start;
+      return (data ?? []).filter((r) => r.week_start === latest).slice(0, 5);
+    },
+  });
+}
+
 /** Nomes das cidades pesquisadas pela ANP num estado (sugestões ao digitar a cidade). */
 export function useAnpCities(uf: string | null) {
   return useQuery({

@@ -12,7 +12,13 @@ import {
   ScreenSkeleton,
   SelectField,
 } from "@/components/ds";
-import { useAnpCities, useCityPrices, useHomeData, usePriceReferences } from "@/hooks/use-tanque";
+import {
+  useAnpCities,
+  useCheapestStations,
+  useCityPrices,
+  useHomeData,
+  usePriceReferences,
+} from "@/hooks/use-tanque";
 import {
   ANP_PAGE_URL,
   MIN_STATIONS_FOR_RANKING,
@@ -24,6 +30,8 @@ import {
 } from "@/services/anp";
 import { cityWeek, cityWeekLines } from "@/services/city-week";
 import { BR_UFS } from "@/constants/app";
+import { mapsDirectionsUrl } from "@/services/trip";
+import { track } from "@/lib/analytics";
 import { brl } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/precos")({
@@ -272,6 +280,7 @@ function CityLookup({
           <p className="mt-2 text-xs text-muted-foreground">
             Pesquisa da ANP, {weekLabel(week.ref.weekStart, week.ref.weekEnd)}.
           </p>
+          <CheapestStations uf={uf} city={shown} fuel={fuel} />
         </div>
       ) : selected && !refs.isLoading ? (
         <p className="mt-3 text-sm text-muted-foreground">
@@ -279,6 +288,50 @@ function CityLookup({
         </p>
       ) : null}
     </AppCard>
+  );
+}
+
+/** Postos mais baratos pesquisados pela ANP na semana, com atalho para o mapa. */
+function CheapestStations({ uf, city, fuel }: { uf: string; city: string; fuel: string }) {
+  const stations = useCheapestStations(uf, city, fuel);
+  const list = stations.data ?? [];
+  if (!list.length) return null;
+  const unit = referenceFuelName(fuel).unit;
+  const last = list[0].collected_on;
+  return (
+    <div className="mt-4 border-t border-border pt-3">
+      <p className="text-sm font-semibold text-foreground">Postos mais baratos da semana</p>
+      <ol className="mt-1 divide-y divide-border">
+        {list.map((s, i) => (
+          <li key={`${s.name}-${i}`} className="flex items-center gap-3 py-2">
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium text-foreground">{s.name}</span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {[s.bairro ?? s.address, s.brand].filter(Boolean).join(" · ")}
+              </span>
+              <a
+                href={mapsDirectionsUrl(
+                  [s.name, s.address, s.bairro, city, uf].filter(Boolean).join(", "),
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => track("station_maps_opened")}
+                className="inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-primary"
+              >
+                <MapPin className="h-3.5 w-3.5" /> Como chegar
+              </a>
+            </span>
+            <span className="shrink-0 text-sm font-semibold text-foreground">
+              {brl(Number(s.price))}/{unit}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <p className="text-xs text-muted-foreground">
+        Preço coletado pela ANP{last ? ` até ${last.slice(8, 10)}/${last.slice(5, 7)}` : ""}. Hoje
+        pode ser outro.
+      </p>
+    </div>
   );
 }
 

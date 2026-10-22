@@ -129,6 +129,7 @@ export type AnalyticsEvent =
   | "celebration_shown"
   | "trip_simulated"
   | "trip_maps_opened"
+  | "station_maps_opened"
   | "onboarding_identity_saved"
   | "onboarding_underage"
   | "retention_day_return"

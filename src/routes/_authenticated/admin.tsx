@@ -367,6 +367,15 @@ function AnpCard() {
               : result.status === "not_found"
                 ? "A ANP ainda não publicou a semana nova (ou o site não respondeu)."
                 : `Erro: ${result.message}`}
+          <br />
+          Postos:{" "}
+          {result.stations.status === "imported"
+            ? `${num(result.stations.rows, 0)} preços por posto importados.`
+            : result.stations.status === "up_to_date"
+              ? "já estavam atualizados."
+              : result.stations.status === "not_found"
+                ? "arquivo da semana ainda não publicado."
+                : `erro: ${result.stations.message}`}
         </p>
       ) : null}
       {importer.isError ? (

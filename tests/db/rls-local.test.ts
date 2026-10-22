@@ -167,3 +167,27 @@ describeDb("limites e limpeza do protótipo", () => {
     expect(r).toEqual({ stations: 0, prices: 0, clubs: 0 });
   });
 });
+
+describeDb("preços por posto da ANP", () => {
+  it("quem está logado lê, mas não grava; visitante não lê", async () => {
+    await db`insert into public.fuel_station_prices
+      (week_start, week_end, uf, municipio, cnpj, name, fuel_type_id, price)
+      values ('2026-10-11', '2026-10-17', 'GO', 'GOIANIA', '00000000000191', 'Posto Teste', 'gasolina', 6.49)`;
+    const rows = await asUser(A, (tx) => tx`select name from public.fuel_station_prices`);
+    expect(rows.map((r) => r.name)).toContain("Posto Teste");
+    await expect(
+      asUser(
+        A,
+        (tx) => tx`insert into public.fuel_station_prices
+          (week_start, week_end, uf, municipio, cnpj, name, fuel_type_id, price)
+          values ('2026-10-11', '2026-10-17', 'GO', 'GOIANIA', '1', 'Falso', 'gasolina', 1)`,
+      ),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      db.begin(async (tx) => {
+        await tx.unsafe("set local role anon");
+        await tx`select 1 from public.fuel_station_prices`;
+      }),
+    ).rejects.toThrow(/permission denied/);
+  });
+});

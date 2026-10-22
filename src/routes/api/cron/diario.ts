@@ -15,13 +15,14 @@ export const Route = createFileRoute("/api/cron/diario")({
         if (request.headers.get("authorization") !== `Bearer ${secret}`) {
           return Response.json({ error: "não autorizado" }, { status: 401 });
         }
-        const { importAnpWeek } = await import("@/lib/anp-import.server");
+        const { importAnpWeek, importAnpStations } = await import("@/lib/anp-import.server");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const anp = await importAnpWeek();
+        const stations = await importAnpStations();
         const cutoff = new Date(Date.now() - 90 * 86_400_000).toISOString();
         const cleanup = await supabaseAdmin.from("app_errors").delete().lt("created_at", cutoff);
         return Response.json(
-          { anp, errorsCleanup: cleanup.error ? cleanup.error.message : "ok" },
+          { anp, stations, errorsCleanup: cleanup.error ? cleanup.error.message : "ok" },
           { status: anp.status === "error" ? 500 : 200 },
         );
       },

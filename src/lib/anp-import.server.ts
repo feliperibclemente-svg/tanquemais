@@ -175,3 +175,69 @@ export async function importAnpWeek(
   }
   return { status: "not_found", tried };
 }
+
+export type AnpStationsResult =
+  | { status: "imported"; week: string; rows: number }
+  | { status: "up_to_date"; week: string }
+  | { status: "not_found"; tried: string[] }
+  | { status: "error"; week?: string; message: string };
+
+/**
+ * Importa o arquivo "Preços por posto revendedor" da semana mais recente e apaga as semanas
+ * com mais de 14 dias (a tela só usa a semana atual; assim a tabela fica pequena).
+ */
+export async function importAnpStations(
+  options: { force?: boolean; now?: Date } = {},
+): Promise<AnpStationsResult> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { parseStationSheet, stationFileUrl } = await import("@/services/anp-stations");
+  const files = await candidateFiles(options.now ?? new Date());
+  const tried: string[] = [];
+
+  for (const file of files.slice(0, 4)) {
+    const url = stationFileUrl(file.url);
+    const { count, error: countError } = await supabaseAdmin
+      .from("fuel_station_prices")
+      .select("id", { count: "exact", head: true })
+      .eq("source", "ANP")
+      .eq("week_start", file.start);
+    if (countError) return { status: "error", week: file.start, message: countError.message };
+    if ((count ?? 0) > 0 && !options.force) return { status: "up_to_date", week: file.start };
+
+    tried.push(url);
+    const res = await fetch(url, { headers: HEADERS });
+    if (!res.ok) continue;
+
+    let parsed: ReturnType<typeof parseStationSheet> = { rows: [], headers: null };
+    try {
+      const sheets = readXlsx(Buffer.from(await res.arrayBuffer()));
+      for (const data of Object.values(sheets)) {
+        parsed = parseStationSheet(data, file);
+        if (parsed.rows.length) break;
+      }
+    } catch (error) {
+      return { status: "error", week: file.start, message: (error as Error).message };
+    }
+    if (parsed.rows.length < 100) {
+      return {
+        status: "error",
+        week: file.start,
+        message: `Formato inesperado no arquivo por posto: ${parsed.rows.length} linhas${
+          parsed.headers ? ` (cabeçalho: ${parsed.headers.slice(0, 16).join(" | ")})` : ""
+        }`,
+      };
+    }
+
+    for (let i = 0; i < parsed.rows.length; i += 500) {
+      const { error } = await supabaseAdmin.from("fuel_station_prices").upsert(
+        parsed.rows.slice(i, i + 500).map((r) => ({ ...r, source: "ANP" })),
+        { onConflict: "source,week_start,cnpj,fuel_type_id" },
+      );
+      if (error) return { status: "error", week: file.start, message: error.message };
+    }
+    const oldest = new Date(Date.parse(file.start) - 14 * 86_400_000).toISOString().slice(0, 10);
+    await supabaseAdmin.from("fuel_station_prices").delete().lt("week_start", oldest);
+    return { status: "imported", week: file.start, rows: parsed.rows.length };
+  }
+  return { status: "not_found", tried };
+}
