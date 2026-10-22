@@ -11,7 +11,7 @@ import {
   type MomentCandidate,
 } from "@/services/moments";
 import { chooseReference, weekLabel } from "@/services/anp";
-import { cityWeek, cityWeekLines } from "@/services/city-week";
+import { cityWeek, cityWeekShort } from "@/services/city-week";
 import { localMonthKey } from "@/services/recap";
 import { num } from "@/lib/format";
 import { track } from "@/lib/analytics";
@@ -144,8 +144,8 @@ export function MomentCard({
     "price-week": {
       icon: <MapPinned className="h-5 w-5" />,
       title: ref ? `${ref.place} nesta semana` : "",
-      body: week ? cityWeekLines(week, vehicle.tank_liters) : "",
-      note: ref ? `Pesquisa da ANP, ${weekLabel(ref.weekStart, ref.weekEnd)}.` : undefined,
+      body: week ? cityWeekShort(week, vehicle.tank_liters) : "",
+      note: ref ? `ANP, ${weekLabel(ref.weekStart, ref.weekEnd)}` : undefined,
       to: "/precos",
       cta: "Ver preços por cidade",
     },

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cityWeek, cityWeekLines } from "@/services/city-week";
+import { cityWeek, cityWeekLines, cityWeekShort } from "@/services/city-week";
 
 const row = (
   week: string,
@@ -100,5 +100,24 @@ describe("cityWeek", () => {
     expect(cityWeekLines(cw, 50)[1]).toBe(
       "Etanol a 75% da gasolina: a gasolina compensa (regra dos 70%).",
     );
+  });
+});
+
+describe("cityWeekShort", () => {
+  it("resume os três fatos em frases curtas", () => {
+    const cw = cityWeek(
+      [
+        row("2026-10-04", "gasolina", 6.67),
+        row("2026-10-11", "gasolina", 6.75, { min: 6.49, max: 7.09 }),
+        row("2026-10-11", "etanol", 4.39),
+      ],
+      place,
+      "gasolina",
+      now,
+    )!;
+    const lines = cityWeekShort(cw, 48);
+    expect(lines[0]).toMatch(/^Gasolina comum R\$\s6,75\/L \(\+R\$\s0,08 na semana\)$/);
+    expect(lines[1]).toBe("Etanol compensa (65% da gasolina)");
+    expect(lines[2]).toMatch(/^Até R\$\s0,60\/L entre postos \(≈ R\$\s29 no tanque\)$/);
   });
 });

@@ -100,3 +100,29 @@ export function cityWeekLines(cw: CityWeek, tankLiters: number | null | undefine
   }
   return lines;
 }
+
+/** Versão curta para o Início: os mesmos três fatos, sem frase explicativa. */
+export function cityWeekShort(cw: CityWeek, tankLiters: number | null | undefined): string[] {
+  const { ref } = cw;
+  const fuel = ref.fuelName.charAt(0).toUpperCase() + ref.fuelName.slice(1);
+  const change =
+    cw.change === null || Math.abs(cw.change) < 0.01
+      ? ""
+      : ` (${cw.change > 0 ? "+" : "−"}${brl(Math.abs(cw.change))} na semana)`;
+  const lines = [`${fuel} ${brl(ref.avgPrice)}/${ref.unit}${change}`];
+  if (cw.ethanolRatio !== null) {
+    const pct = Math.round(cw.ethanolRatio * 100);
+    lines.push(
+      cw.ethanolRatio <= ETHANOL_BREAKEVEN_RATIO
+        ? `Etanol compensa (${pct}% da gasolina)`
+        : `Gasolina compensa (etanol a ${pct}%)`,
+    );
+  }
+  if (cw.spread !== null) {
+    const tank = tankLiters && tankLiters > 0 && ref.unit === "L" ? tankLiters : null;
+    lines.push(
+      `Até ${brl(cw.spread)}/${ref.unit} entre postos${tank ? ` (≈ ${brl(cw.spread * tank, 0)} no tanque)` : ""}`,
+    );
+  }
+  return lines;
+}
