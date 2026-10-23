@@ -269,8 +269,9 @@ function CityLookup({
           ]}
         />
       </div>
+      {selected ? <CheapestStations uf={uf} city={shown} fuel={fuel} /> : null}
       {week ? (
-        <div className="mt-3">
+        <div className="mt-4 border-t border-border pt-3">
           <p className="text-base font-semibold text-foreground">{week.ref.place}</p>
           <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
             {lines.map((line) => (
@@ -280,7 +281,6 @@ function CityLookup({
           <p className="mt-2 text-xs text-muted-foreground">
             Pesquisa da ANP, {weekLabel(week.ref.weekStart, week.ref.weekEnd)}.
           </p>
-          <CheapestStations uf={uf} city={shown} fuel={fuel} />
         </div>
       ) : selected && !refs.isLoading ? (
         <p className="mt-3 text-sm text-muted-foreground">

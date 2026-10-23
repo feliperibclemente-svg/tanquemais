@@ -164,3 +164,16 @@ describe("parseStationSheet", () => {
     );
   });
 });
+
+describe("CNPJ numérico da planilha", () => {
+  it("recupera os zeros à esquerda", () => {
+    const { rows } = parseStationSheet(
+      [
+        ["CNPJ", "FANTASIA", "MUNICÍPIO", "ESTADO", "PRODUTO", "PREÇO DE REVENDA"],
+        [198451000185, "TRR COLORADO", "JUAZEIRO DO NORTE", "CEARA", "GASOLINA COMUM", 6.39],
+      ],
+      { start: "2026-10-11", end: "2026-10-17" },
+    );
+    expect(rows[0].cnpj).toBe("00198451000185");
+  });
+});
