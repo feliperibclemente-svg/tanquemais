@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { BellRing, CalendarDays, ChevronRight, MapPin, MapPinned, Wrench, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { useCheapestStations, useCheckups } from "@/hooks/use-tanque";
+import { useCheckups } from "@/hooks/use-tanque";
 import { markRecapSeen, recapSeen, useMonthlyRecap } from "@/hooks/use-recap";
 import { oilStatus } from "@/services/checkup";
 import {
@@ -13,7 +13,7 @@ import {
 import { chooseReference, weekLabel } from "@/services/anp";
 import { cityWeek, cityWeekShort } from "@/services/city-week";
 import { localMonthKey } from "@/services/recap";
-import { brl, num } from "@/lib/format";
+import { num } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import type { Vehicle } from "@/types/domain";
 
@@ -49,14 +49,6 @@ export function MomentCard({
   });
   const fuel = fuelTypeId ?? vehicle.fuel_type_id ?? "gasolina";
   const week = place.uf ? cityWeek(references, place, fuel, new Date()) : null;
-  const cheapest = useCheapestStations(place.uf ?? "", place.city ?? "", fuel).data?.[0];
-  const short = week ? cityWeekShort(week, vehicle.tank_liters) : [];
-  const cheapLine =
-    week && cheapest
-      ? [
-          `Mais barato: ${cheapest.name}${cheapest.bairro ? ` (${cheapest.bairro})` : ""}, ${brl(Number(cheapest.price))}/${week.ref.unit}`,
-        ]
-      : [];
   const ref = week?.ref ?? null;
   const lastCheckup = checkups.data?.find((c) => c.vehicle_id === vehicle.id);
   const checkupDue =
@@ -152,11 +144,10 @@ export function MomentCard({
     "price-week": {
       icon: <MapPinned className="h-5 w-5" />,
       title: ref ? `${ref.place} nesta semana` : "",
-      // Média da semana, o posto mais barato e os outros dois fatos.
-      body: week ? [short[0], ...cheapLine, ...short.slice(1)] : "",
+      body: week ? cityWeekShort(week, vehicle.tank_liters) : "",
       note: ref ? `ANP, ${weekLabel(ref.weekStart, ref.weekEnd)}` : undefined,
       to: "/precos",
-      cta: cheapest ? "Ver os 5 mais baratos" : "Ver preços por cidade",
+      cta: "Ver preços por cidade",
     },
     checkup: {
       icon: <Wrench className="h-5 w-5" />,

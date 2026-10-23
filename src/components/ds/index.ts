@@ -42,6 +42,7 @@ export { PrimaryStar } from "@/components/app/PrimaryStar";
 export { InstallCard } from "@/components/app/InstallCard";
 export { MomentCard } from "@/components/app/MomentCard";
 export { Shortcuts } from "@/components/app/Shortcuts";
+export { CheapestNearby } from "@/components/app/CheapestNearby";
 export { InviteButton } from "@/components/app/InviteButton";
 export { BrandMark, Logo, BRAND_GREEN } from "@/components/app/Logo";
 export { TeoAvatar, TeoSays } from "@/components/app/Teo";

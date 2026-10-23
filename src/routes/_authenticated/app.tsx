@@ -9,6 +9,7 @@ import {
   ErrorState,
   InstallCard,
   MomentCard,
+  CheapestNearby,
   Shortcuts,
   TeoAvatar,
   ScreenSkeleton,
@@ -140,6 +141,13 @@ function HomePage() {
 
           {/* Atalhos logo abaixo da ação principal (como as ações rápidas dos apps de banco) */}
           <Shortcuts />
+
+          {/* Onde abastecer mais barato nesta semana (ANP), logo depois das ações */}
+          <CheapestNearby
+            uf={place.uf}
+            city={place.city}
+            fuelTypeId={last?.fuel_type_id ?? primaryVehicle.fuel_type_id ?? "gasolina"}
+          />
 
           {/* Último abastecimento com a conclusão em destaque */}
           {last ? (
