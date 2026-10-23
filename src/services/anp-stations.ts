@@ -93,7 +93,7 @@ export function parseStationSheet(
       const fuel = toFuelTypeId(text(row, cols.produto));
       const uf = toUf(text(row, cols.uf));
       const price = toNumber(row[cols.preco!]);
-      const cnpj = text(row, cols.cnpj).replace(/\D/g, "");
+      const cnpj = text(row, cols.cnpj).replace(/\D/g, "").padStart(14, "0"); // a planilha guarda como número
       const municipio = normalizeName(text(row, cols.municipio));
       if (!fuel || !uf || !cnpj || !municipio || price === null || price < 0.5 || price > 30) {
         continue;
